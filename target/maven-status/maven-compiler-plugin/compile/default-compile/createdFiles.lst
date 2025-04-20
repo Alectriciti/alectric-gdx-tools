@@ -1,1 +1,10 @@
-com\alectriciti\gdx\GdxToolkit.class
+com\alectriciti\gdx\Toolkit.class
+com\alectriciti\gdx\Canvas.class
+com\alectriciti\gdx\Widget.class
+com\alectriciti\gdx\WidgetManager.class
+com\alectriciti\gdx\Ansi.class
+com\alectriciti\gdx\ChatManager.class
+com\alectriciti\gdx\TextManager.class
+com\alectriciti\gdx\Button.class
+com\alectriciti\gdx\WidgetManager$1.class
+com\alectriciti\gdx\Button$Type.class

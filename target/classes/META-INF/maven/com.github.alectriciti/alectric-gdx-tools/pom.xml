@@ -9,5 +9,27 @@
     <artifactId>gdx</artifactId>
     <version>1.12.1</version>
   </dependency>
+  <!-- Desktop backend -->
+    <dependency>
+      <groupId>com.badlogicgames.gdx</groupId>
+      <artifactId>gdx-backend-lwjgl3</artifactId>
+      <version>1.12.0</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- Native desktop dependencies -->
+    <dependency>
+      <groupId>com.badlogicgames.gdx</groupId>
+      <artifactId>gdx-platform</artifactId>
+      <version>1.12.0</version>
+      <scope>test</scope>
+      <classifier>natives-desktop</classifier>
+    </dependency>
+  <dependency>
+  <groupId>org.junit.jupiter</groupId>
+  <artifactId>junit-jupiter</artifactId>
+  <version>5.10.0</version>
+  <scope>test</scope>
+</dependency>
 </dependencies>
 </project>
