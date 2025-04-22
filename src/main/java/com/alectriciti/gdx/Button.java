@@ -2,6 +2,7 @@ package com.alectriciti.gdx;
 
 import static com.alectriciti.gdx.Toolkit.*;
 
+import com.alectriciti.gdx.Button.Type;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
@@ -11,6 +12,11 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Rectangle;
 
+
+/**
+ * A Button widget which can be added directly to a canvas, or added standalone
+ * @author alectriciti
+ */
 public class Button extends Widget{
 	
 	int key;
@@ -28,7 +34,13 @@ public class Button extends Widget{
 	int rapidfire_speed = 2;
 	
 	public Type type = Type.PRESS;
-
+	
+	/**
+	 * 
+	 * @param button_name
+	 * @param key
+	 * @param canvas
+	 */
 	public Button(String button_name, int key, Canvas canvas) {
 		super(button_name, canvas);
 		//super(wonkaMain, button_name);
@@ -157,13 +169,17 @@ public class Button extends Widget{
 		drawChildren(renderer);
 	}
 	
-	public void drawTexture(SpriteBatch batch) {
+	public boolean drawTexture(SpriteBatch batch) {
+		if(texture==null) {
+			return false;
+		}
 		if(pressing) {
 			batch.setColor(Color.GRAY);
 		}else {
 			batch.setColor(Color.WHITE);
 		}
 		batch.draw(texture, getGlobalX(), getGlobalY()+1, shape.width-1, shape.height-1);
+		return true;
 	}
 	
 	@Override
@@ -171,11 +187,11 @@ public class Button extends Widget{
 		return true;
 	}
 
-	public void drawFont(SpriteBatch batch, BitmapFont font) {
+	public boolean drawFont(SpriteBatch batch, BitmapFont font) {
 		// TODO Auto-generated method stub
 
 		if(!visible){
-			return;
+			return false; 
 		}
 		if(pressing) {
 			font.setColor(Color.GRAY);
@@ -185,11 +201,26 @@ public class Button extends Widget{
 			font.setColor(Color.WHITE);
 		}
 		font.draw(batch, name, getGlobalX()+2, getGlobalY()+font.getCapHeight()+2);
+		return true;
 	}
 	
 	public Button setVisible(boolean b) {
 		visible = b;
 		return this;
+	}
+	
+	@Override
+	protected void OnMouseClicked() {
+		if(!is_key_down) {
+			//if button's keybind is not pressed
+			pressing = true;
+			if(type == Type.PRESS_AND_RELEASE) {
+				activate();
+			}else if (type == Type.RAPIDFIRE) {
+				manager.buttons_rapidfiring.add(this); //start rapidfiring
+			}
+		}
+		manager.mouse_clicked_button = this; // new button clicked on!
 	}
 
 }

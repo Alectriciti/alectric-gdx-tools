@@ -5,10 +5,19 @@ import com.badlogic.gdx.graphics.Color;
 
 public class Toolkit {
 	
+	
+	/**
+	 * A handy little print function
+	 * @param msg the message to display
+	 */
 	public static void print(String msg) {
 		System.out.println(msg);
 	}
-	
+
+	/**
+	 * A handy little print function, but in red
+	 * @param msg the message to display
+	 */
 	public static void printWarning(String msg) {
 		System.out.println(Ansi.YELLOW+"⚠️ "+msg);
 	}

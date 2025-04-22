@@ -1,0 +1,22 @@
+-classpath
+'C:/Users/alect/.m2/repository/com/badlogicgames/gdx/gdx/1.12.1/gdx-1.12.1.jar;C:/Users/alect/.m2/repository/com/badlogicgames/gdx/gdx-jnigen-loader/2.3.1/gdx-jnigen-loader-2.3.1.jar'
+-encoding
+'UTF-8'
+-protected
+-sourcepath
+'C:/Users/alect/design/gamedev/projects_gdx/alectric-gdx-tools/src/main/java;C:/Users/alect/design/gamedev/projects_gdx/alectric-gdx-tools/target/generated-sources/annotations'
+-author
+-bottom
+'Copyright &#169; 2025. All rights reserved.'
+-charset
+'UTF-8'
+-d
+'C:/Users/alect/design/gamedev/projects_gdx/alectric-gdx-tools/target/reports/apidocs'
+-docencoding
+'UTF-8'
+-doctitle
+'alectric-gdx-tools 0.0.1 API'
+-use
+-version
+-windowtitle
+'alectric-gdx-tools 0.0.1 API'

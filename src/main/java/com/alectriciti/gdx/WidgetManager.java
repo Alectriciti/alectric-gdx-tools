@@ -16,7 +16,6 @@ import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -56,9 +55,13 @@ public class WidgetManager implements InputProcessor {
 	int mouseScrollOffset = 0; // add this to your WidgetManager or UI state
 	private float scrollSelectionOffset;
 	
+	
+	int mouse_x, mouse_y;
+	
 	/**
 	 * These references exist globally to allow for extra functionality
 	 */
+	public List<Widget> widgets = new ArrayList<Widget>();
 	public List<Button> buttons = new ArrayList<Button>();
 	protected List<Button> buttons_rapidfiring = new ArrayList<Button>();
 	public Map<String, Button> buttons_by_name = new HashMap<String, Button>();
@@ -106,10 +109,9 @@ public class WidgetManager implements InputProcessor {
 		//Mouse handling
 		ui_tick++;
 		
-		//mouseScrollOffset += (scroll_y/4);
+		//mouseScrollOffset += (scroll_y/4);s
 		
 		edit_mode = Gdx.input.isKeyPressed(Keys.CONTROL_LEFT) || Gdx.input.isKeyPressed(Keys.CONTROL_RIGHT);
-		
 		constraint_mode = Gdx.input.isKeyPressed(Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Keys.SHIFT_RIGHT);
 		
 		if(edit_mode) {
@@ -131,9 +133,8 @@ public class WidgetManager implements InputProcessor {
 		}
 		*/
 		
-		
-		int mouse_x = getMouseX();
-		int mouse_y = getMouseY();
+		mouse_x = getMouseX();
+		mouse_y = getMouseY();
 		
 		if(Gdx.input.isButtonPressed(Buttons.LEFT)) {
 			mouse_is_down = true;
@@ -155,27 +156,8 @@ public class WidgetManager implements InputProcessor {
 								focus((Canvas) widget_hovering);
 							}
 						}else {
-							if(widget_hovering instanceof Button) {
-								Button button = (Button)widget_hovering;
-								if(!button.is_key_down) {
-									//if button's keybind is not pressed
-									button.pressing = true;
-									if(button.type == Type.PRESS_AND_RELEASE) {
-										button.activate();
-									}else if (button.type == Type.RAPIDFIRE) {
-										buttons_rapidfiring.add(button); //start rapidfiring
-									}
-								}
-								mouse_clicked_button = button; // new button clicked on!
-							}else if(widget_hovering instanceof Canvas){
-								Canvas canvas = (Canvas)widget_hovering;
-								if(!canvas.focused) {
-									focus(canvas);
-								}
-							}
+							widget_hovering.callOnClicked(); //API call
 						}
-					}else {
-						print("widget_hovering is null");
 					}
 				}
 			}
@@ -264,6 +246,13 @@ public class WidgetManager implements InputProcessor {
 		}
 		
 		
+		HoverMouseLogic();
+		
+	}
+	private void HoverMouseLogic() {
+
+		
+		
 		if(!mouse_is_down) {
 			/**
 			 * Main Hover Logic... this FETCHES The widget selection candidate
@@ -276,7 +265,7 @@ public class WidgetManager implements InputProcessor {
 			    //print(""+i);
 			    Canvas canvas = canvases.get(i);
 				if(canvas.visible) {
-					//first check children
+					//first check children widgets
 					for(Widget w : canvas.widgets) {
 						if(w.isVisible() && w.containsGlobal(mouse_x, mouse_y)) {
 							setWidgetSelectionCandidate(w);
@@ -288,13 +277,15 @@ public class WidgetManager implements InputProcessor {
 						break;
 					}
 					if(canvas.containsGlobal(mouse_x, mouse_y)) {
-						//then do canvas
+						//then search through the canvases
 						setWidgetSelectionCandidate(canvas);
 						found = true;
 						break;
 					}
 				}
 			}
+			
+			//then search the stragglers (which have not been added to any canvas)
 			if(!found) {
 				for(Widget w : widget_orphans) {
 					if(w.containsGlobal(mouse_x, mouse_y)) {
@@ -310,8 +301,8 @@ public class WidgetManager implements InputProcessor {
 				
 			}
 		}
-		
 	}
+
 	/**
 	 * Renders all canvases in the order they were created
 	 * @param renderer
@@ -473,6 +464,12 @@ public class WidgetManager implements InputProcessor {
 			buttons.add(b);
 			buttons_by_name.put(b.name, b);
 			buttons_by_key.put(b.key, b);
+		}
+	}
+
+	public void dispose() {
+		for(Widget w : widgets) {
+			w.texture.dispose();
 		}
 	}
 	

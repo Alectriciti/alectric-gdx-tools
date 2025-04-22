@@ -18,6 +18,7 @@ import com.badlogic.gdx.math.Rectangle;
 
 /**
  * Widgets are the building blocks of Alectric UI which can be updated/rendered manually, or using WidgetManager
+ * @author alectriciti
  */
 public class Widget {
 	
@@ -34,6 +35,8 @@ public class Widget {
 	public int z; //for z ordering
 	
 	boolean hovering = false;
+	private boolean currently_clicked = false;
+	
 	protected Widget parent;
 
 	
@@ -86,6 +89,7 @@ public class Widget {
 		this.shape = new Rectangle();
 		if(canvas != null) {
 			this.manager = canvas.manager;
+			this.manager.registerWidget(this);
 			canvas.registerWidget(this);
 		}else {
 			printError("Error instantiating "+name+" ... Canvas is NULL. Register with a WidgetManager instead");
@@ -104,8 +108,8 @@ public class Widget {
 	public Widget(String name, WidgetManager manager) {
 		this.name = name;
 		this.manager = manager;
-		this.shape = new Rectangle();
 		this.manager.registerWidget(this);
+		this.shape = new Rectangle();
 		setSize(32, 32);
 		updateGlobalPosition();
 	}
@@ -247,22 +251,91 @@ public class Widget {
 		return visible;
 	}
 
-	public void drawFont(SpriteBatch sprite_batch, BitmapFont font) {
+	public boolean drawFont(SpriteBatch sprite_batch, BitmapFont font) {
 		
 		if(!visible){
-			return;
+			return false;
 		}
 		font.draw(sprite_batch, name, getGlobalX(), getGlobalY());
+		return true;
 	}
 	
-	public void drawTexture(SpriteBatch batch) {
-		batch.setColor(Color.WHITE);
-		batch.draw(texture, getGlobalX(), getGlobalY(), shape.width-1, shape.height-1);
+	/**
+	 * 
+	 * @param sprite_batch A clean {@link SpriteBatch} which has already started .begin()
+	 * @return whether or not the texture was able to draw {@code
+	 * 
+	 * }
+	 */
+	public boolean drawTexture(SpriteBatch sprite_batch) {
+		if(texture==null) {
+			return false;
+		}
+		sprite_batch.setColor(Color.WHITE);
+		sprite_batch.draw(texture, getGlobalX(), getGlobalY(), shape.width-1, shape.height-1);
+		return true;
 	}
 	
 	
 	public int getZIndex() {
 		return z;
+	}
+
+	final void callOnClicked() {
+		currently_clicked = true;
+		OnMouseClicked();
+	}
+
+	final void callOnReleased() {
+		currently_clicked = false;
+		OnMouseReleased();
+	}
+
+	protected void OnMouseClicked() {
+		// TODO Auto-generated method stub
+	}
+
+	protected void OnMouseReleased() {
+		// TODO Auto-generated method stub
+	}
+	
+	public boolean getCurrentlyClicked() {
+		return currently_clicked;
+	}
+	
+	
+
+
+	/**
+	 * Registers the widget to this canvas.
+	 * The idea is that this is called at two places:
+	 * 1. When the widget is initalized
+	 * 2. When a widget switches canvases
+	 */
+	void registerWidget(Widget widget) {
+		
+		//Check if the widget already has a parent
+		if(widget.parent != null) {
+			widget.parent.unregisterWidget(widget);
+		}
+		widgets.add(widget);
+		widget.parent = this;
+		
+		if(widget instanceof Button) {
+			Button b = (Button)widget;
+			buttons.add(b);
+			manager.buttons.add(b);
+			manager.buttons_by_name.put(b.name, b);
+			manager.buttons_by_key.put(b.key, b);
+		}
+	}
+
+	public void unregisterWidget(Widget widget_to_remove) {
+		widgets.remove(widget_to_remove);
+		if(widget_to_remove instanceof Button) {
+			Button b = (Button) widget_to_remove;
+			buttons.remove(b);
+		}
 	}
 	
 }

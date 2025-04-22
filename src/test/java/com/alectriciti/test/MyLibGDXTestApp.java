@@ -3,6 +3,8 @@ package com.alectriciti.test;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Window;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3WindowListener;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -14,10 +16,11 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import static com.alectriciti.gdx.Toolkit.*;
 
 import com.alectriciti.gdx.Canvas;
+import com.alectriciti.gdx.Widget;
 import com.alectriciti.gdx.Button;
 import com.alectriciti.gdx.WidgetManager;
 
-public class MyLibGDXTestApp implements ApplicationListener {
+public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListener {
 
 	
 	
@@ -35,12 +38,14 @@ public class MyLibGDXTestApp implements ApplicationListener {
 		
 		Gdx.input.setInputProcessor(input);
 
-		//Canvas main_menu = new Canvas("Cool Canvas", widget_manager, new Rectangle(100, 100, 200, 200));
-		//Canvas stupid_canvas = new Canvas("Stupid Canvas", widget_manager, new Rectangle(150, 50, 300, 100));
+		Canvas main_menu = new Canvas("Cool Canvas", widget_manager, new Rectangle(100, 100, 200, 200));
+		Canvas stupid_canvas = new Canvas("Stupid Canvas", widget_manager, new Rectangle(150, 50, 300, 100));
+
+		Button a = new Button("Ass", Keys.A, main_menu);
+		a.setSize(64,42);
 		
 		Button b = new Button("Poop", Keys.SPACE, widget_manager);
 		b.setRelativePosition(100, 00);
-		Button a = new Button("Ass", Keys.A, widget_manager);
 
 		width = Gdx.graphics.getWidth();
 		height = Gdx.graphics.getHeight();
@@ -87,6 +92,58 @@ public class MyLibGDXTestApp implements ApplicationListener {
 	public void dispose() {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public void created(Lwjgl3Window window) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void iconified(boolean isIconified) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void maximized(boolean isMaximized) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void focusLost() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void focusGained() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public boolean closeRequested() {
+		// TODO Auto-generated method stub
+		widget_manager.dispose();
+		this.shape_renderer.dispose();
+		this.sprite_batch.dispose();
+		Gdx.app.exit();
+		return true;
+	}
+
+	@Override
+	public void filesDropped(String[] files) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void refreshRequested() {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

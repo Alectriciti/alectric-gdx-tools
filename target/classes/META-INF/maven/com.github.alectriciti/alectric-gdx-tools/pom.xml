@@ -26,10 +26,46 @@
       <classifier>natives-desktop</classifier>
     </dependency>
   <dependency>
-  <groupId>org.junit.jupiter</groupId>
-  <artifactId>junit-jupiter</artifactId>
-  <version>5.10.0</version>
-  <scope>test</scope>
-</dependency>
+    <groupId>org.junit.jupiter</groupId>
+    <artifactId>junit-jupiter</artifactId>
+    <version>5.10.0</version>
+    <scope>test</scope>
+  </dependency>
 </dependencies>
+<build>
+  <plugins>
+    <!-- Javadoc Plugin -->
+    <plugin>
+	  <groupId>org.apache.maven.plugins</groupId>
+	  <artifactId>maven-javadoc-plugin</artifactId>
+	  <version>3.11.2</version>
+	  <executions>
+	    <execution>
+	      <id>attach-javadocs</id>
+	      <goals>
+	        <goal>jar</goal>
+	      </goals>
+	    </execution>
+	  </executions>
+	  <configuration>
+	    <failOnError>false</failOnError> <!-- Allow missing/malformed Javadocs -->
+	  </configuration>
+	</plugin>
+
+    <!-- Source JAR (optional but often useful) -->
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-source-plugin</artifactId>
+      <version>3.3.0</version>
+      <executions>
+        <execution>
+          <id>attach-sources</id>
+          <goals>
+            <goal>jar</goal>
+          </goals>
+        </execution>
+      </executions>
+    </plugin>
+  </plugins>
+</build>
 </project>

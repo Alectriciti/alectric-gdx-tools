@@ -12,6 +12,10 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Rectangle;
 
+
+/**
+ * A container widget which can be 
+ */
 public class Canvas extends Widget{
 	
 	
@@ -28,25 +32,6 @@ public class Canvas extends Widget{
 		//this.shape_edit_handle = new Rectangle(shape.x, shape.y+shape.height-EDIT_HANDLE_HEIGHT, shape.width, EDIT_HANDLE_HEIGHT);
 		this.color = new Color(0.2f, 0.2f, 0.2f, 0.5f);
 		updateGlobalPosition();
-	}
-	
-	
-
-
-	/**
-	 * Automatically adds objects
-	 */
-	void registerWidget(Widget widget) {
-		widgets.add(widget);
-		widget.parent = this;
-		
-		if(widget instanceof Button) {
-			Button b = (Button)widget;
-			buttons.add(b);
-			manager.buttons.add(b);
-			manager.buttons_by_name.put(b.name, b);
-			manager.buttons_by_key.put(b.key, b);
-		}
 	}
 	
 	
@@ -77,6 +62,14 @@ public class Canvas extends Widget{
 	
 	public void getConfiguration() {
 		
+	}
+	
+	
+	@Override
+	protected void OnMouseClicked() {
+		if(!focused) {
+			manager.focus(this);
+		}
 	}
 	
 	
