@@ -1,9 +1,12 @@
 package com.alectriciti.gdx;
 
+import java.awt.Desktop;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -26,7 +29,7 @@ import static com.alectriciti.gdx.Toolkit.*;
 /**
  * A widget manager can be instantiated to automatically run logic and or render it
  */
-public class WidgetManager implements InputProcessor {
+public class UIManager implements InputProcessor {
 
 	public Color COLOR_BUTTON_ACTIVATED = Color.GREEN;
 	public Color COLOR_BUTTON_PRESSING = Color.WHITE;
@@ -37,13 +40,21 @@ public class WidgetManager implements InputProcessor {
 	
 	boolean mouse_is_down;
 
-	Widget mouse_adjusting_widget = null;
+	/**
+	 * This is the widget that is currently being adjusted and dragged around (the red outline)
+	 */
+	Widget widget_currently_adjusting = null;
+	
+	/**
+	 * This is the button that is currently being clicked
+	 */
 	Button mouse_clicked_button = null;
 
 	private float mouse_config_offset_x;
 	private float mouse_config_offset_y;
 	
-	
+	BitmapFont font;
+	boolean font_activated = false;
 
 	List<Canvas> canvases = new ArrayList<Canvas>();
 	List<Canvas> canvases_active = new ArrayList<Canvas>();
@@ -61,13 +72,16 @@ public class WidgetManager implements InputProcessor {
 	/**
 	 * These references exist globally to allow for extra functionality
 	 */
-	public List<Widget> widgets = new ArrayList<Widget>();
+	public HashSet<Widget> widgets = new HashSet<Widget>();
+	public HashSet<Widget> widget_orphans = new HashSet<Widget>();
+	
+	
 	public List<Button> buttons = new ArrayList<Button>();
 	protected List<Button> buttons_rapidfiring = new ArrayList<Button>();
 	public Map<String, Button> buttons_by_name = new HashMap<String, Button>();
 	public Map<Integer, Button> buttons_by_key = new HashMap<Integer, Button>();
 	
-	public WidgetManager(InputMultiplexer input) {
+	public UIManager(InputMultiplexer input) {
 		input.addProcessor(this);
 	}
 	
@@ -97,6 +111,7 @@ public class WidgetManager implements InputProcessor {
 		if(widget_to_set_hovering!=null) {
 			widget_hovering = widget_to_set_hovering;
 			widget_hovering.hovering = true;
+			//print("New Candidate: "+widget_hovering.name);
 		}else {
 			widget_hovering = null;
 		}
@@ -121,6 +136,10 @@ public class WidgetManager implements InputProcessor {
 				edit_mode_pressed = false;
 				scrollSelectionOffset = 0;
 			}
+		}
+		
+		for(Widget w : widgets) {
+			w.update();
 		}
 		
 		/*
@@ -148,12 +167,15 @@ public class WidgetManager implements InputProcessor {
 				if(Gdx.input.isButtonJustPressed(Buttons.LEFT)) {
 					if(widget_hovering!=null) {
 						if(edit_mode) {
-							//moving button config mode
-							mouse_adjusting_widget = widget_hovering;
-							mouse_config_offset_x = widget_hovering.getGlobalX()-mouse_x;
-							mouse_config_offset_y = widget_hovering.getGlobalY()-mouse_y;
-							if(widget_hovering instanceof Canvas) {
-								focus((Canvas) widget_hovering);
+							
+							if(widget_hovering.isEditable()) {
+								//moving button config mode
+								widget_currently_adjusting = widget_hovering;
+								mouse_config_offset_x = widget_hovering.getGlobalX()-mouse_x;
+								mouse_config_offset_y = widget_hovering.getGlobalY()-mouse_y;
+								if(widget_hovering instanceof Canvas) {
+									focus((Canvas) widget_hovering);
+								}
 							}
 						}else {
 							widget_hovering.callOnClicked(); //API call
@@ -164,17 +186,10 @@ public class WidgetManager implements InputProcessor {
 			
 			
 			//while mouse is held and adjusting widget
-			if(mouse_adjusting_widget!=null) {
+			if(widget_currently_adjusting!=null) {
 				//moves the widget around
-				if(constraint_mode) {
-					mouse_adjusting_widget.setGlobalPosition(
-							
-							
-							((mouse_x+(int)(mouse_config_offset_x))/constraint_amount)*constraint_amount,
-							((mouse_y+(int)(mouse_config_offset_y))/constraint_amount)*constraint_amount);
-				}else {
-					mouse_adjusting_widget.setGlobalPosition((int)(mouse_x+mouse_config_offset_x), (int)(mouse_y+mouse_config_offset_y));
-				}
+				AdjustWidgetPosition();
+				
 			}if(mouse_clicked_button!=null) { //If a button is already selected
 				
 				
@@ -199,8 +214,8 @@ public class WidgetManager implements InputProcessor {
 			mouse_is_down = false;
 			
 			
-			if(mouse_adjusting_widget!=null) {
-				mouse_adjusting_widget = null;
+			if(widget_currently_adjusting!=null) {
+				widget_currently_adjusting = null;
 			}
 			if(mouse_clicked_button != null) {
 				if(mouse_clicked_button.is_key_down) {
@@ -249,6 +264,16 @@ public class WidgetManager implements InputProcessor {
 		HoverMouseLogic();
 		
 	}
+	private void AdjustWidgetPosition() {
+		if(constraint_mode) {
+			widget_currently_adjusting.setGlobalPosition(
+					((mouse_x+(int)(mouse_config_offset_x))/constraint_amount)*constraint_amount,
+					((mouse_y+(int)(mouse_config_offset_y))/constraint_amount)*constraint_amount);
+		}else {
+			widget_currently_adjusting.setGlobalPosition((int)(mouse_x+mouse_config_offset_x), (int)(mouse_y+mouse_config_offset_y));
+		}
+	}
+
 	private void HoverMouseLogic() {
 
 		
@@ -266,7 +291,8 @@ public class WidgetManager implements InputProcessor {
 			    Canvas canvas = canvases.get(i);
 				if(canvas.visible) {
 					//first check children widgets
-					for(Widget w : canvas.widgets) {
+					//print("size: "+canvas.getAllChildren().size());
+					for(Widget w : canvas.getAllChildren()) {
 						if(w.isVisible() && w.containsGlobal(mouse_x, mouse_y)) {
 							setWidgetSelectionCandidate(w);
 							found = true;
@@ -309,16 +335,29 @@ public class WidgetManager implements InputProcessor {
 	 */
 	public void renderAll(ShapeRenderer shape_renderer, SpriteBatch sprite_batch, BitmapFont font) {
 		
+		boolean font_valid = font!=null;
 
-		shape_renderer.begin();
+
+		Gdx.gl.glEnable(GL20.GL_BLEND);
 		
+		Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+
+		
+		/*
+		 * START WITH ORPHANS
+		 */
+		shape_renderer.begin();
 		for(Widget w : widget_orphans) {
-			w.drawShape(shape_renderer);
+			w.drawShape(shape_renderer, true);
 		}
 		shape_renderer.end();
-		
-
 		sprite_batch.begin();
+		if(font_valid) {
+			for(Widget w : widget_orphans) {
+				w.drawFont(sprite_batch, font, true);
+			}
+			Gdx.gl.glEnable(GL20.GL_BLEND);
+		}
 		for(Widget w : widget_orphans) {
 			if(w.texture!=null) {
 				w.drawTexture(sprite_batch);
@@ -327,33 +366,50 @@ public class WidgetManager implements InputProcessor {
 		sprite_batch.end();
 
 		Gdx.gl.glEnable(GL20.GL_BLEND);
-		Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+		
+		
+		/*
+		 * Now Canvas Groups
+		 */
 		if(font!=null) {
 			for(Canvas canvas : canvases) {
 				if(canvas.visible) {
 					shape_renderer.begin();
-					canvas.drawShape(shape_renderer);
+					canvas.drawShape(shape_renderer, true);
 					shape_renderer.end();
 					sprite_batch.begin();
-					canvas.drawFont(sprite_batch, font);
+					canvas.drawFont(sprite_batch, font, true);
 					sprite_batch.end();
+					Gdx.gl.glEnable(GL20.GL_BLEND);
 				}
 			}
 		}else {
+			/*
 			for(Canvas canvas : canvases) {
 				if(canvas.visible) {
 					shape_renderer.begin();
-					canvas.drawShape(shape_renderer);
+					canvas.drawShape(shape_renderer, true);
 					shape_renderer.end();
 				}
 			}
+			*/
 		}
+
+		//Draw this ontop to allow for visibility
+		/*
+		if(widget_currently_adjusting!=null) {
+			shape_renderer.begin();
+			widget_currently_adjusting.drawShape(shape_renderer, false);
+			widget_currently_adjusting.drawEditMode(shape_renderer, true);
+			shape_renderer.end();
+			sprite_batch.begin();
+			widget_currently_adjusting.drawFont(sprite_batch, font, false);
+			sprite_batch.end();
+		}
+		*/
 	}
 	
-	/**
-	 * Renders all canvases in the order they were created
-	 * @param renderer
-	 */
+	/*
 	public void renderShapes(ShapeRenderer shape_renderer) {
 		for(Canvas canvas : canvases) {
 			if(canvas.visible) {
@@ -361,9 +417,15 @@ public class WidgetManager implements InputProcessor {
 			}
 		}
 		for(Widget w : widget_orphans) {
-			w.drawShape(shape_renderer);
+			w.drawShape(shape_renderer, true);
+		}
+		
+		//Draw this ontop to allow for visibility
+		if(widget_currently_adjusting!=null) {
+			widget_currently_adjusting.drawEditMode(shape_renderer, false);
 		}
 	}
+	*/
 
 
 	public void registerCanvas(Canvas canvas) {
@@ -438,26 +500,52 @@ public class WidgetManager implements InputProcessor {
 		scrollSelectionOffset += amountY;
 		return false;
 	}
-
-	public void importFiles(String[] files) {
-		if(files[0]!=null) {
-			String s = files[0];
-			print(s);
-			File f = new File(s);
-			if(f.isDirectory()) {
-				
-			}else if(f.getName().endsWith(".png")) {
-				Button b = new Button(f.getName(), 0, this);
+	
+	
+	/**
+	 * @param file_path If linked to a .png, it will load a new button with that png as the image. If it's a folder, it will open that folder on desktop.
+	 */
+	public Button importFileAsButton(String file_path) {
+		if(file_path!=null) {
+			File file = new File(file_path);
+			Button b = null;
+			if(file.isDirectory()) {
+				b = new Button(file.getName(), 0, this) {
+					
+					File f = file;
+					@Override
+					protected void onActivate() {
+						try {
+							Desktop.getDesktop().open(f);
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						super.onActivate();
+					}
+				};
 				b.setGlobalPosition(getMouseX(), getMouseY());
-				b.setTexture(new FileHandle(f));
+			}else if(file.getName().endsWith(".png")) {
+				b = new Button(file.getName(), 0, this);
+				b.setGlobalPosition(getMouseX(), getMouseY());
+				b.setTexture(new FileHandle(file));
+				return b;
 			}
 		}
+		return null;
 	}
 	
-	public List<Widget> widget_orphans = new ArrayList<Widget>();
-
-	public void registerWidget(Widget widget) {
-		widget_orphans.add(widget);
+	/**
+	 * Registers a widget by adding it to appropriate lists and sets
+	 * @param widget to be registered
+	 */
+	void registerWidget(Widget widget) {
+		
+		if(widget.getParent()==null) {
+			widget_orphans.add(widget);
+		}
+		
+		widgets.add(widget);
 		
 		if(widget instanceof Button) {
 			Button b = (Button)widget;
@@ -466,10 +554,14 @@ public class WidgetManager implements InputProcessor {
 			buttons_by_key.put(b.key, b);
 		}
 	}
-
+	
+	
+	/**
+	 * This should be called on shutdown to dispose of widget-related and other resources
+	 */
 	public void dispose() {
 		for(Widget w : widgets) {
-			w.texture.dispose();
+			w.dispose();
 		}
 	}
 	

@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.alectriciti.gdx.WidgetManager.*;
+import static com.alectriciti.gdx.UIManager.*;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -22,7 +22,7 @@ public class Canvas extends Widget{
 	
 	public boolean focused = true;
 	
-	public Canvas(String name, WidgetManager manager, Rectangle shape) {
+	public Canvas(String name, UIManager manager, Rectangle shape) {
 		super();
 		this.name = name;
 		this.manager = manager;
@@ -35,7 +35,8 @@ public class Canvas extends Widget{
 	}
 	
 	
-	public void drawShape(ShapeRenderer renderer) {
+	@Override
+	public void drawShape(ShapeRenderer renderer, boolean recursive) {
 		if(!visible){
 			return;
 		}
@@ -45,13 +46,18 @@ public class Canvas extends Widget{
 		renderer.rect(getGlobalX(), getGlobalY(), shape.width, shape.height);
 
 		if(hovering && manager.edit_mode) {
-			drawEditMode(renderer);
+			drawEditMode(renderer, recursive);
+			if(recursive) {
+				drawEditModeChildren(renderer, recursive);
+			}
 		}else {
 			renderer.set(ShapeType.Line);
 			renderer.setColor(color_trim);
 			renderer.rect(getGlobalX(), getGlobalY(), shape.width, shape.height);
+			if(recursive) {
+				drawShapeChildren(renderer, recursive);
+			}
 		}
-		drawChildren(renderer);
 	}
 	
 	@Override

@@ -41,15 +41,17 @@ public class Button extends Widget{
 	 * @param key
 	 * @param canvas
 	 */
-	public Button(String button_name, int key, Canvas canvas) {
-		super(button_name, canvas);
+	public Button(String button_name, int key, Widget w) {
+		super(button_name, w);
 		//super(wonkaMain, button_name);
 		this.key = key;
 		this.color = Color.WHITE;
 		updateGlobalPosition();
 	}
 	
-	public Button(String name, int key, WidgetManager widgetManager) {
+	
+	
+	public Button(String name, int key, UIManager widgetManager) {
 		super(name, widgetManager);
 		this.key = key;
 		this.color = Color.WHITE;
@@ -117,15 +119,10 @@ public class Button extends Widget{
 
 	
 	
-	public boolean is_key_down;
-	public boolean cancelled;
-	
-	
-	public void drawShape(ShapeRenderer renderer) {
-		
-		if(!visible){
-			return;
-		}
+	@Override
+	protected void update() {
+		// TODO Auto-generated method stub
+		super.update();
 		
 		if(pressing) {
 			color = manager.COLOR_BUTTON_PRESSING.cpy();
@@ -135,6 +132,25 @@ public class Button extends Widget{
 			color = LerpColor(color, color_default, 0.25f);
 			//color.set(color_default.r*d, color_default.g*d, color_default.b*d, color_default.a);
 		}
+		if(effect_rect!=null) {
+			effect_rect_a *= 0.85f;
+			effect_rect_x += 1;
+			if(effect_rect_a<0.01) {
+				effect_rect = null;
+			}
+		}
+	}
+	
+	
+	public boolean is_key_down;
+	public boolean cancelled;
+	
+	@Override
+	public void drawShape(ShapeRenderer renderer, boolean recursive) {
+		
+		if(!visible){
+			return;
+		}
 
 		renderer.set(ShapeType.Filled);
 		renderer.setColor(color);
@@ -142,8 +158,8 @@ public class Button extends Widget{
 		
 
 		if(hovering) {
-			if(manager.edit_mode) {
-				drawEditMode(renderer);
+			if(manager.edit_mode && editable) {
+				drawEditMode(renderer, recursive);
 			}else {
 				renderer.set(ShapeType.Line);
 				renderer.setColor(color_trim_highlight);
@@ -157,16 +173,11 @@ public class Button extends Widget{
 		
 		
 		if(effect_rect!=null) {
-			effect_rect_a *= 0.85f;
-			effect_rect_x += 1;
 			renderer.setColor(new Color(1, 1, 1, effect_rect_a));
 			renderer.rect(getGlobalX()-(effect_rect_x/2), getGlobalY()-(effect_rect_x/2), shape.width+effect_rect_x, shape.height+effect_rect_x);
-			if(effect_rect_a<0.01) {
-				effect_rect = null;
-			}
 		}
 		
-		drawChildren(renderer);
+		drawShapeChildren(renderer, recursive);
 	}
 	
 	public boolean drawTexture(SpriteBatch batch) {
@@ -187,7 +198,7 @@ public class Button extends Widget{
 		return true;
 	}
 
-	public boolean drawFont(SpriteBatch batch, BitmapFont font) {
+	public boolean drawFont(SpriteBatch batch, BitmapFont font, boolean recursive) {
 		// TODO Auto-generated method stub
 
 		if(!visible){
@@ -201,12 +212,14 @@ public class Button extends Widget{
 			font.setColor(Color.WHITE);
 		}
 		font.draw(batch, name, getGlobalX()+2, getGlobalY()+font.getCapHeight()+2);
+		if(recursive) {
+			drawFontChildren(batch, font, recursive);
+		}
 		return true;
 	}
 	
-	public Button setVisible(boolean b) {
+	public void setVisible(boolean b) {
 		visible = b;
-		return this;
 	}
 	
 	@Override

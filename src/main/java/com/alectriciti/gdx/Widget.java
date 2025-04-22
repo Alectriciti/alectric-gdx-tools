@@ -1,9 +1,10 @@
 package com.alectriciti.gdx;
 
 import static com.alectriciti.gdx.Toolkit.*;
-import static com.alectriciti.gdx.WidgetManager.*;
+import static com.alectriciti.gdx.UIManager.*;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import com.badlogic.gdx.Gdx;
@@ -24,15 +25,20 @@ public class Widget {
 	
 
 
-	public List<Widget> widgets = new ArrayList<Widget>();
-	public List<Button> buttons = new ArrayList<Button>();
+	public HashSet<Widget> widgets = new HashSet<Widget>();
+	public HashSet<Button> buttons = new HashSet<Button>();
+
+	List<Widget> widgets_heirarchy_cache = new ArrayList<Widget>();
 	
-	protected WidgetManager manager;
+	protected UIManager manager;
 	
 	public String name;
 	protected Rectangle shape;
 	protected Rectangle shape_global = new Rectangle();
+	
 	public int z; //for z ordering
+	
+	public boolean editable = true;
 	
 	boolean hovering = false;
 	private boolean currently_clicked = false;
@@ -84,13 +90,13 @@ public class Widget {
 	 * @param name name of the widget
 	 * @param canvas name of the container to apply it to
 	 */
-	public Widget(String name, Canvas canvas) {
+	public Widget(String name, Widget w) {
 		this.name = name;
 		this.shape = new Rectangle();
-		if(canvas != null) {
-			this.manager = canvas.manager;
-			this.manager.registerWidget(this);
-			canvas.registerWidget(this);
+		if(w != null) {
+			this.manager = w.manager;
+			this.attachToWidget(w); //parent first!
+			this.manager.registerWidget(this); // do this last, it might make an orphan
 		}else {
 			printError("Error instantiating "+name+" ... Canvas is NULL. Register with a WidgetManager instead");
 		}
@@ -98,14 +104,14 @@ public class Widget {
 		updateGlobalPosition();
 	}
 	
-	public Widget(String name, int pos_x, int pos_y, int width, int height, Canvas canvas) {
-		this(name, canvas);
+	public Widget(String name, int pos_x, int pos_y, int width, int height, Widget w) {
+		this(name, w);
 		this.shape = new Rectangle(pos_x, pos_y, width, height);
 		setSize(32, 32);
 		updateGlobalPosition();
 	}
 	
-	public Widget(String name, WidgetManager manager) {
+	public Widget(String name, UIManager manager) {
 		this.name = name;
 		this.manager = manager;
 		this.manager.registerWidget(this);
@@ -113,6 +119,111 @@ public class Widget {
 		setSize(32, 32);
 		updateGlobalPosition();
 	}
+	
+	
+	public String getName() {
+		return name;
+	}
+	
+	
+	/*
+	 * 
+	 * Parents and Children 
+	 * 
+	 * 
+	 */
+	
+	public Widget getParent() {
+		return parent;
+	}
+	
+	public boolean hasAncestor(Widget maybeAncestor) {
+	    Widget scanning_parent = this.getParent();
+	    while (scanning_parent != null) {
+	        if (scanning_parent == maybeAncestor) {
+	        	return true;
+	        }
+	        scanning_parent = scanning_parent.getParent();
+	    }
+	    return false;
+	}
+	
+	public boolean attachToWidget(Widget new_widget_parent) {
+		if(new_widget_parent != null) {
+			if(new_widget_parent.hasAncestor(this)) {
+				printWarning("Tried adding widget ["+getName()+"] to ["+new_widget_parent.getName()+"], but it was an ancestor!");
+				return false;
+			}
+			this.parent = new_widget_parent;
+			new_widget_parent.attachChildWidget(this);
+			refreshHeirarchyCache();
+			return true;
+		}else {
+			//making this an orphan
+			manager.widget_orphans.add(this);
+			return true;
+		}
+	}
+
+	/**
+	 * Attaches and registers the widget to this widget
+	 * The idea is that this is called at two places:
+	 * 1. When the widget is initalized
+	 * 2. When a widget switches canvases
+	 */
+	protected void attachChildWidget(Widget widget_to_attach) {
+		
+		//Check if the widget already has a parent
+		if(widget_to_attach.parent != null) {
+			widget_to_attach.parent.detachWidget(widget_to_attach, false);
+		}
+		widget_to_attach.parent = this;
+		widgets.add(widget_to_attach);
+
+		refreshHeirarchyUpward();
+		
+		if(widget_to_attach instanceof Button) {
+			Button b = (Button)widget_to_attach;
+			buttons.add(b);
+		}
+	}
+	
+	/**
+	 * Detaches
+	 * @param widget_to_remove
+	 */
+	public void detachWidget(Widget widget_to_remove, boolean update_cache) {
+		widgets.remove(widget_to_remove);
+		if(update_cache) {
+			refreshHeirarchyUpward();
+		}
+		if(widget_to_remove instanceof Button) {
+			Button b = (Button) widget_to_remove;
+			buttons.remove(b);
+		}
+	}
+	
+	private void refreshHeirarchyCache() {
+		widgets_heirarchy_cache.clear();
+		for(Widget child : widgets) {
+			widgets_heirarchy_cache.add(child); // add the child directly
+			child.refreshHeirarchyCache(); // update child's cache
+			widgets_heirarchy_cache.addAll(child.getAllChildren()); //add all descendants
+		}
+	}
+	
+	private void refreshHeirarchyUpward() {
+		refreshHeirarchyCache();
+		if(parent!=null) {
+			parent.refreshHeirarchyUpward();
+		}
+	}
+
+	public List<Widget> getAllChildren() {
+		return widgets_heirarchy_cache;
+	}
+	
+	
 	
 	
 	
@@ -128,9 +239,13 @@ public class Widget {
 		this.shape_global.setWidth(width);
 		this.shape_global.setHeight(height);
 	}
+
+	public float getWidth() {
+		return this.shape.getWidth();
+	}
 	
-	public Widget getParent() {
-		return parent;
+	public float getHeight() {
+		return this.shape.getHeight();
 	}
 
 	public Widget setRelativePosition(float x, float y) {
@@ -194,52 +309,106 @@ public class Widget {
 	}
 	
 	/**
+	 * Logic, only to be ran once per frame
+	 */
+	protected void update() {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	/**
 	 * This
 	 * @param renderer The ShapeRenderer which has already utilized .begin()
+	 * @param recursive 
 	 */
-	public void drawShape(ShapeRenderer renderer) {
+	public void drawShape(ShapeRenderer renderer, boolean recursive) {
 		if(!visible){
 			return;
 		}
 		renderer.setColor(color);
 		renderer.set(ShapeType.Line);
 		renderer.rect(getGlobalX(), getGlobalY(), shape.width, shape.height);
-		if(manager.edit_mode) {
-			
-			//renderer.rect(shape_edit_handle.x, shape_edit_handle.y, shape_edit_handle.width, shape_edit_handle.height);
-		}
 		//renderer.rect(shape.x, shape.y, shape.width, shape.height);
-		drawChildren(renderer);
+		if(recursive) {
+			drawShapeChildren(renderer, recursive);
+		}
 	}
 	
-	public void drawEditMode(ShapeRenderer renderer) {
-		renderer.setColor(color_edit);
-		renderer.set(ShapeRenderer.ShapeType.Filled);
-
-	    // Top and bottom edges
-		int tick = manager.ui_tick/2;
-		int dotSpacing = 4;
-		int offset = tick % dotSpacing;
-		int dotRadius = 1;
-	    for (float i = getGlobalX() + offset; i <= getGlobalX() + shape.width; i += dotSpacing) {
-	    	renderer.circle(i, getGlobalY() + shape.height, dotRadius); // Top
-	    }
-	    for (float i = getGlobalX() + 2 - offset; i <= getGlobalX() + shape.width; i += dotSpacing) {
-	    	renderer.circle(i, getGlobalY(), dotRadius); // Bottom
-	    }
-
-	    // Left and right edges
-	    for (float j = getGlobalY() + offset; j <= getGlobalY() + shape.height; j += dotSpacing) {
-	    	renderer.circle(getGlobalX(), j, dotRadius); // Left
-	    }
-	    for (float j = getGlobalY() + 2 - offset; j <= getGlobalY() + shape.height; j += dotSpacing) {
-	    	renderer.circle(getGlobalX() + shape.width, j, dotRadius); // Right
+	public void drawEditMode(ShapeRenderer renderer, boolean recursive) {
+		if(editable) {
+			renderer.setColor(color_edit);
+			renderer.set(ShapeRenderer.ShapeType.Filled);
+	
+		    // Top and bottom edges
+			int tick = manager.ui_tick/2;
+			int dotSpacing = 4;
+			int offset = tick % dotSpacing;
+			int dotRadius = 1;
+		    for (float i = getGlobalX() + offset; i <= getGlobalX() + shape.width; i += dotSpacing) {
+		    	renderer.circle(i, getGlobalY() + shape.height, dotRadius); // Top
+		    }
+		    for (float i = getGlobalX() + 2 - offset; i <= getGlobalX() + shape.width; i += dotSpacing) {
+		    	renderer.circle(i, getGlobalY(), dotRadius); // Bottom
+		    }
+	
+		    // Left and right edges
+		    for (float j = getGlobalY() + offset; j <= getGlobalY() + shape.height; j += dotSpacing) {
+		    	renderer.circle(getGlobalX(), j, dotRadius); // Left
+		    }
+		    for (float j = getGlobalY() + 2 - offset; j <= getGlobalY() + shape.height; j += dotSpacing) {
+		    	renderer.circle(getGlobalX() + shape.width, j, dotRadius); // Right
+		    }
+		}
+	    if(recursive) {
+	    	drawEditModeChildren(renderer, recursive);
 	    }
 	}
 	
-	protected void drawChildren(ShapeRenderer renderer) {
+	
+	public boolean drawFont(SpriteBatch sprite_batch, BitmapFont font, boolean recursive) {
+		
+		if(!visible){
+			return false;
+		}
+		
+		
+		font.setColor(Color.WHITE);
+		font.draw(sprite_batch, name, getGlobalX(), getGlobalY());
+		if(recursive) {
+			drawFontChildren(sprite_batch, font, recursive);
+		}
+		return true;
+	}
+
+	/**
+	 * 
+	 * @param sprite_batch A clean {@link SpriteBatch} which has already started .begin()
+	 * @return whether or not the texture was able to draw
+	 */
+	public boolean drawTexture(SpriteBatch sprite_batch) {
+		if(texture==null) {
+			return false;
+		}
+		sprite_batch.setColor(Color.WHITE);
+		sprite_batch.draw(texture, getGlobalX(), getGlobalY(), shape.width-1, shape.height-1);
+		return true;
+	}
+	
+	protected void drawEditModeChildren(ShapeRenderer renderer, boolean recursive) {
 		for(Widget w : widgets) {
-			w.drawShape(renderer);
+			w.drawEditMode(renderer, recursive);
+		}
+	}
+	
+	protected void drawShapeChildren(ShapeRenderer renderer, boolean recursive) {
+		for(Widget w : widgets) {
+			w.drawShape(renderer, recursive);
+		}
+	}
+	
+	protected void drawFontChildren(SpriteBatch sprite_batch, BitmapFont font, boolean recursive) {
+		for(Widget w : widgets) {
+			w.drawFont(sprite_batch, font, recursive);
 		}
 	}
 
@@ -249,31 +418,6 @@ public class Widget {
 	
 	public boolean isVisible() {
 		return visible;
-	}
-
-	public boolean drawFont(SpriteBatch sprite_batch, BitmapFont font) {
-		
-		if(!visible){
-			return false;
-		}
-		font.draw(sprite_batch, name, getGlobalX(), getGlobalY());
-		return true;
-	}
-	
-	/**
-	 * 
-	 * @param sprite_batch A clean {@link SpriteBatch} which has already started .begin()
-	 * @return whether or not the texture was able to draw {@code
-	 * 
-	 * }
-	 */
-	public boolean drawTexture(SpriteBatch sprite_batch) {
-		if(texture==null) {
-			return false;
-		}
-		sprite_batch.setColor(Color.WHITE);
-		sprite_batch.draw(texture, getGlobalX(), getGlobalY(), shape.width-1, shape.height-1);
-		return true;
 	}
 	
 	
@@ -302,40 +446,26 @@ public class Widget {
 	public boolean getCurrentlyClicked() {
 		return currently_clicked;
 	}
-	
+
 	
 
-
-	/**
-	 * Registers the widget to this canvas.
-	 * The idea is that this is called at two places:
-	 * 1. When the widget is initalized
-	 * 2. When a widget switches canvases
-	 */
-	void registerWidget(Widget widget) {
-		
-		//Check if the widget already has a parent
-		if(widget.parent != null) {
-			widget.parent.unregisterWidget(widget);
-		}
-		widgets.add(widget);
-		widget.parent = this;
-		
-		if(widget instanceof Button) {
-			Button b = (Button)widget;
-			buttons.add(b);
-			manager.buttons.add(b);
-			manager.buttons_by_name.put(b.name, b);
-			manager.buttons_by_key.put(b.key, b);
+	public void dispose() {
+		if(texture!=null) {
+			texture.dispose();
 		}
 	}
 
-	public void unregisterWidget(Widget widget_to_remove) {
-		widgets.remove(widget_to_remove);
-		if(widget_to_remove instanceof Button) {
-			Button b = (Button) widget_to_remove;
-			buttons.remove(b);
-		}
+	public void setVisible(boolean b) {
+		visible = b;
+	}
+
+	public boolean isEditable() {
+		// TODO Auto-generated method stub
+		return editable;
+	}
+	
+	public String toString() {
+		return name;
 	}
 	
 }
