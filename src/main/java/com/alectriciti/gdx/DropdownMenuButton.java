@@ -2,19 +2,26 @@ package com.alectriciti.gdx;
 
 import static com.alectriciti.gdx.Toolkit.*;
 
-import java.util.LinkedList;
-
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Rectangle;
 
 public class DropdownMenuButton extends Button{
 	
 	float expand_amount = 0;
 	float expand_amount_target = 0;
+	float expand_speed = 0.1f;
 	
-	boolean animating;
-
+	Direction direction = Direction.DOWN;
+	
+	public void setDirection(Direction d) {
+		this.direction = d;
+	}
+	
+	Rectangle dropdown_region = new Rectangle();
+	
 	public DropdownMenuButton(String button_name, int key, Widget w) {
 		super(button_name, key, w);
 		type = Type.TOGGLE;
@@ -54,24 +61,18 @@ public class DropdownMenuButton extends Button{
 		
 	}
 	
-	
-	protected void updatePositionForChildren() {
-		float offset = 0;
-		for(Widget w : widgets) {
-			w.setRelativePosition(0, offset);
-			offset += w.getHeight()*expand_amount;
-			w.setRelativePosition(0, offset);
-		}
+	@Override
+	public void setGlobalPosition(float x, float y) {
+		super.setGlobalPosition(x, y);
 	}
 	
-	
 	@Override
-	public void drawShape(ShapeRenderer renderer, boolean recursive) {
+	protected void update() {
 		// TODO Auto-generated method stub
-		super.drawShape(renderer, false);
-		
+		super.update();
+
 		if(animating) {
-			expand_amount = lerp(expand_amount, expand_amount_target, 0.1f);
+			expand_amount = lerp(expand_amount, expand_amount_target, expand_speed);
 			if(Math.abs(expand_amount_target - expand_amount) > 0.02) {
 				updatePositionForChildren();
 			}else {
@@ -86,8 +87,73 @@ public class DropdownMenuButton extends Button{
 			}
 		}
 		
+	}
+	
+	protected void updatePositionForChildren() {
+		float offset = 0;
+		//Adjust the actual widgets
+		for(Widget w : widgets) {
+			offset += w.getHeight()*expand_amount;
+			w.setRelativePosition(direction.x*offset, direction.y*offset);
+			w.setOpacity(Math.max(0, (expand_amount*2)-1));
+		}
+		
+		if(effect_rect!=null) {
+			for(Widget w : widgets) {
+				effect_rect = effect_rect.merge(w.shape_global);
+				//effect_rect.height += w.getHeight()*(expand_amount);
+			}
+			switch(direction) {
+			case DOWN:
+				break;
+			case LEFT:
+				break;
+			case RIGHT:
+				break;
+			case UP:
+				for(Widget w : widgets) {
+					//effect_rect.height += w.getHeight()*(expand_amount);
+				}
+				break;
+			default:
+				break;
+			
+			}
+		}
+	}
+	
+	@Override
+	public void drawShape(ShapeRenderer renderer, boolean recursive) {
+		// TODO Auto-generated method stub
+		super.drawShape(renderer, false);
+		
+		//renderer.set(ShapeType.Line);
+		//renderer.setColor(Color.BLUE);
+		//renderer.rect(dropdown_region.x-2, dropdown_region.y-2, dropdown_region.width+2, dropdown_region.height+2);
+		
 		if(activated) {
 			drawShapeChildren(renderer, recursive);
+		}
+	}
+	
+	@Override
+	protected void spawnButtonEffect() {
+		super.spawnButtonEffect();
+		//effect_rect.width += shape.getWidth();
+		//effect_rect.height = shape.getHeight();
+	}
+
+	@Override
+	protected void drawButtonEffect(ShapeRenderer renderer) {
+		if(effect_rect!=null) {
+			renderer.setColor(new Color(1, 1, 1, effect_rect_a));
+
+			renderer.rect(
+					effect_rect.x-effect_delta-effect_offset_start,
+					effect_rect.y-effect_delta-effect_offset_start,
+					effect_rect.width+((effect_delta+effect_offset_start)*2),
+					effect_rect.height+((effect_delta+effect_offset_start)*2)
+					);
 		}
 	}
 	

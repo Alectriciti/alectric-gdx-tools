@@ -1,10 +1,5 @@
 package com.alectriciti.gdx;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import static com.alectriciti.gdx.UIManager.*;
 
 import com.badlogic.gdx.graphics.Color;

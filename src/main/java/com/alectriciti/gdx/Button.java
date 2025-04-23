@@ -33,6 +33,13 @@ public class Button extends Widget{
 	
 	int rapidfire_speed = 2;
 	
+	public float effect_offset_start = 2;
+	public static float effect_move_speed = 0.3333f;
+
+	Rectangle effect_rect;
+	float effect_rect_a = 1f;
+	float effect_delta = 0;
+	
 	public Type type = Type.PRESS;
 	
 	/**
@@ -41,8 +48,8 @@ public class Button extends Widget{
 	 * @param key
 	 * @param canvas
 	 */
-	public Button(String button_name, int key, Widget w) {
-		super(button_name, w);
+	public Button(String button_name, int key, Widget parent) {
+		super(button_name, parent);
 		//super(wonkaMain, button_name);
 		this.key = key;
 		this.color = Color.WHITE;
@@ -62,6 +69,14 @@ public class Button extends Widget{
 		this.type = type;
 		return this;
 	}
+	
+	@Override
+	public void setSize(float width, float height) {
+		// TODO Auto-generated method stub
+		super.setSize(width, height);
+		//effect_rect.width = shape.getWidth();
+		//effect_rect.height = shape.getHeight();
+	}
 
 	/**
 	 * This activates the button
@@ -74,7 +89,7 @@ public class Button extends Widget{
 			activated = true;
 		}
 		System.out.println("["+name+"] activated");
-		spawnEffect();
+		spawnButtonEffect();
 		onActivate();
 	}
 	
@@ -106,23 +121,10 @@ public class Button extends Widget{
 		
 	}
 	
-
-	Rectangle effect_rect;
-	float effect_rect_a = 1f;
-	float effect_rect_x = 0;
-
-	private void spawnEffect() {
-		effect_rect = new Rectangle();
-		effect_rect_a = 1f;
-		effect_rect_x = 0;
-	}
-
-	
 	
 	@Override
 	protected void update() {
 		// TODO Auto-generated method stub
-		super.update();
 		
 		if(pressing) {
 			color = manager.COLOR_BUTTON_PRESSING.cpy();
@@ -133,12 +135,13 @@ public class Button extends Widget{
 			//color.set(color_default.r*d, color_default.g*d, color_default.b*d, color_default.a);
 		}
 		if(effect_rect!=null) {
-			effect_rect_a *= 0.85f;
-			effect_rect_x += 1;
+			effect_rect_a *= 0.92f;
+			effect_delta += effect_move_speed;
 			if(effect_rect_a<0.01) {
 				effect_rect = null;
 			}
 		}
+		super.update();
 	}
 	
 	
@@ -172,14 +175,33 @@ public class Button extends Widget{
 		}
 		
 		
-		if(effect_rect!=null) {
-			renderer.setColor(new Color(1, 1, 1, effect_rect_a));
-			renderer.rect(getGlobalX()-(effect_rect_x/2), getGlobalY()-(effect_rect_x/2), shape.width+effect_rect_x, shape.height+effect_rect_x);
-		}
+		drawButtonEffect(renderer);
 		
 		drawShapeChildren(renderer, recursive);
 	}
 	
+	protected void drawButtonEffect(ShapeRenderer renderer) {
+		if(effect_rect!=null) {
+			renderer.setColor(new Color(1, 1, 1, effect_rect_a));
+			renderer.rect(
+					effect_rect.x-effect_delta-effect_offset_start,
+					effect_rect.y-effect_delta-effect_offset_start,
+					effect_rect.width+((effect_delta+effect_offset_start)*2),
+					effect_rect.height+((effect_delta+effect_offset_start)*2)
+					);
+			//renderer.rect(getGlobalX()-(effect_delta/2)-effect_offset_start, getGlobalY()-(effect_delta/2)-effect_offset_start, shape.width+effect_delta+effect_offset_start, shape.height+effect_delta+effect_offset_start);
+		}
+	}
+
+
+	protected void spawnButtonEffect() {
+		effect_rect = new Rectangle(shape_global);
+		effect_rect_a = 1f;
+		effect_delta = 0;
+	}
+
+
+
 	public boolean drawTexture(SpriteBatch batch) {
 		if(texture==null) {
 			return false;

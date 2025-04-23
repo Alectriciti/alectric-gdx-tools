@@ -43,13 +43,14 @@ public class Widget {
 	boolean hovering = false;
 	private boolean currently_clicked = false;
 	
-	protected Widget parent;
-
+	boolean animating; // this will run on update() if relevant
 	
+	protected Widget parent;
 	
 	protected Texture texture;
 	private FileHandle texture_file;
-
+	
+	
 	public void setTexture(FileHandle fileHandle) {
 		this.texture_file = fileHandle;
 		this.texture = new Texture(texture_file);
@@ -72,11 +73,13 @@ public class Widget {
 	public Color color_edit = new Color(1, 0.25f, 0.25f, 1);
 	public Color color_trim = new Color(0.25f, 0.25f, 0.25f, 1);
 	public Color color_trim_highlight = new Color(0.5f, 1f, 0.5f, 1);
+	public Color font_color = Color.WHITE.cpy();
 	
 	/**
 	 * The color which is drawn to be active at all times
 	 */
 	public Color color = new Color(0, 0, 0, 1);
+	private float opacity = 1;
 
 	
 	/**
@@ -90,12 +93,12 @@ public class Widget {
 	 * @param name name of the widget
 	 * @param canvas name of the container to apply it to
 	 */
-	public Widget(String name, Widget w) {
+	public Widget(String name, Widget parent) {
 		this.name = name;
 		this.shape = new Rectangle();
-		if(w != null) {
-			this.manager = w.manager;
-			this.attachToWidget(w); //parent first!
+		if(parent != null) {
+			this.manager = parent.manager;
+			this.attachToWidget(parent); //parent first!
 			this.manager.registerWidget(this); // do this last, it might make an orphan
 		}else {
 			printError("Error instantiating "+name+" ... Canvas is NULL. Register with a WidgetManager instead");
@@ -297,15 +300,16 @@ public class Widget {
 	}
 	
 	public void setColorDefault(Color c) {
-		this.color_default = new Color(c.r, c.g, c.b, c.a);
+		this.color_default = new Color(c.r, c.g, c.b, opacity);
 	}
 	
 	public void setColorTrim(Color c) {
-		this.color_trim = new Color(c.r, c.g, c.b, c.a);
+		this.color_trim = new Color(c.r, c.g, c.b, opacity);
 	}
 
 	public void setColor(Color c) {
 		this.color = c;
+		c.a = opacity;
 	}
 	
 	/**
@@ -314,6 +318,11 @@ public class Widget {
 	protected void update() {
 		// TODO Auto-generated method stub
 		
+		if(animating) {
+			color.a = opacity;
+			color_default.a = opacity;
+			font_color.a = opacity;
+		}
 	}
 	
 	/**
@@ -372,7 +381,7 @@ public class Widget {
 		}
 		
 		
-		font.setColor(Color.WHITE);
+		font.setColor(font_color);
 		font.draw(sprite_batch, name, getGlobalX(), getGlobalY());
 		if(recursive) {
 			drawFontChildren(sprite_batch, font, recursive);
@@ -445,6 +454,12 @@ public class Widget {
 	
 	public boolean getCurrentlyClicked() {
 		return currently_clicked;
+	}
+	
+	public void setOpacity(float alpha) {
+		this.opacity  = alpha;
+		this.color.a = alpha;
+		this.color.a = alpha;
 	}
 
 	

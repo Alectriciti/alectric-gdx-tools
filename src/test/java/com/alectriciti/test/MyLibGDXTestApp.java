@@ -17,7 +17,11 @@ import com.badlogic.gdx.utils.ScreenUtils;
 
 import static com.alectriciti.gdx.Toolkit.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.alectriciti.gdx.Canvas;
+import com.alectriciti.gdx.Direction;
 import com.alectriciti.gdx.DropdownMenuButton;
 import com.alectriciti.gdx.Widget;
 import com.alectriciti.gdx.Button;
@@ -48,14 +52,34 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 		Canvas main_menu = new Canvas("Cool Canvas", widget_manager, new Rectangle(100, 100, 200, 200));
 		Canvas stupid_canvas = new Canvas("Stupid Canvas", widget_manager, new Rectangle(150, 50, 300, 100));
 		
-		DropdownMenuButton dropdown = new DropdownMenuButton("Dropdown", 0, main_menu);
-		dropdown.setGlobalPosition(200, 300);
+		//DropdownMenuButton dropdown = new DropdownMenuButton("Dropdown", 0, main_menu);
+		//dropdown.setGlobalPosition(200, 300);
+		
 
-		Button a = new Button("Ass", Keys.A, dropdown);
-		//a.setSize(64,42);
 
-		Button b = new Button("Butt", Keys.SPACE, dropdown);
-		Button c = new Button("Crap", Keys.B, dropdown);
+		DropdownMenuButton left = new DropdownMenuButton("Left", 0, main_menu);
+		left.setDirection(Direction.LEFT);
+		left.setGlobalPosition(180, 200);
+		createTestButtonArray(left, 4);
+
+
+		DropdownMenuButton right = new DropdownMenuButton("Right", 0, main_menu);
+		right.setDirection(Direction.RIGHT);
+		right.setGlobalPosition(220, 200);
+		createTestButtonArray(right, 4);
+
+
+		DropdownMenuButton up = new DropdownMenuButton("Up", 0, main_menu);
+		up.setDirection(Direction.UP);
+		up.setGlobalPosition(200, 220);
+		createTestButtonArray(up, 4);
+
+
+		DropdownMenuButton down = new DropdownMenuButton("Down", 0, main_menu);
+		down.setDirection(Direction.DOWN);
+		down.setGlobalPosition(200, 180);
+		createTestButtonArray(down, 4);
+		
 		//b.setRelativePosition(100, 00);
 
 		width = Gdx.graphics.getWidth();
@@ -65,6 +89,18 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 		shape_renderer.setAutoShapeType(true);
 		sprite_batch = new SpriteBatch();
 		
+	}
+	
+	
+	int global_test_button_index;
+	
+	public List<Button> createTestButtonArray(Widget parent, int amount){
+		List<Button> buttons = new ArrayList<Button>();
+		for(int i = 0; i <amount; i++) {
+			Button b = new Button(((char)global_test_button_index)+" Button "+i, 0, parent);
+			buttons.add(b);
+		}
+		return buttons;
 	}
 
 	@Override
