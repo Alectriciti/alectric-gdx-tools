@@ -21,12 +21,14 @@ public class Canvas extends Widget{
 		super();
 		this.name = name;
 		this.manager = manager;
+		this.manager.registerWidget(this);
 		this.manager.registerCanvas(this);
 		this.shape = new Rectangle(shape.x, shape.y, shape.width, shape.height);
 		this.shape_global = new Rectangle(shape);
 		//this.shape_edit_handle = new Rectangle(shape.x, shape.y+shape.height-EDIT_HANDLE_HEIGHT, shape.width, EDIT_HANDLE_HEIGHT);
 		this.color = new Color(0.2f, 0.2f, 0.2f, 0.5f);
 		updateGlobalPosition();
+		pushNewZPosition(false);
 	}
 	
 	

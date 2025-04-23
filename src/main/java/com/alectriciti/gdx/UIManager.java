@@ -39,11 +39,14 @@ public class UIManager implements InputProcessor {
 	
 	
 	boolean mouse_is_down;
+	boolean debug_mode = true;
+	
 
 	/**
 	 * This is the widget that is currently being adjusted and dragged around (the red outline)
 	 */
 	Widget widget_currently_adjusting = null;
+	Canvas canvas_proposed_to_attach = null;
 	
 	/**
 	 * This is the button that is currently being clicked
@@ -59,7 +62,7 @@ public class UIManager implements InputProcessor {
 	List<Canvas> canvases = new ArrayList<Canvas>();
 	List<Canvas> canvases_active = new ArrayList<Canvas>();
 	private Canvas canvas_focused;
-	private int global_canvas_z = 0;
+	int global_canvas_z = 0;
 	
 	public int ui_tick = 0;
 
@@ -89,9 +92,9 @@ public class UIManager implements InputProcessor {
 		if(canvas!=null) {
 			global_canvas_z++;
 			//TODO Do extra checks such as unclicking buttons etc.
-			//mouse_adjusting_widget = null;
+			//mouse_adjusting_widfget = null;
 			canvas_focused = canvas;
-			canvas_focused.z = global_canvas_z;
+			canvas_focused.pushNewZPosition(true);
 			canvases.sort(Comparator.comparingInt(Widget::getZIndex));
 			print("Canvas focused: "+canvas.name);
 		}
@@ -104,12 +107,12 @@ public class UIManager implements InputProcessor {
 	
 	Widget widget_hovering;
 	
-	private void setWidgetSelectionCandidate(Widget widget_to_set_hovering) {
+	private void setWidgetSelectionCandidate(Widget widget_to_assign) {
 		if(widget_hovering!=null) {
 			widget_hovering.hovering = false;
 		}
-		if(widget_to_set_hovering!=null) {
-			widget_hovering = widget_to_set_hovering;
+		if(widget_to_assign!=null) {
+			widget_hovering = widget_to_assign;
 			widget_hovering.hovering = true;
 			//print("New Candidate: "+widget_hovering.name);
 		}else {
@@ -158,8 +161,6 @@ public class UIManager implements InputProcessor {
 		if(Gdx.input.isButtonPressed(Buttons.LEFT)) {
 			mouse_is_down = true;
 			
-			
-			
 			if(mouse_clicked_button == null) {
 				/*
 				 * No Button is clicked yet
@@ -175,6 +176,8 @@ public class UIManager implements InputProcessor {
 								mouse_config_offset_y = widget_hovering.getGlobalY()-mouse_y;
 								if(widget_hovering instanceof Canvas) {
 									focus((Canvas) widget_hovering);
+								}else if(widget_hovering.parent instanceof Canvas) {
+									focus((Canvas) widget_hovering.parent);
 								}
 							}
 						}else {
@@ -279,54 +282,86 @@ public class UIManager implements InputProcessor {
 		
 		
 		if(!mouse_is_down) {
-			/**
-			 * Main Hover Logic... this FETCHES The widget selection candidate
-			 */
-			boolean found = false;
-			int total = canvases.size();
-			int offset = (int) (scrollSelectionOffset % total); // Wrap safely
-			for (int o = 0; o < total; o++) {
-			    int i = (total - 1 - o + offset + total) % total; // Rotate from topmost down with offset
-			    //print(""+i);
-			    Canvas canvas = canvases.get(i);
-				if(canvas.visible) {
-					//first check children widgets
-					//print("size: "+canvas.getAllChildren().size());
-					for(Widget w : canvas.getAllChildren()) {
-						if(w.isVisible() && w.containsGlobal(mouse_x, mouse_y)) {
-							setWidgetSelectionCandidate(w);
-							found = true;
-							break;
-						}
-					}
-					if(found) {
-						break;
-					}
-					if(canvas.containsGlobal(mouse_x, mouse_y)) {
-						//then search through the canvases
-						setWidgetSelectionCandidate(canvas);
-						found = true;
-						break;
-					}
-				}
-			}
 			
-			//then search the stragglers (which have not been added to any canvas)
-			if(!found) {
-				for(Widget w : widget_orphans) {
-					if(w.containsGlobal(mouse_x, mouse_y)) {
-						setWidgetSelectionCandidate(w);
-						return;
-					}
-				}
-				setWidgetSelectionCandidate(null);
-				//if(canvas_focused.containsGlobal(mouse_x, mouse_y)) {
-					//setWidgetSelectionCandidate(canvas_focused);
-				//}else {
-				//}
-				
+			//canvas_proposed_to_attach
+			
+			
+			
+			Widget widget_to_highlight = getSelectableWidgetAtPosition(mouse_x, mouse_y);
+			if(widget_to_highlight!=null) {
+				setWidgetSelectionCandidate(widget_to_highlight);
 			}
 		}
+	}
+
+	/**
+	 * Main Hover Logic... this FETCHES The widget selection candidate
+	 */
+	private Widget getSelectableWidgetAtPosition(int mouseX, int mouseY) {
+		//Widget widget = null;
+		//boolean found = false;
+		
+		List<Widget> found_widgets = getAllWidgetsAtLocation(mouseX, mouseY);
+
+		if(found_widgets.isEmpty()) {
+			//print("found widgets is empty");
+			return null;
+		}
+
+		int total_widgets = found_widgets.size();
+		
+		if(edit_mode) {
+			int offset = (int) (scrollSelectionOffset % total_widgets); // Wrap safely
+			
+	
+			int i = (total_widgets - 1 + offset + total_widgets) % total_widgets;
+			return found_widgets.get(i);
+		}else {
+			return found_widgets.get(total_widgets-1);
+		}
+		/*
+		for (int o = 0; o < total_widgets; o++) {
+		    int i = (total_widgets - 1 - o + offset + total_widgets) % total_widgets; // Rotate from topmost down with offset
+		    //print(""+i);
+		    Widget canvas = canvases.get(i);
+			
+		    //for(Widget w : canvas.getAllChildren()) {
+			//	if(w.isVisible() && w.containsGlobal(getMouseX(), getMouseY())) {
+			//		//return w;
+			//	}
+			//}
+		}
+		*/
+		//then search the stragglers (which have not been added to any canvas)
+		/*
+		if(!found) {
+			for(Widget w : widget_orphans) {
+				if(w.containsGlobal(mouse_x, mouse_y)) {
+					return w;
+				}
+			}
+			setWidgetSelectionCandidate(null);
+			//if(canvas_focused.containsGlobal(mouse_x, mouse_y)) {
+				//setWidgetSelectionCandidate(canvas_focused);
+			//}else {
+			//}
+			
+		}
+		*/
+		//return widget;
+	}
+
+	private List<Widget> getAllWidgetsAtLocation(int mouseX, int mouseY) {
+		List<Widget> found_widgets = new ArrayList<Widget>();
+		for(Widget w : widgets) {
+			if(w.isVisible()) {
+				if(w.containsGlobal(mouseX, mouseY)) {
+					found_widgets.add(w);
+				}
+			}
+		}
+		found_widgets.sort(Comparator.comparingInt(Widget::getZIndex));
+		return found_widgets;
 	}
 
 	/**
@@ -356,15 +391,21 @@ public class UIManager implements InputProcessor {
 			for(Widget w : widget_orphans) {
 				w.drawFont(sprite_batch, font, true);
 			}
-			Gdx.gl.glEnable(GL20.GL_BLEND);
 		}
+		Gdx.gl.glEnable(GL20.GL_BLEND);
 		for(Widget w : widget_orphans) {
 			if(w.texture!=null) {
 				w.drawTexture(sprite_batch);
 			}
 		}
-		sprite_batch.end();
+		
+		if(debug_mode) {
+			
+		}
 
+		font.draw(sprite_batch, "Widget Scroll Selector: "+scrollSelectionOffset, 20, 500);
+		font.draw(sprite_batch, "Widget Candidate "+(widget_hovering!=null?widget_hovering:"null"), 20, 524);
+		sprite_batch.end();
 		Gdx.gl.glEnable(GL20.GL_BLEND);
 		
 		
@@ -383,16 +424,6 @@ public class UIManager implements InputProcessor {
 					Gdx.gl.glEnable(GL20.GL_BLEND);
 				}
 			}
-		}else {
-			/*
-			for(Canvas canvas : canvases) {
-				if(canvas.visible) {
-					shape_renderer.begin();
-					canvas.drawShape(shape_renderer, true);
-					shape_renderer.end();
-				}
-			}
-			*/
 		}
 
 		//Draw this ontop to allow for visibility
@@ -436,8 +467,6 @@ public class UIManager implements InputProcessor {
 		}
 	}
 	
-	
-	boolean debug_mode;
 	
 	/**
 	 * Draws wireframes around widgets
@@ -564,6 +593,8 @@ public class UIManager implements InputProcessor {
 			w.dispose();
 		}
 	}
+	
+	
 	
 	
 

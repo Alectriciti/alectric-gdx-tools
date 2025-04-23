@@ -105,6 +105,7 @@ public class Widget {
 		}
 		setSize(32, 32);
 		updateGlobalPosition();
+		pushNewZPosition(false);
 	}
 	
 	public Widget(String name, int pos_x, int pos_y, int width, int height, Widget w) {
@@ -112,6 +113,7 @@ public class Widget {
 		this.shape = new Rectangle(pos_x, pos_y, width, height);
 		setSize(32, 32);
 		updateGlobalPosition();
+		pushNewZPosition(false);
 	}
 	
 	public Widget(String name, UIManager manager) {
@@ -121,6 +123,7 @@ public class Widget {
 		this.shape = new Rectangle();
 		setSize(32, 32);
 		updateGlobalPosition();
+		pushNewZPosition(false);
 	}
 	
 	
@@ -432,6 +435,16 @@ public class Widget {
 	
 	public int getZIndex() {
 		return z;
+	}
+
+	public void pushNewZPosition(boolean recursive) {
+		z = manager.global_canvas_z;
+		manager.global_canvas_z++;
+		if(recursive) {
+			for(Widget w : widgets) {
+				w.pushNewZPosition(recursive);
+			}
+		}
 	}
 
 	final void callOnClicked() {

@@ -24,6 +24,7 @@ import com.alectriciti.gdx.Canvas;
 import com.alectriciti.gdx.Direction;
 import com.alectriciti.gdx.DropdownMenuButton;
 import com.alectriciti.gdx.Widget;
+import com.alectriciti.gdx.chat.MessageManager;
 import com.alectriciti.gdx.Button;
 import com.alectriciti.gdx.UIManager;
 
@@ -33,6 +34,7 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 	
 	InputMultiplexer input = new InputMultiplexer();
 	UIManager widget_manager = new UIManager(input);
+	MessageManager msg_manager;
 	ShapeRenderer shape_renderer;
 	SpriteBatch sprite_batch;
 	BitmapFont font;
@@ -48,7 +50,8 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 		FileHandle font_handle = Gdx.files.internal("lucida_console16.fnt");
 		
 		font = new BitmapFont(font_handle);
-
+		msg_manager = new MessageManager(font);
+		
 		Canvas main_menu = new Canvas("Cool Canvas", widget_manager, new Rectangle(100, 100, 200, 200));
 		Canvas stupid_canvas = new Canvas("Stupid Canvas", widget_manager, new Rectangle(150, 50, 300, 100));
 		
@@ -97,7 +100,7 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 	public List<Button> createTestButtonArray(Widget parent, int amount){
 		List<Button> buttons = new ArrayList<Button>();
 		for(int i = 0; i <amount; i++) {
-			Button b = new Button(((char)global_test_button_index)+" Button "+i, 0, parent);
+			Button b = new Button(("("+global_test_button_index+")")+" Button "+i, 0, parent);
 			buttons.add(b);
 		}
 		return buttons;

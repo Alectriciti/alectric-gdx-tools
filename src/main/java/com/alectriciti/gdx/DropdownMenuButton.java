@@ -175,6 +175,7 @@ public class DropdownMenuButton extends Button{
 	protected void attachChildWidget(Widget widget_to_attach) {
 		super.attachChildWidget(widget_to_attach);
 		widget_to_attach.editable = false;
+		widget_to_attach.visible = false;
 	}
 	
 	
