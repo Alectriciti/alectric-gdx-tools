@@ -10,6 +10,8 @@ import com.badlogic.gdx.math.Rectangle;
 
 public class DropdownMenuButton extends Button{
 	
+	public String type = "dropdownmenubutton";
+	
 	float expand_amount = 0;
 	float expand_amount_target = 0;
 	float expand_speed = 0.1f;
@@ -24,8 +26,12 @@ public class DropdownMenuButton extends Button{
 	
 	public DropdownMenuButton(String button_name, int key, Widget w) {
 		super(button_name, key, w);
-		type = Type.TOGGLE;
-		// TODO Auto-generated constructor stub
+		button_type = ButtonType.TOGGLE; //default type for this class should be toggle
+	}
+	
+	public DropdownMenuButton(String button_name, Widget w) {
+		super(button_name, w);
+		button_type = ButtonType.TOGGLE;
 	}
 	
 	@Override
@@ -47,6 +53,7 @@ public class DropdownMenuButton extends Button{
 	protected void dropdownOpen() {
 		expand_amount_target = 1;
 		animating = true;
+		updatePositionForChildren();
 		for(Widget w : widgets) {
 			w.setVisible(true);
 		}
@@ -75,6 +82,15 @@ public class DropdownMenuButton extends Button{
 			expand_amount = lerp(expand_amount, expand_amount_target, expand_speed);
 			if(Math.abs(expand_amount_target - expand_amount) > 0.02) {
 				updatePositionForChildren();
+				if(activated) {
+					for(Widget w : widgets) {
+						w.color_texture_alpha.a = expand_amount;
+					}
+				}else {
+					for(Widget w : widgets) {
+						w.color_texture_alpha.a = expand_amount;
+					}
+				}
 			}else {
 				animating = false;
 				if(activated) {
@@ -83,6 +99,7 @@ public class DropdownMenuButton extends Button{
 					for(Widget w : widgets) {
 						w.setVisible(false);
 					}
+					print("widgets set to invisible");
 				}
 			}
 		}
@@ -123,6 +140,12 @@ public class DropdownMenuButton extends Button{
 	}
 	
 	@Override
+	public boolean drawTexture(SpriteBatch batch, boolean recursive) {
+		// TODO Auto-generated method stub
+		return super.drawTexture(batch, recursive);
+	}
+	
+	@Override
 	public void drawShape(ShapeRenderer renderer, boolean recursive) {
 		// TODO Auto-generated method stub
 		super.drawShape(renderer, false);
@@ -133,27 +156,6 @@ public class DropdownMenuButton extends Button{
 		
 		if(activated) {
 			drawShapeChildren(renderer, recursive);
-		}
-	}
-	
-	@Override
-	protected void spawnButtonEffect() {
-		super.spawnButtonEffect();
-		//effect_rect.width += shape.getWidth();
-		//effect_rect.height = shape.getHeight();
-	}
-
-	@Override
-	protected void drawButtonEffect(ShapeRenderer renderer) {
-		if(effect_rect!=null) {
-			renderer.setColor(new Color(1, 1, 1, effect_rect_a));
-
-			renderer.rect(
-					effect_rect.x-effect_delta-effect_offset_start,
-					effect_rect.y-effect_delta-effect_offset_start,
-					effect_rect.width+((effect_delta+effect_offset_start)*2),
-					effect_rect.height+((effect_delta+effect_offset_start)*2)
-					);
 		}
 	}
 	

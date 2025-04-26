@@ -1,0 +1,11 @@
+{
+type: button
+name: 0
+id: 0
+shape: {
+	x: 0.0
+	y: 0.0
+	width: 32.0
+	height: 32.0
+}
+}

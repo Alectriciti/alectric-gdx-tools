@@ -1,13 +1,8 @@
 package com.alectriciti.test;
 
-import java.awt.dnd.DropTarget;
-import java.awt.dnd.DropTargetListener;
 
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
-import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Window;
-import com.badlogic.gdx.backends.lwjgl3.Lwjgl3WindowListener;
-
 public class TestDesktopLauncher {
 	
 	public static void main(String[] args) {

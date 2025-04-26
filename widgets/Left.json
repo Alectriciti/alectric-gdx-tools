@@ -1,0 +1,11 @@
+{
+type: button
+name: Left
+id: Left
+shape: {
+	x: 123.0
+	y: 119.0
+	width: 32.0
+	height: 32.0
+}
+}

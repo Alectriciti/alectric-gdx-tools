@@ -10,7 +10,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import com.alectriciti.gdx.Button.Type;
+import com.alectriciti.gdx.Button.ButtonType;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Input.Keys;
@@ -19,9 +19,13 @@ import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.JsonReader;
+import com.badlogic.gdx.utils.JsonValue;
 
 import static com.alectriciti.gdx.Toolkit.*;
 
@@ -41,7 +45,6 @@ public class UIManager implements InputProcessor {
 	boolean mouse_is_down;
 	boolean debug_mode = true;
 	
-
 	/**
 	 * This is the widget that is currently being adjusted and dragged around (the red outline)
 	 */
@@ -51,14 +54,14 @@ public class UIManager implements InputProcessor {
 	/**
 	 * This is the button that is currently being clicked
 	 */
-	Button mouse_clicked_button = null;
-
+	Button mouse_clicked_widget = null;
+	
 	private float mouse_config_offset_x;
 	private float mouse_config_offset_y;
 	
 	BitmapFont font;
 	boolean font_activated = false;
-
+	
 	List<Canvas> canvases = new ArrayList<Canvas>();
 	List<Canvas> canvases_active = new ArrayList<Canvas>();
 	private Canvas canvas_focused;
@@ -86,6 +89,17 @@ public class UIManager implements InputProcessor {
 	
 	public UIManager(InputMultiplexer input) {
 		input.addProcessor(this);
+		
+	}
+	
+	
+	/**
+	 * Calling this after initializing all of your buttons can automatically mark them for serialization based on their name value
+	 */
+	public void automaticallyAssignIDsToWidgets() {
+		for(Widget w : widgets) {
+			w.autoAssignId();
+		}
 	}
 	
 	public void focus(Canvas canvas) {
@@ -161,7 +175,7 @@ public class UIManager implements InputProcessor {
 		if(Gdx.input.isButtonPressed(Buttons.LEFT)) {
 			mouse_is_down = true;
 			
-			if(mouse_clicked_button == null) {
+			if(mouse_clicked_widget == null) {
 				/*
 				 * No Button is clicked yet
 				 */
@@ -193,19 +207,19 @@ public class UIManager implements InputProcessor {
 				//moves the widget around
 				AdjustWidgetPosition();
 				
-			}if(mouse_clicked_button!=null) { //If a button is already selected
+			}if(mouse_clicked_widget!=null) { //If a button is already selected
 				
 				
 				/*
 				 * IF mouse moves out of position while held...
 				 */
-				if(!mouse_clicked_button.containsGlobal(mouse_x, mouse_y)) {
-					mouse_clicked_button.pressing = false;
-					if(mouse_clicked_button.type==Type.RAPIDFIRE) {
-						buttons_rapidfiring.remove(mouse_clicked_button);
-						mouse_clicked_button.deactivate();
+				if(!mouse_clicked_widget.containsGlobal(mouse_x, mouse_y)) {
+					mouse_clicked_widget.pressing = false;
+					if(mouse_clicked_widget.button_type == ButtonType.RAPIDFIRE) {
+						buttons_rapidfiring.remove(mouse_clicked_widget);
+						mouse_clicked_widget.deactivate();
 					}
-					mouse_clicked_button = null; //finally nullify clicked button
+					mouse_clicked_widget = null; //finally nullify clicked button
 					//print("deselected");
 				}
 			}else{ // Just now selecting a new widget
@@ -220,35 +234,35 @@ public class UIManager implements InputProcessor {
 			if(widget_currently_adjusting!=null) {
 				widget_currently_adjusting = null;
 			}
-			if(mouse_clicked_button != null) {
-				if(mouse_clicked_button.is_key_down) {
-					mouse_clicked_button.pressing = false;
-					mouse_clicked_button.cancelled = true;
+			if(mouse_clicked_widget != null) {
+				if(mouse_clicked_widget.is_key_down) {
+					mouse_clicked_widget.pressing = false;
+					mouse_clicked_widget.cancelled = true;
 				}else {
-					switch(mouse_clicked_button.type) {
+					switch(mouse_clicked_widget.button_type) {
 					case PRESS:
-						mouse_clicked_button.activate();
+						mouse_clicked_widget.activate();
 						break;
 					case RAPIDFIRE:
-						buttons_rapidfiring.remove(mouse_clicked_button);
-						mouse_clicked_button.deactivate();
+						buttons_rapidfiring.remove(mouse_clicked_widget);
+						mouse_clicked_widget.deactivate();
 						break;
 					case PRESS_AND_RELEASE:
-						mouse_clicked_button.deactivate();
+						mouse_clicked_widget.deactivate();
 						break;
 					case TOGGLE:
-						if(!mouse_clicked_button.activated) {
-							mouse_clicked_button.activate();
-							print(mouse_clicked_button.name+ " ACTIVATED");
+						if(!mouse_clicked_widget.activated) {
+							mouse_clicked_widget.activate();
+							print(mouse_clicked_widget.name+ " ACTIVATED");
 						}else {
-							mouse_clicked_button.deactivate();
-							print(mouse_clicked_button.name+ " DEACTIVATED");
+							mouse_clicked_widget.deactivate();
+							print(mouse_clicked_widget.name+ " DEACTIVATED");
 						}
 						break;
 					}
 				}
-				mouse_clicked_button.pressing = false;
-				mouse_clicked_button = null;
+				mouse_clicked_widget.pressing = false;
+				mouse_clicked_widget = null;
 			}
 			if(widget_hovering!=null) {
 				widget_hovering.hovering = false;
@@ -395,14 +409,14 @@ public class UIManager implements InputProcessor {
 		Gdx.gl.glEnable(GL20.GL_BLEND);
 		for(Widget w : widget_orphans) {
 			if(w.texture!=null) {
-				w.drawTexture(sprite_batch);
+				w.drawTexture(sprite_batch, true);
 			}
 		}
 		
 		if(debug_mode) {
 			
 		}
-
+		font.setColor(Color.WHITE);
 		font.draw(sprite_batch, "Widget Scroll Selector: "+scrollSelectionOffset, 20, 500);
 		font.draw(sprite_batch, "Widget Candidate "+(widget_hovering!=null?widget_hovering:"null"), 20, 524);
 		sprite_batch.end();
@@ -419,6 +433,7 @@ public class UIManager implements InputProcessor {
 					canvas.drawShape(shape_renderer, true);
 					shape_renderer.end();
 					sprite_batch.begin();
+					canvas.drawTexture(sprite_batch, true);
 					canvas.drawFont(sprite_batch, font, true);
 					sprite_batch.end();
 					Gdx.gl.glEnable(GL20.GL_BLEND);
@@ -478,13 +493,109 @@ public class UIManager implements InputProcessor {
 
 	@Override
 	public boolean keyDown(int keycode) {
-		// TODO Auto-generated method stub
+
+		if(buttons_by_key.containsKey(keycode)) {
+			Button b = buttons_by_key.get(keycode);
+			if(!b.visible) {
+				return false;
+			}
+		
+		switch(b.button_type) {
+			case RAPIDFIRE:
+					b.is_key_down = true;
+					if(b.cancelled) {
+						b.pressing = false;
+					}else {
+						b.pressing = true;
+						b.activate();
+						buttons_rapidfiring.add(b);
+					}
+				break;
+			case PRESS:
+					b.is_key_down = true;
+					if(b.cancelled) {
+						b.pressing = false;
+					}else {
+						b.pressing = true;
+					}
+				break;
+			case PRESS_AND_RELEASE:
+					if(!b.is_key_down) {
+						b.is_key_down = true;
+						if(b.cancelled) {
+							b.pressing = false;
+						}else {
+							b.pressing = true;
+							b.activate();
+						}
+					}
+				break;
+			case TOGGLE:
+					if(!b.activated) {
+						b.activate();
+						b.activated = true;
+						print(b.name+ " ACTIVATED");
+					} else {
+						b.deactivate();
+						b.activated = false;
+						print(b.name+ " DEACTIVATED");
+					}
+				break;
+				}
+			return true;
+			}
 		return false;
 	}
-
+	
 	@Override
 	public boolean keyUp(int keycode) {
-		// TODO Auto-generated method stub
+		if(buttons_by_key.containsKey(keycode)) {
+			Button b = buttons_by_key.get(keycode);
+			if(!b.visible) {
+				return false;
+			}
+		
+		switch(b.button_type) {
+			case RAPIDFIRE:
+				if(b.is_key_down) {
+					b.is_key_down = false;
+					b.pressing = false;
+					if(b.cancelled) {
+						b.cancelled = false;
+					}else {
+						b.deactivate();
+						buttons_rapidfiring.remove(b);
+					}
+				}
+				break;
+			case PRESS:
+				if(b.is_key_down) {
+					b.is_key_down = false;
+					b.pressing = false;
+					if(b.cancelled) {
+						b.cancelled = false;
+					}else {
+						b.activate();
+					}
+				}
+				break;
+			case PRESS_AND_RELEASE:
+				if(b.is_key_down) {
+					b.is_key_down = false;
+					b.pressing = false;
+					if(b.cancelled) {
+						b.cancelled = false;
+					}else {
+						b.deactivate();
+					}
+				}
+				break;
+			case TOGGLE:
+					
+				break;
+				}
+			return true;
+			}
 		return false;
 	}
 
@@ -532,36 +643,65 @@ public class UIManager implements InputProcessor {
 	
 	
 	/**
-	 * @param file_path If linked to a .png, it will load a new button with that png as the image. If it's a folder, it will open that folder on desktop.
+	 * A quick and dirty implementation for allowing drag and drop onto widgets
+	 * .png files will set the texture of the widget
+	 * directories will create a hyperlink for buttons to open the folder
+	 * @return true if the dropped file was appropriately utilized, allowing for override logic if false
 	 */
-	public Button importFileAsButton(String file_path) {
-		if(file_path!=null) {
-			File file = new File(file_path);
-			Button b = null;
-			if(file.isDirectory()) {
-				b = new Button(file.getName(), 0, this) {
-					
-					File f = file;
-					@Override
-					protected void onActivate() {
-						try {
-							Desktop.getDesktop().open(f);
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-						super.onActivate();
-					}
-				};
-				b.setGlobalPosition(getMouseX(), getMouseY());
-			}else if(file.getName().endsWith(".png")) {
-				b = new Button(file.getName(), 0, this);
-				b.setGlobalPosition(getMouseX(), getMouseY());
-				b.setTexture(new FileHandle(file));
-				return b;
+	public boolean importFileAutomaticAssignment(String[] files) {
+		if(files[0]!=null) {
+			FileHandle file = new FileHandle(files[0]);
+			Button button = null;
+			
+			Widget w = widget_hovering;
+			
+			
+			
+			if (w instanceof Button) {
+				button = (Button) w;
+				print("yah it's a booton");
 			}
+			
+			if(file.isDirectory()) {
+				
+				if(button!=null) {
+					button.setHyperlink(file);
+					return true;
+				}
+			} else if(file.extension().toLowerCase().equals("png")) {
+				if(button!=null) {
+					button.setTexture(file);
+					return true;
+				}
+			}
+			
+			
+			
+//			Button b = null;
+//			if(file.isDirectory()) {
+//				b = new Button(file.getName(), 0, this) {
+//					
+//					File f = file;
+//					@Override
+//					protected void onActivate() {
+//						try {
+//							Desktop.getDesktop().open(f);
+//						} catch (IOException e) {
+//							// TODO Auto-generated catch block
+//							e.printStackTrace();
+//						}
+//						super.onActivate();
+//					}
+//				};
+//				b.setGlobalPosition(getMouseX(), getMouseY());
+//			}else if(file.getName().endsWith(".png")) {
+//				b = new Button(file.getName(), 0, this);
+//				b.setGlobalPosition(getMouseX(), getMouseY());
+//				b.setTexture(new FileHandle(file));
+//				return b;
+//			}
 		}
-		return null;
+		return false;
 	}
 	
 	/**
@@ -575,16 +715,115 @@ public class UIManager implements InputProcessor {
 		}
 		
 		widgets.add(widget);
-		
-		if(widget instanceof Button) {
-			Button b = (Button)widget;
-			buttons.add(b);
-			buttons_by_name.put(b.name, b);
-			buttons_by_key.put(b.key, b);
-		}
 	}
 	
 	
+
+	
+	String folder_widgets = "widgets/";
+	
+	public void saveAllWidgets() {
+	    FileHandle file = Gdx.files.local(folder_widgets);
+	    if (!file.exists()) file.mkdirs();
+
+	    for (Widget w : widgets) {
+	        if (w.getId() != null) {
+	            FileHandle widgetFile = Gdx.files.local(folder_widgets + w.getId() + ".json");
+	            Json json = new Json();
+	            widgetFile.writeString(w.saveToJson().toString(), false);
+	        }
+	    }
+	}
+
+	public void loadAllWidgets() {
+	    FileHandle file = Gdx.files.local(folder_widgets);
+	    if (!file.exists()) return;
+
+	    for (Widget w : widgets) {
+	        if (w.getId() != null) {
+	            FileHandle widgetFile = Gdx.files.local(folder_widgets + w.getId() + ".json");
+	            if (widgetFile.exists()) {
+	                JsonReader reader = new JsonReader();
+	                JsonValue data = reader.parse(widgetFile);
+	                
+	                String type = data.getString("type", "widget");
+	                
+	                switch (type) {
+	                    case "button":
+	                        ((Button) w).loadFromJson(data);
+	                        break;
+	                    case "widget":
+	                    default:
+	                        w.loadFromJson(data);
+	                        break;
+	                }
+	            }
+	        }
+	    }
+	    
+	    for(Widget w : widgets) {
+	    	w.reloadAllData();
+	    	print("Reloaded all widgets!");
+	    }
+	}
+	
+	/*
+	public void SaveAllCanvases() {
+		FileHandle file = Gdx.files.local(folder_widgets);
+		
+		if(!file.exists()) {
+			file.mkdirs();
+		}
+		
+		for(Canvas c : canvases) {
+			Json json = new Json();
+			json.setTypeName("canvas");
+			
+			String data = json.toJson(c);
+			
+			Gdx.files.local("widgets/"+c.name+".json").writeString(data, false);
+			print("Saved "+c.name+" to "+file.name());
+		}
+		print("All Canvases saved!");
+	}
+	
+	public void LoadAllCanases() {
+		FileHandle file = Gdx.files.local(folder_widgets);
+
+		if(!file.exists()) {
+			return;
+		}
+		
+		if(!file.exists()) {
+			file.mkdirs();
+		}
+		
+		
+		
+		
+		//1 load all widgets individually
+		// assign to appropriate groups
+		
+		//2 itterate based on heirarchy index...
+		// first the top layer,
+		// then assign children to appropriate parents now that the top layer is done
+		// (reloadAllJsonReferences)
+		
+		//3 re-establish any id links from cousins
+		
+		//4 Run "refreshHeirarchyCache" for everything
+		
+		for(FileHandle f : file.list()) {
+			Json json = new Json();
+			json.setTypeName("canvas");
+			
+			Canvas c = json.fromJson(Canvas.class, f);
+			c.reloadAllJsonReferences();
+		}
+		
+	}
+	*/
+
 	/**
 	 * This should be called on shutdown to dispose of widget-related and other resources
 	 */
@@ -593,8 +832,6 @@ public class UIManager implements InputProcessor {
 			w.dispose();
 		}
 	}
-	
-	
 	
 	
 

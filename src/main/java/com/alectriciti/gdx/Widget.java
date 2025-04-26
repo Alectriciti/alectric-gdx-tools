@@ -5,7 +5,9 @@ import static com.alectriciti.gdx.UIManager.*;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
@@ -16,6 +18,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.utils.JsonValue;
 
 /**
  * Widgets are the building blocks of Alectric UI which can be updated/rendered manually, or using WidgetManager
@@ -23,32 +26,53 @@ import com.badlogic.gdx.math.Rectangle;
  */
 public class Widget {
 	
-
-
-	public HashSet<Widget> widgets = new HashSet<Widget>();
-	public HashSet<Button> buttons = new HashSet<Button>();
-
-	List<Widget> widgets_heirarchy_cache = new ArrayList<Widget>();
 	
-	protected UIManager manager;
+	transient protected UIManager manager;
+	
+
+	public String type = "widget";
+	
 	
 	public String name;
+	
+	protected transient Widget parent;
+	
+	
+	//for serializations
+	public String id;
+	
+	public String getId() {
+		return id;
+	}
+	
+
+
+	public transient LinkedList<Widget> widgets = new LinkedList<Widget>();
+
+	
+	//A constantly refreshing cache for quickly determining grandchildren
+	transient List<Widget> widgets_heirarchy_cache = new ArrayList<Widget>();
+	
+	
 	protected Rectangle shape;
 	protected Rectangle shape_global = new Rectangle();
 	
-	public int z; //for z ordering
+	public Direction alignment = Direction.NONE;
 	
 	public boolean editable = true;
+
 	
-	boolean hovering = false;
-	private boolean currently_clicked = false;
+	public transient int z; //for z ordering
 	
-	boolean animating; // this will run on update() if relevant
+	transient boolean hovering = false;
+	transient private boolean currently_clicked = false;
 	
-	protected Widget parent;
+	transient boolean animating; // this will run on update() if relevant
+
+	transient protected Color color_texture_alpha = new Color(1,1,1,1);
 	
-	protected Texture texture;
-	private FileHandle texture_file;
+	transient protected Texture texture;
+	protected FileHandle texture_file;
 	
 	
 	public void setTexture(FileHandle fileHandle) {
@@ -56,23 +80,26 @@ public class Widget {
 		this.texture = new Texture(texture_file);
 	}
 	
-	public Texture getAndLoadTexture() {
-		if(texture==null) {
-			if(texture_file.exists())
+	
+	/**
+	 * Loading from serialization
+	 * @return
+	 */
+	public void reloadAllData() {
+		if(texture_file!=null && texture_file.exists())
 			texture = new Texture(texture_file);
-		}
-		return texture;
+		updateGlobalPosition();
 	}
 	
 	/**
 	 * With WidgetManager, Widgets are required to be visible in order to render or be interacted with
 	 */
 	public boolean visible = true;
-
+	
 	public Color color_default = new Color(0, 0, 0, 1);
 	public Color color_edit = new Color(1, 0.25f, 0.25f, 1);
 	public Color color_trim = new Color(0.25f, 0.25f, 0.25f, 1);
-	public Color color_trim_highlight = new Color(0.5f, 1f, 0.5f, 1);
+	public Color color_trim_highlight = new Color(0.8f, 0.8f, 0.8f, 1);
 	public Color font_color = Color.WHITE.cpy();
 	
 	/**
@@ -86,6 +113,7 @@ public class Widget {
 	 * Reserved for Canvas
 	 */
 	protected Widget() {
+		//Must create some kind of registry!
 		}
 	
 	/**
@@ -108,14 +136,6 @@ public class Widget {
 		pushNewZPosition(false);
 	}
 	
-	public Widget(String name, int pos_x, int pos_y, int width, int height, Widget w) {
-		this(name, w);
-		this.shape = new Rectangle(pos_x, pos_y, width, height);
-		setSize(32, 32);
-		updateGlobalPosition();
-		pushNewZPosition(false);
-	}
-	
 	public Widget(String name, UIManager manager) {
 		this.name = name;
 		this.manager = manager;
@@ -125,7 +145,6 @@ public class Widget {
 		updateGlobalPosition();
 		pushNewZPosition(false);
 	}
-	
 	
 	public String getName() {
 		return name;
@@ -187,11 +206,6 @@ public class Widget {
 		widgets.add(widget_to_attach);
 
 		refreshHeirarchyUpward();
-		
-		if(widget_to_attach instanceof Button) {
-			Button b = (Button)widget_to_attach;
-			buttons.add(b);
-		}
 	}
 	
 	/**
@@ -202,10 +216,6 @@ public class Widget {
 		widgets.remove(widget_to_remove);
 		if(update_cache) {
 			refreshHeirarchyUpward();
-		}
-		if(widget_to_remove instanceof Button) {
-			Button b = (Button) widget_to_remove;
-			buttons.remove(b);
 		}
 	}
 	
@@ -395,15 +405,21 @@ public class Widget {
 	/**
 	 * 
 	 * @param sprite_batch A clean {@link SpriteBatch} which has already started .begin()
+	 * @param b 
 	 * @return whether or not the texture was able to draw
 	 */
-	public boolean drawTexture(SpriteBatch sprite_batch) {
-		if(texture==null) {
-			return false;
+	public boolean drawTexture(SpriteBatch sprite_batch, boolean recursive) {
+		boolean valid = texture!=null;
+		if(visible) {
+			if(valid) {
+				sprite_batch.setColor(color_texture_alpha);
+				sprite_batch.draw(texture, getGlobalX(), getGlobalY(), shape.width-1, shape.height-1);
+			}
 		}
-		sprite_batch.setColor(Color.WHITE);
-		sprite_batch.draw(texture, getGlobalX(), getGlobalY(), shape.width-1, shape.height-1);
-		return true;
+		if(recursive) {
+			drawTextureChildren(sprite_batch, recursive);
+		}
+		return valid;
 	}
 	
 	protected void drawEditModeChildren(ShapeRenderer renderer, boolean recursive) {
@@ -415,6 +431,12 @@ public class Widget {
 	protected void drawShapeChildren(ShapeRenderer renderer, boolean recursive) {
 		for(Widget w : widgets) {
 			w.drawShape(renderer, recursive);
+		}
+	}
+	
+	protected void drawTextureChildren(SpriteBatch sprite_batch, boolean recursive) {
+		for(Widget w : widgets) {
+			w.drawTexture(sprite_batch, recursive);
 		}
 	}
 	
@@ -494,6 +516,70 @@ public class Widget {
 	
 	public String toString() {
 		return name;
+	}
+
+
+	public void autoAssignId() {
+		
+		
+		//TODO
+		//make it us a set or list, and use "cotains(proposed_id)"
+		if(id == null) {
+			//ensure the new id hasn't been used
+			if(name!=null) {
+				boolean free_to_use = true;
+				for(Widget w : manager.widgets) {
+					if(w == this) {
+						continue;
+					}
+					if(id!=null && w.id.equalsIgnoreCase(this.name)) {
+						free_to_use = false;
+						return;
+					}
+				}
+				if(free_to_use) {
+					id = name;
+					
+				}
+			}
+		}
+	}
+	
+	
+	public JsonValue saveToJson() {
+	    JsonValue out = new JsonValue(JsonValue.ValueType.object);
+	    out.addChild("type", new JsonValue("widget"));
+	    out.addChild("name", new JsonValue(name));
+	    out.addChild("id", new JsonValue(id));
+	    if(texture_file!=null)
+	    out.addChild("texture", new JsonValue(texture_file.path()));
+	    if (shape != null) {
+	        JsonValue shapeObj = new JsonValue(JsonValue.ValueType.object);
+	        shapeObj.addChild("x", new JsonValue(shape.x));
+	        shapeObj.addChild("y", new JsonValue(shape.y));
+	        shapeObj.addChild("width", new JsonValue(shape.width));
+	        shapeObj.addChild("height", new JsonValue(shape.height));
+	        out.addChild("shape", shapeObj);
+	    }
+	    return out;
+	}
+
+	public void loadFromJson(JsonValue data) {
+	    this.name = data.getString("name", name);
+	    this.id = data.getString("id", id);
+	    
+		if (data.has("texture")) {
+			this.texture_file = new FileHandle(data.getString("texture"));
+			print("widget texture loaded: " + texture_file);
+	    }
+	    
+	    JsonValue shapeObj = data.get("shape");
+	    if (shapeObj != null) {
+	        this.shape.x = shapeObj.getFloat("x", shape.x);
+	        this.shape.y = shapeObj.getFloat("y", shape.y);
+	        this.shape.width = shapeObj.getFloat("width", shape.width);
+	        this.shape.height = shapeObj.getFloat("height", shape.height);
+	    }
 	}
 	
 }

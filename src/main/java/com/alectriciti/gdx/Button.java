@@ -2,15 +2,19 @@ package com.alectriciti.gdx;
 
 import static com.alectriciti.gdx.Toolkit.*;
 
-import com.alectriciti.gdx.Button.Type;
+import java.awt.Desktop;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.utils.JsonValue;
 
 
 /**
@@ -19,15 +23,24 @@ import com.badlogic.gdx.math.Rectangle;
  */
 public class Button extends Widget{
 	
-	int key;
+	public int key_code;
 	
-	enum Type{
+	
+	public static Color DEFAULT_BUTTON_COLOR = Color.DARK_GRAY.cpy();
+	
+	enum ButtonType{
 		PRESS,
 		PRESS_AND_RELEASE,
 		TOGGLE,
 		RAPIDFIRE
 	}
 
+	transient List<Runnable> run_on_activate = new ArrayList<Runnable>();
+	transient List<Runnable> run_on_deactivate = new ArrayList<Runnable>();
+	
+	transient Runnable hyperlink = null;
+	FileHandle hyperlink_file = null;
+	
 	boolean pressing = false;
 	boolean activated = false;
 	
@@ -37,10 +50,11 @@ public class Button extends Widget{
 	public static float effect_move_speed = 0.3333f;
 
 	Rectangle effect_rect;
+	Color effect_color = new Color(Color.WHITE);
 	float effect_rect_a = 1f;
 	float effect_delta = 0;
 	
-	public Type type = Type.PRESS;
+	public ButtonType button_type = ButtonType.PRESS;
 	
 	/**
 	 * 
@@ -51,22 +65,48 @@ public class Button extends Widget{
 	public Button(String button_name, int key, Widget parent) {
 		super(button_name, parent);
 		//super(wonkaMain, button_name);
-		this.key = key;
+		this.key_code = key;
 		this.color = Color.WHITE;
+		
+		registerSelf();
 		updateGlobalPosition();
 	}
 	
+	private void registerSelf() {
+		manager.buttons.add(this);
+		manager.buttons_by_name.put(name, this);
+		manager.buttons_by_key.put(key_code, this);
+	}
+	
+	public Button(String button_name, Widget parent) {
+		this(button_name, 0, parent);
+		registerSelf();
+	}
+	
+	@Override
+	public void reloadAllData() {
+		// TODO Auto-generated method stub
+		super.reloadAllData();
+		if(hyperlink_file!=null) {
+			setHyperlink(hyperlink_file);
+		}
+	}
 	
 	
 	public Button(String name, int key, UIManager widgetManager) {
 		super(name, widgetManager);
-		this.key = key;
+		this.key_code = key;
 		this.color = Color.WHITE;
 		updateGlobalPosition();
 	}
 
-	public Button setType(Type type) {
-		this.type = type;
+	
+	public Button() {
+		super();
+		//USED FOR CONSTRUCTOR PURPOSES
+	}
+	public Button setType(ButtonType type) {
+		this.button_type = type;
 		return this;
 	}
 	
@@ -85,12 +125,21 @@ public class Button extends Widget{
 		if(!visible) {
 			return;
 		}
-		if(type == Type.TOGGLE) {
+		if(button_type == ButtonType.TOGGLE) {
 			activated = true;
 		}
-		System.out.println("["+name+"] activated");
-		spawnButtonEffect();
+		if(doesPlayEffectOnClick()) {
+			spawnButtonEffect(Color.GREEN);
+		}
+		
 		onActivate();
+		
+		for(Runnable r : run_on_activate) {
+			r.run();
+		}
+		if(hyperlink!=null) {
+			hyperlink.run();
+		}
 	}
 	
 	/**
@@ -100,11 +149,15 @@ public class Button extends Widget{
 		if(!visible) {
 			return;
 		}
-		if(type == Type.TOGGLE) {
+		if(button_type == ButtonType.TOGGLE) {
 			activated = false;
 		}
-		System.out.println("["+name+"] deactivated");
+		
 		onDeactivate();
+		
+		for(Runnable r : run_on_deactivate) {
+			r.run();
+		}
 	}
 
 	/**
@@ -144,7 +197,6 @@ public class Button extends Widget{
 		super.update();
 	}
 	
-	
 	public boolean is_key_down;
 	public boolean cancelled;
 	
@@ -179,10 +231,25 @@ public class Button extends Widget{
 		
 		drawShapeChildren(renderer, recursive);
 	}
+
+	
+	protected boolean doesPlayEffectOnClick() {
+		return true;
+	}
+
+	
+	protected void spawnButtonEffect(Color c) {
+		effect_rect = new Rectangle(shape_global);
+		effect_color = c.cpy();
+		effect_rect_a = 1f;
+		effect_delta = 0;
+	}
+
 	
 	protected void drawButtonEffect(ShapeRenderer renderer) {
 		if(effect_rect!=null) {
-			renderer.setColor(new Color(1, 1, 1, effect_rect_a));
+			effect_color.a = effect_rect_a;
+			renderer.setColor(effect_color);
 			renderer.rect(
 					effect_rect.x-effect_delta-effect_offset_start,
 					effect_rect.y-effect_delta-effect_offset_start,
@@ -194,25 +261,22 @@ public class Button extends Widget{
 	}
 
 
-	protected void spawnButtonEffect() {
-		effect_rect = new Rectangle(shape_global);
-		effect_rect_a = 1f;
-		effect_delta = 0;
-	}
-
-
-
-	public boolean drawTexture(SpriteBatch batch) {
-		if(texture==null) {
-			return false;
+	public boolean drawTexture(SpriteBatch batch, boolean recursive) {
+		boolean valid = texture != null;
+		if (valid) {
+			if(visible) {
+				if (pressing) {
+					batch.setColor(Color.GRAY);
+				} else {
+					batch.setColor(color_texture_alpha);
+				}
+				batch.draw(texture, getGlobalX(), getGlobalY() + 1, shape.width - 1, shape.height - 1);
+			}
 		}
-		if(pressing) {
-			batch.setColor(Color.GRAY);
-		}else {
-			batch.setColor(Color.WHITE);
+		if(recursive) {
+			drawTextureChildren(batch, recursive);
 		}
-		batch.draw(texture, getGlobalX(), getGlobalY()+1, shape.width-1, shape.height-1);
-		return true;
+		return valid;
 	}
 	
 	@Override
@@ -231,7 +295,7 @@ public class Button extends Widget{
 		}else if (activated) {
 			font.setColor(Color.BLACK);
 		}else {
-			font.setColor(Color.WHITE);
+			font.setColor(color_texture_alpha);
 		}
 		font.draw(batch, name, getGlobalX()+2, getGlobalY()+font.getCapHeight()+2);
 		if(recursive) {
@@ -249,13 +313,65 @@ public class Button extends Widget{
 		if(!is_key_down) {
 			//if button's keybind is not pressed
 			pressing = true;
-			if(type == Type.PRESS_AND_RELEASE) {
+			if(button_type == ButtonType.PRESS_AND_RELEASE) {
 				activate();
-			}else if (type == Type.RAPIDFIRE) {
+			}else if (button_type == ButtonType.RAPIDFIRE) {
 				manager.buttons_rapidfiring.add(this); //start rapidfiring
 			}
 		}
-		manager.mouse_clicked_button = this; // new button clicked on!
+		manager.mouse_clicked_widget = this; // new button clicked on!
+	}
+	
+
+	
+	public void addOnActivate(Runnable r) {
+		this.run_on_activate.add(r);
+	}
+	
+	public void addOnDeactivate(Runnable r) {
+		this.run_on_deactivate.add(r);
 	}
 
+
+
+	public void setHyperlink(FileHandle file) {
+		this.hyperlink_file = file;
+		this.hyperlink = new Runnable() {
+			
+			@Override
+			public void run() {
+				if(hyperlink_file!=null && hyperlink_file.exists() && hyperlink_file.isDirectory()) {
+					try {
+						Desktop.getDesktop().open(hyperlink_file.file());
+					} catch (IOException e) {
+						e.printStackTrace();
+						print("Error! Directory for missing or null, unassigning.");
+					}
+				}
+			}
+		};
+	}
+	
+	@Override
+	public JsonValue saveToJson() {
+		// TODO Auto-generated method stub
+		JsonValue json = super.saveToJson();
+		json.get("type").set("button");
+		
+		if(hyperlink_file!=null) {
+			json.addChild("hyperlink", new JsonValue(hyperlink_file.path()));
+		}
+		return json;
+	}
+	
+	
+	@Override
+	public void loadFromJson(JsonValue data) {
+		// TODO Auto-generated method stub
+		super.loadFromJson(data);
+		
+		if(data.has("hyperlink")) {
+			this.hyperlink_file = new FileHandle(data.getString("hyperlink"));
+		}
+	}
 }
