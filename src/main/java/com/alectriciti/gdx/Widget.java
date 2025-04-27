@@ -345,12 +345,9 @@ public class Widget {
 			w.updateGlobalPosition();
 		}
 	}
-	
-	
 	public void setGlobalPosition(float x, float y) {
 		int width = Gdx.graphics.getWidth();
 		int height = Gdx.graphics.getHeight();
-
 		boolean align_top = false,  align_right = false;
 		switch(alignment) {
 		case DOWN_RIGHT:
@@ -374,30 +371,39 @@ public class Widget {
 		}
 		
 		
-		//now assign
-		
-		if (parent != null) {
+	    if (parent != null) {
 	        shape_base.x = x - parent.shape_global.x;
 	        shape_base.y = y - parent.shape_global.y;
-
-			if(align_top) {
+	        
+	        if(align_top) {
 	            shape_base.y = (y - parent.shape_global.y) - (height - shape.height);
-				//this.setY(canvas_height - (position_spawn.y+shape.height));
-			}else if(align_right) {
+	        }else {
+	            shape_base.y = y - parent.shape_global.y;
+	        }
+	        if(align_right) {
 	            shape_base.x = (x - parent.shape_global.x) - (width - shape.width);
-			}
+	        }else {
+	            shape_base.x = x - parent.shape_global.x;
+	        }
 	    } else {
 	        shape_base.x = x;
 	        shape_base.y = y;
-			if(align_top) {
+
+	        if(align_top) {
 	            shape_base.y = y - (height - shape.height);
-				//this.setY(canvas_height - (position_spawn.y+shape.height));
-			}else if(align_right) {
+	        } else {
 	            shape_base.y = y;
-			}
+	        }
+
+	        if(align_right) {
+	            shape_base.x = x - (width - shape.width);
+	        } else {
+	            shape_base.x = x;
+	        }
 	    }
-		updateAlignment();
-		updateGlobalPosition();
+	    
+	    updateAlignment();
+	    updateGlobalPosition();
 	}
 
 
