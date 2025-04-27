@@ -12,6 +12,7 @@ import java.util.UUID;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -31,6 +32,8 @@ public class Widget {
 	
 
 	public String type = "widget";
+	
+	public boolean render_text = true;
 	
 	
 	public String name;
@@ -99,7 +102,7 @@ public class Widget {
 	
 	public Color color_default = new Color(0, 0, 0, 1);
 	public Color color_edit = new Color(1, 0.25f, 0.25f, 1);
-	public Color color_trim = new Color(0.25f, 0.25f, 0.25f, 1);
+	public Color color_trim = new Color(0.125f, 0.125f, 0.125f, 1);
 	public Color color_trim_highlight = new Color(0.8f, 0.8f, 0.8f, 1);
 	public Color font_color = Color.WHITE.cpy();
 	
@@ -306,12 +309,12 @@ public class Widget {
 			align_top = true;
 			break;
 		default:
-			return;
+			break;
 		}
 		if(align_top) {
 			shape.y = height + shape_base.y - shape.height;
-			//this.setY(canvas_height - (position_spawn.y+shape.height));
-		}else if(align_right) {
+		}
+		if(align_right) {
 			shape.x = width + shape_base.x - shape.width;
 		}
 	}
@@ -367,7 +370,7 @@ public class Widget {
 			align_top = true;
 			break;
 		default:
-			return;
+			break;
 		}
 		
 		
@@ -457,9 +460,15 @@ public class Widget {
 		if(!visible){
 			return;
 		}
-		renderer.setColor(color);
-		renderer.set(ShapeType.Line);
-		renderer.rect(getGlobalX(), getGlobalY(), shape.width, shape.height);
+		if(hovering) {
+			if(manager.edit_mode) {
+				drawEditMode(renderer, recursive);
+			}else {
+				renderer.setColor(color);
+				renderer.set(ShapeType.Line);
+				renderer.rect(getGlobalX(), getGlobalY(), shape.width, shape.height);
+			}
+		}
 		//renderer.rect(shape.x, shape.y, shape.width, shape.height);
 		if(recursive) {
 			drawShapeChildren(renderer, recursive);
@@ -503,9 +512,11 @@ public class Widget {
 			return false;
 		}
 		
-		
-		font.setColor(font_color);
-		font.draw(sprite_batch, name, getGlobalX(), getGlobalY());
+		if(render_text) {
+		//print(getGlobalX()+" "+getGlobalY());
+			font.setColor(font_color);
+			font.draw(sprite_batch, name, getGlobalX(), getGlobalY()+font.getCapHeight());
+		}
 		if(recursive) {
 			drawFontChildren(sprite_batch, font, recursive);
 		}

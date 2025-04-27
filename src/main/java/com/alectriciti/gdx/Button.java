@@ -26,7 +26,6 @@ public class Button extends Widget{
 	public int key_code;
 	
 	
-	public static Color DEFAULT_BUTTON_COLOR = Color.DARK_GRAY.cpy();
 	
 	public enum ButtonType{
 		PRESS,
@@ -44,15 +43,20 @@ public class Button extends Widget{
 	public boolean pressing = false;
 	public boolean activated = false;
 	
-	int rapidfire_speed = 2;
+	public int rapidfire_frequency = 8;
 	
 	public float effect_offset_start = 2;
 	public static float effect_move_speed = 0.3333f;
 
 	Rectangle effect_rect;
-	Color effect_color = new Color(Color.WHITE);
+	public Color color_default = manager.COLOR_BUTTON_DEFAULT;
+	public Color color_pressing = manager.COLOR_BUTTON_PRESSING.cpy();
+	public Color color_activated = manager.COLOR_BUTTON_ACTIVATED.cpy();
+	public Color effect_color = new Color(Color.WHITE);
 	float effect_rect_a = 1f;
 	float effect_delta = 0;
+	
+	public boolean play_effect = true;
 	
 	public ButtonType button_type = ButtonType.PRESS;
 	
@@ -196,22 +200,22 @@ public class Button extends Widget{
 	@Override
 	protected void update() {
 		// TODO Auto-generated method stub
-		
-		if(pressing) {
-			color = manager.COLOR_BUTTON_PRESSING.cpy();
-		}else if(activated) {
-			color = manager.COLOR_BUTTON_ACTIVATED.cpy();
-		}else {
-			color = LerpColor(color, color_default, 0.25f);
-			//color.set(color_default.r*d, color_default.g*d, color_default.b*d, color_default.a);
-		}
-		if(effect_rect!=null) {
-			effect_rect_a *= 0.92f;
-			effect_delta += effect_move_speed;
-			if(effect_rect_a<0.01) {
-				effect_rect = null;
+			
+			if(pressing) {
+				color = LerpColor(color, color_pressing, 0.5f);
+			}else if(activated) {
+				color = LerpColor(color, color_activated, 0.5f);
+			}else {
+				color = LerpColor(color, color_default, 0.25f);
+				//color.set(color_default.r*d, color_default.g*d, color_default.b*d, color_default.a);
 			}
-		}
+			if(effect_rect!=null) {
+				effect_rect_a *= 0.92f;
+				effect_delta += effect_move_speed;
+				if(effect_rect_a<0.01) {
+					effect_rect = null;
+				}
+			}
 		super.update();
 	}
 	
@@ -252,7 +256,7 @@ public class Button extends Widget{
 
 	
 	protected boolean doesPlayEffectOnClick() {
-		return true;
+		return play_effect;
 	}
 
 	
@@ -309,7 +313,7 @@ public class Button extends Widget{
 			return false; 
 		}
 		if(pressing) {
-			font.setColor(Color.GRAY);
+			font.setColor(Color.DARK_GRAY);
 		}else if (activated) {
 			font.setColor(Color.BLACK);
 		}else {

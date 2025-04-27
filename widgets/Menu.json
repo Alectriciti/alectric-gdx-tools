@@ -3,8 +3,8 @@ type: button
 name: Menu
 id: Menu
 shape: {
-	x: 51.0
-	y: -99.0
+	x: 0.0
+	y: 0
 	width: 128.0
 	height: 24.0
 }

@@ -7,6 +7,7 @@ import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Window;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3WindowListener;
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -28,6 +29,7 @@ import com.alectriciti.gdx.DropdownMenuButton;
 import com.alectriciti.gdx.Widget;
 import com.alectriciti.gdx.chat.MessageManager;
 import com.alectriciti.gdx.Button;
+import com.alectriciti.gdx.Button.ButtonType;
 import com.alectriciti.gdx.UIManager;
 
 public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListener {
@@ -56,6 +58,14 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 		
 		font = new BitmapFont(font_handle);
 		msg_manager = new MessageManager(font);
+
+    	
+    	Widget w = new Widget("ImageIndex", ui_manager);
+    	w.alignment = Direction.UP;
+    	w.setSize(120, 32);
+    	w.setRelativePosition(10, -76);
+    	w.setColor(Color.WHITE.cpy());
+    	
 		
 		Canvas main_menu = new Canvas("Cool Canvas", ui_manager, new Rectangle(100, 100, 200, 200));
 		Canvas stupid_canvas = new Canvas("Stupid Canvas", ui_manager, new Rectangle(150, 50, 300, 100));
@@ -90,6 +100,10 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 		
 		Button poop = new Button("poop", main_menu);
 		poop.id = "poopbutton";
+		
+		Button ass = new Button("asspounder 5000", main_menu);
+		ass.setType(ButtonType.RAPIDFIRE);
+		ass.setRelativePosition(200, 300);
 		
 
 		Button save = main_menu_buttons.get(1);

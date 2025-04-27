@@ -36,8 +36,8 @@ import static com.alectriciti.gdx.Toolkit.*;
 public class UIManager implements InputProcessor {
 
 	public Color COLOR_BUTTON_ACTIVATED = Color.GREEN;
-	public Color COLOR_BUTTON_PRESSING = Color.WHITE;
-	public Color COLOR_BUTTON_DEFAULT = Color.GRAY;
+	public Color COLOR_BUTTON_PRESSING = Color.GRAY;
+	public Color COLOR_BUTTON_DEFAULT = new Color(0.05f, 0.05f, 0.05f, 1);
 	
 	public static final float EDIT_HANDLE_HEIGHT = 8;
 	
@@ -83,7 +83,7 @@ public class UIManager implements InputProcessor {
 	
 	
 	public List<Button> buttons = new ArrayList<Button>();
-	protected List<Button> buttons_rapidfiring = new ArrayList<Button>();
+	public List<Button> buttons_rapidfiring = new ArrayList<Button>();
 	public Map<String, Button> buttons_by_name = new HashMap<String, Button>();
 	public Map<Integer, Button> buttons_by_key = new HashMap<Integer, Button>();
 	
@@ -121,6 +121,10 @@ public class UIManager implements InputProcessor {
 	
 	Widget widget_hovering;
 	
+	public boolean isEdittingMode() {
+		return edit_mode;
+	}
+	
 	private void setWidgetSelectionCandidate(Widget widget_to_assign) {
 		if(widget_hovering!=null) {
 			widget_hovering.hovering = false;
@@ -155,6 +159,11 @@ public class UIManager implements InputProcessor {
 			}
 		}
 		
+		for(Button b : buttons_rapidfiring) {
+			if(ui_tick%b.rapidfire_frequency==0) {
+				b.activate();
+			}
+		}
 		for(Widget w : widgets) {
 			w.update();
 		}
@@ -304,6 +313,11 @@ public class UIManager implements InputProcessor {
 			Widget widget_to_highlight = getSelectableWidgetAtPosition(mouse_x, mouse_y);
 			if(widget_to_highlight!=null) {
 				setWidgetSelectionCandidate(widget_to_highlight);
+			}else {
+				if(widget_hovering != null) {
+					widget_hovering.hovering = false;
+					widget_hovering = null;
+				}
 			}
 		}
 	}

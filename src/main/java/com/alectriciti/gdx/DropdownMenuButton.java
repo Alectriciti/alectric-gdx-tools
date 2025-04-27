@@ -79,11 +79,6 @@ public class DropdownMenuButton extends Button{
 	}
 	
 	@Override
-	public void setGlobalPosition(float x, float y) {
-		super.setGlobalPosition(x, y);
-	}
-	
-	@Override
 	protected void update() {
 		// TODO Auto-generated method stub
 		super.update();
