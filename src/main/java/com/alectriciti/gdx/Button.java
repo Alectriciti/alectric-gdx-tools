@@ -28,7 +28,7 @@ public class Button extends Widget{
 	
 	public static Color DEFAULT_BUTTON_COLOR = Color.DARK_GRAY.cpy();
 	
-	enum ButtonType{
+	public enum ButtonType{
 		PRESS,
 		PRESS_AND_RELEASE,
 		TOGGLE,
@@ -38,11 +38,11 @@ public class Button extends Widget{
 	transient List<Runnable> run_on_activate = new ArrayList<Runnable>();
 	transient List<Runnable> run_on_deactivate = new ArrayList<Runnable>();
 	
-	transient Runnable hyperlink = null;
-	FileHandle hyperlink_file = null;
+	public transient Runnable hyperlink = null;
+	public FileHandle hyperlink_file = null;
 	
-	boolean pressing = false;
-	boolean activated = false;
+	public boolean pressing = false;
+	public boolean activated = false;
 	
 	int rapidfire_speed = 2;
 	
@@ -72,16 +72,39 @@ public class Button extends Widget{
 		updateGlobalPosition();
 	}
 	
+	
+	public Button(String name, int key, UIManager widgetManager) {
+		super(name, widgetManager);
+		this.key_code = key;
+		this.color = Color.WHITE.cpy();
+		registerSelf();
+		updateGlobalPosition();
+	}
+
+	
+	public Button(String button_name, Widget parent) {
+		this(button_name, 0, parent);
+		registerSelf();
+	}
+	
+	public Button(String name, UIManager widgetManager) {
+		this(name, 0, widgetManager);
+	}
+
+	
+	public Button() {
+		super();
+		//USED FOR CONSTRUCTOR PURPOSES
+	}
+	
+	
+	
 	private void registerSelf() {
 		manager.buttons.add(this);
 		manager.buttons_by_name.put(name, this);
 		manager.buttons_by_key.put(key_code, this);
 	}
 	
-	public Button(String button_name, Widget parent) {
-		this(button_name, 0, parent);
-		registerSelf();
-	}
 	
 	@Override
 	public void reloadAllData() {
@@ -90,21 +113,16 @@ public class Button extends Widget{
 		if(hyperlink_file!=null) {
 			setHyperlink(hyperlink_file);
 		}
+		if(activated) {
+			if(this instanceof DropdownMenuButton) {
+				
+			}else {
+				//activates a button when reloaded, used for settings
+				activate();
+			}
+		}
 	}
 	
-	
-	public Button(String name, int key, UIManager widgetManager) {
-		super(name, widgetManager);
-		this.key_code = key;
-		this.color = Color.WHITE;
-		updateGlobalPosition();
-	}
-
-	
-	public Button() {
-		super();
-		//USED FOR CONSTRUCTOR PURPOSES
-	}
 	public Button setType(ButtonType type) {
 		this.button_type = type;
 		return this;
@@ -322,8 +340,6 @@ public class Button extends Widget{
 		manager.mouse_clicked_widget = this; // new button clicked on!
 	}
 	
-
-	
 	public void addOnActivate(Runnable r) {
 		this.run_on_activate.add(r);
 	}
@@ -361,6 +377,9 @@ public class Button extends Widget{
 		if(hyperlink_file!=null) {
 			json.addChild("hyperlink", new JsonValue(hyperlink_file.path()));
 		}
+		
+		json.addChild("activated", new JsonValue(activated));
+		
 		return json;
 	}
 	
@@ -372,6 +391,12 @@ public class Button extends Widget{
 		
 		if(data.has("hyperlink")) {
 			this.hyperlink_file = new FileHandle(data.getString("hyperlink"));
+		}
+		
+		if(data.has("activated")) {
+			if(!(this instanceof DropdownMenuButton)) {
+			this.activated = data.getBoolean("activated");
+			}
 		}
 	}
 }

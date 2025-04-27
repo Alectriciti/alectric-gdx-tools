@@ -55,6 +55,7 @@ public class Widget {
 	
 	
 	protected Rectangle shape;
+	protected Rectangle shape_base = new Rectangle(); // for UI offset
 	protected Rectangle shape_global = new Rectangle();
 	
 	public Direction alignment = Direction.NONE;
@@ -252,6 +253,8 @@ public class Widget {
 	public void setSize(float width, float height) {
 		this.shape.setWidth(width);
 		this.shape.setHeight(height);
+		this.shape_base.setWidth(width);
+		this.shape_base.setHeight(height);
 		this.shape_global.setWidth(width);
 		this.shape_global.setHeight(height);
 	}
@@ -265,17 +268,76 @@ public class Widget {
 	}
 
 	public Widget setRelativePosition(float x, float y) {
+		this.shape_base.x = x;
+		this.shape_base.y = y;
 		this.shape.x = x;
 		this.shape.y = y;
+		updateAlignment();
 		updateGlobalPosition();
 		return this;
 	}
 	
+	/**
+	 * Run this ONLY after a position change
+	 */
+	public void updateAlignment() {
+		int width = Gdx.graphics.getWidth();
+		int height = Gdx.graphics.getHeight();
+
+		shape.x = shape_base.x;
+		shape.y = shape_base.y;
+
+		boolean align_top = false,  align_right = false;
+		switch(alignment) {
+		case DOWN_RIGHT:
+			align_right = true;
+			break;
+		case RIGHT:
+			align_right = true;
+			break;
+		case UP:
+			align_top = true;
+			break;
+		case UP_LEFT:
+			align_top = true;
+			break;
+		case UP_RIGHT:
+			align_right = true;
+			align_top = true;
+			break;
+		default:
+			return;
+		}
+		if(align_top) {
+			shape.y = height + shape_base.y - shape.height;
+			//this.setY(canvas_height - (position_spawn.y+shape.height));
+		}else if(align_right) {
+			shape.x = width + shape_base.x - shape.width;
+		}
+	}
+
+
+	public void setRelativeX(float x) {
+		// TODO Auto-generated method stub
+		this.shape_base.x = x;
+		updateAlignment();
+		updateGlobalPosition();
+	}
+	
+	public void setRelativeY(float y) {
+		// TODO Auto-generated method stub
+		this.shape_base.y = y;
+		updateAlignment();
+		updateGlobalPosition();
+	}
+	
 	public void updateGlobalPosition() {
+		
 		if(parent!=null) {
 			shape_global.x = parent.getGlobalX() + shape.x;
 			shape_global.y = parent.getGlobalY() + shape.y;
 		}else {
+			
 			shape_global.x = shape.x;
 			shape_global.y = shape.y;
 		}
@@ -286,13 +348,55 @@ public class Widget {
 	
 	
 	public void setGlobalPosition(float x, float y) {
-		if(parent != null) {
-			this.shape.x = x - parent.getGlobalX();
-			this.shape.y = y - parent.getGlobalY();
-		}else {
-			this.shape.x = x;
-			this.shape.y = y;
+		int width = Gdx.graphics.getWidth();
+		int height = Gdx.graphics.getHeight();
+
+		boolean align_top = false,  align_right = false;
+		switch(alignment) {
+		case DOWN_RIGHT:
+			align_right = true;
+			break;
+		case RIGHT:
+			align_right = true;
+			break;
+		case UP:
+			align_top = true;
+			break;
+		case UP_LEFT:
+			align_top = true;
+			break;
+		case UP_RIGHT:
+			align_right = true;
+			align_top = true;
+			break;
+		default:
+			return;
 		}
+		
+		
+		//now assign
+		
+		if (parent != null) {
+	        shape_base.x = x - parent.shape_global.x;
+	        shape_base.y = y - parent.shape_global.y;
+
+			if(align_top) {
+	            shape_base.y = (y - parent.shape_global.y) - (height - shape.height);
+				//this.setY(canvas_height - (position_spawn.y+shape.height));
+			}else if(align_right) {
+	            shape_base.x = (x - parent.shape_global.x) - (width - shape.width);
+			}
+	    } else {
+	        shape_base.x = x;
+	        shape_base.y = y;
+			if(align_top) {
+	            shape_base.y = y - (height - shape.height);
+				//this.setY(canvas_height - (position_spawn.y+shape.height));
+			}else if(align_right) {
+	            shape_base.y = y;
+			}
+	    }
+		updateAlignment();
 		updateGlobalPosition();
 	}
 
@@ -555,8 +659,8 @@ public class Widget {
 	    out.addChild("texture", new JsonValue(texture_file.path()));
 	    if (shape != null) {
 	        JsonValue shapeObj = new JsonValue(JsonValue.ValueType.object);
-	        shapeObj.addChild("x", new JsonValue(shape.x));
-	        shapeObj.addChild("y", new JsonValue(shape.y));
+	        shapeObj.addChild("x", new JsonValue(shape_base.x));
+	        shapeObj.addChild("y", new JsonValue(shape_base.y));
 	        shapeObj.addChild("width", new JsonValue(shape.width));
 	        shapeObj.addChild("height", new JsonValue(shape.height));
 	        out.addChild("shape", shapeObj);
@@ -575,8 +679,8 @@ public class Widget {
 	    
 	    JsonValue shapeObj = data.get("shape");
 	    if (shapeObj != null) {
-	        this.shape.x = shapeObj.getFloat("x", shape.x);
-	        this.shape.y = shapeObj.getFloat("y", shape.y);
+	        setRelativeX(shapeObj.getFloat("x", shape.x));
+	        setRelativeY(shapeObj.getFloat("y", shape.y));
 	        this.shape.width = shapeObj.getFloat("width", shape.width);
 	        this.shape.height = shapeObj.getFloat("height", shape.height);
 	    }

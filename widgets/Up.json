@@ -3,9 +3,10 @@ type: button
 name: Up
 id: Up
 shape: {
-	x: 232.0
-	y: 262.0
+	x: 100.0
+	y: 120.0
 	width: 32.0
 	height: 32.0
 }
+activated: false
 }

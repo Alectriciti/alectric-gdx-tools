@@ -3,9 +3,10 @@ type: button
 name: Right
 id: Right
 shape: {
-	x: 375.0
-	y: 158.0
+	x: 120.0
+	y: 100.0
 	width: 32.0
 	height: 32.0
 }
+activated: false
 }

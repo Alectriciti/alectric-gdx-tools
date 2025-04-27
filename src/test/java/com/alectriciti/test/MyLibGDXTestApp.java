@@ -81,10 +81,11 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 		createTestButtonArray(up, 4);
 
 
-		DropdownMenuButton down = new DropdownMenuButton("Menu", Keys.ESCAPE, main_menu);
+		DropdownMenuButton down = new DropdownMenuButton("Menu", Keys.ESCAPE, ui_manager);
 		down.setDirection(Direction.DOWN);
 		down.setSize(128, 24);
 		down.setGlobalPosition(10, 420);
+		down.alignment = Direction.UP;
 		List<Button> main_menu_buttons = createTestButtonArray(down, 4, "New", "Save", "Save As", "Load");
 		
 		Button poop = new Button("poop", main_menu);
@@ -127,6 +128,11 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 		
 		viewport.setCamera(camera);
 		viewport.apply();
+		
+		
+		ui_manager.loadAllWidgets();
+		ui_manager.alignAllWidgets();
+		
 	}
 	
 	
@@ -160,6 +166,7 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 	public void resize(int width, int height) {
 		this.width = width;
 		this.height = height;
+		ui_manager.alignAllWidgets();
 		viewport.update(width, height, true);
 	}
 

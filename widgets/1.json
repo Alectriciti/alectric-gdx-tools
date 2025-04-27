@@ -8,4 +8,5 @@ shape: {
 	width: 32.0
 	height: 32.0
 }
+activated: false
 }

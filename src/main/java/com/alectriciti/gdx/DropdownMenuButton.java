@@ -34,6 +34,16 @@ public class DropdownMenuButton extends Button{
 		button_type = ButtonType.TOGGLE;
 	}
 	
+	public DropdownMenuButton(String button_name, int keycode, UIManager manager) {
+		super(button_name, keycode, manager);
+		button_type = ButtonType.TOGGLE;
+	}
+	
+	public DropdownMenuButton(String button_name, UIManager manager) {
+		super(button_name, manager);
+		button_type = ButtonType.TOGGLE;
+	}
+	
 	@Override
 	public void activate() {
 		// TODO Auto-generated method stub

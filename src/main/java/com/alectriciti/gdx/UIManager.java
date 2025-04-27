@@ -401,11 +401,6 @@ public class UIManager implements InputProcessor {
 		}
 		shape_renderer.end();
 		sprite_batch.begin();
-		if(font_valid) {
-			for(Widget w : widget_orphans) {
-				w.drawFont(sprite_batch, font, true);
-			}
-		}
 		Gdx.gl.glEnable(GL20.GL_BLEND);
 		for(Widget w : widget_orphans) {
 			if(w.texture!=null) {
@@ -413,12 +408,17 @@ public class UIManager implements InputProcessor {
 			}
 		}
 		
+		if(font_valid) {
+			for(Widget w : widget_orphans) {
+				w.drawFont(sprite_batch, font, true);
+			}
+		}
 		if(debug_mode) {
 			
 		}
-		font.setColor(Color.WHITE);
-		font.draw(sprite_batch, "Widget Scroll Selector: "+scrollSelectionOffset, 20, 500);
-		font.draw(sprite_batch, "Widget Candidate "+(widget_hovering!=null?widget_hovering:"null"), 20, 524);
+		//font.setColor(Color.WHITE);
+		//font.draw(sprite_batch, "Widget Scroll Selector: "+scrollSelectionOffset, 20, 500);
+		//font.draw(sprite_batch, "Widget Candidate "+(widget_hovering!=null?widget_hovering:"null"), 20, 524);
 		sprite_batch.end();
 		Gdx.gl.glEnable(GL20.GL_BLEND);
 		
@@ -493,7 +493,7 @@ public class UIManager implements InputProcessor {
 
 	@Override
 	public boolean keyDown(int keycode) {
-
+		
 		if(buttons_by_key.containsKey(keycode)) {
 			Button b = buttons_by_key.get(keycode);
 			if(!b.visible) {
@@ -722,6 +722,17 @@ public class UIManager implements InputProcessor {
 	
 	String folder_widgets = "widgets/";
 	
+	
+	/**
+	 * Should be run on resize
+	 */
+	public void alignAllWidgets() {
+		for(Widget w : widgets) {
+			w.updateAlignment();
+			w.updateGlobalPosition();
+		}
+	}
+	
 	public void saveAllWidgets() {
 	    FileHandle file = Gdx.files.local(folder_widgets);
 	    if (!file.exists()) file.mkdirs();
@@ -765,64 +776,8 @@ public class UIManager implements InputProcessor {
 	    	w.reloadAllData();
 	    	print("Reloaded all widgets!");
 	    }
+	    alignAllWidgets();
 	}
-	
-	/*
-	public void SaveAllCanvases() {
-		FileHandle file = Gdx.files.local(folder_widgets);
-		
-		if(!file.exists()) {
-			file.mkdirs();
-		}
-		
-		for(Canvas c : canvases) {
-			Json json = new Json();
-			json.setTypeName("canvas");
-			
-			String data = json.toJson(c);
-			
-			Gdx.files.local("widgets/"+c.name+".json").writeString(data, false);
-			print("Saved "+c.name+" to "+file.name());
-		}
-		print("All Canvases saved!");
-	}
-	
-	public void LoadAllCanases() {
-		FileHandle file = Gdx.files.local(folder_widgets);
-
-		if(!file.exists()) {
-			return;
-		}
-		
-		if(!file.exists()) {
-			file.mkdirs();
-		}
-		
-		
-		
-		
-		//1 load all widgets individually
-		// assign to appropriate groups
-		
-		//2 itterate based on heirarchy index...
-		// first the top layer,
-		// then assign children to appropriate parents now that the top layer is done
-		// (reloadAllJsonReferences)
-		
-		//3 re-establish any id links from cousins
-		
-		//4 Run "refreshHeirarchyCache" for everything
-		
-		for(FileHandle f : file.list()) {
-			Json json = new Json();
-			json.setTypeName("canvas");
-			
-			Canvas c = json.fromJson(Canvas.class, f);
-			c.reloadAllJsonReferences();
-		}
-		
-	}
-	*/
 
 	/**
 	 * This should be called on shutdown to dispose of widget-related and other resources
@@ -832,6 +787,7 @@ public class UIManager implements InputProcessor {
 			w.dispose();
 		}
 	}
+	
 	
 	
 

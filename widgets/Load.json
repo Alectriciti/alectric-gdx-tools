@@ -4,8 +4,9 @@ name: Load
 id: Load
 shape: {
 	x: 0.0
-	y: -125.40473175048828
+	y: -125.17375946044922
 	width: 32.0
 	height: 32.0
 }
+activated: false
 }
