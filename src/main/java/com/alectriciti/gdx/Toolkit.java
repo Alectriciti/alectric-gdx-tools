@@ -1,6 +1,13 @@
 package com.alectriciti.gdx;
 
+import java.awt.MouseInfo;
+import java.awt.Point;
+
+import org.lwjgl.glfw.GLFW;
+
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Graphics;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Graphics.Lwjgl3Monitor;
 import com.badlogic.gdx.graphics.Color;
 
 public class Toolkit {
@@ -84,6 +91,14 @@ public class Toolkit {
 	public static int getMouseY() {
 		return Gdx.graphics.getHeight() - Gdx.input.getY();
 	}
+	
+	public static int[] getAbsoluteMousePosition() {
+        Point p = MouseInfo.getPointerInfo().getLocation();
+
+        int screenX = (int) p.getX();
+        int screenY = (int) p.getY();
+        return new int[]{screenX, screenY};
+    }
 	
 
 }

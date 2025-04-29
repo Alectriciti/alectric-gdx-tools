@@ -64,7 +64,7 @@ public class UIManager implements InputProcessor {
 	
 	List<Canvas> canvases = new ArrayList<Canvas>();
 	List<Canvas> canvases_active = new ArrayList<Canvas>();
-	private Canvas canvas_focused;
+	Widget canvas_focused;
 	int global_canvas_z = 0;
 	
 	public int ui_tick = 0;
@@ -102,15 +102,15 @@ public class UIManager implements InputProcessor {
 		}
 	}
 	
-	public void focus(Canvas canvas) {
-		if(canvas!=null) {
+	public void focus(Widget w) {
+		if(w!=null) {
 			global_canvas_z++;
 			//TODO Do extra checks such as unclicking buttons etc.
 			//mouse_adjusting_widfget = null;
-			canvas_focused = canvas;
+			canvas_focused = w;
 			canvas_focused.pushNewZPosition(true);
 			canvases.sort(Comparator.comparingInt(Widget::getZIndex));
-			print("Canvas focused: "+canvas.name);
+			print("Canvas focused: "+w.name);
 		}
 	}
 	
@@ -190,7 +190,7 @@ public class UIManager implements InputProcessor {
 				 */
 				if(Gdx.input.isButtonJustPressed(Buttons.LEFT)) {
 					if(widget_hovering!=null) {
-						if(edit_mode) {
+						if(edit_mode || widget_hovering.isAlwaysEditable()) {
 							
 							if(widget_hovering.isEditable()) {
 								//moving button config mode
@@ -203,9 +203,8 @@ public class UIManager implements InputProcessor {
 									focus((Canvas) widget_hovering.parent);
 								}
 							}
-						}else {
-							widget_hovering.callOnClicked(); //API call
 						}
+						widget_hovering.callOnClicked(); //API call
 					}
 				}
 			}
@@ -270,6 +269,7 @@ public class UIManager implements InputProcessor {
 						break;
 					}
 				}
+				mouse_clicked_widget.callOnReleased();
 				mouse_clicked_widget.pressing = false;
 				mouse_clicked_widget = null;
 			}
@@ -291,12 +291,21 @@ public class UIManager implements InputProcessor {
 		
 	}
 	private void AdjustWidgetPosition() {
-		if(constraint_mode) {
-			widget_currently_adjusting.setGlobalPosition(
-					((mouse_x+(int)(mouse_config_offset_x))/constraint_amount)*constraint_amount,
-					((mouse_y+(int)(mouse_config_offset_y))/constraint_amount)*constraint_amount);
+		if(widget_currently_adjusting instanceof WindowMoverWidget) {
+			//move window logic
+			WindowMoverWidget window = (WindowMoverWidget) widget_currently_adjusting;
+			window.moveWindow(
+					(int)mouse_config_offset_x,
+					(int)mouse_config_offset_y);
+			
 		}else {
-			widget_currently_adjusting.setGlobalPosition((int)(mouse_x+mouse_config_offset_x), (int)(mouse_y+mouse_config_offset_y));
+			if(constraint_mode) {
+				widget_currently_adjusting.setGlobalPosition(
+						((mouse_x+(int)(mouse_config_offset_x))/constraint_amount)*constraint_amount,
+						((mouse_y+(int)(mouse_config_offset_y))/constraint_amount)*constraint_amount);
+			}else {
+				widget_currently_adjusting.setGlobalPosition((int)(mouse_x+mouse_config_offset_x), (int)(mouse_y+mouse_config_offset_y));
+			}
 		}
 	}
 

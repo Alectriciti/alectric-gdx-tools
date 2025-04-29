@@ -27,6 +27,7 @@ import com.alectriciti.gdx.Canvas;
 import com.alectriciti.gdx.Direction;
 import com.alectriciti.gdx.DropdownMenuButton;
 import com.alectriciti.gdx.Widget;
+import com.alectriciti.gdx.WindowMoverWidget;
 import com.alectriciti.gdx.chat.MessageManager;
 import com.alectriciti.gdx.Button;
 import com.alectriciti.gdx.Button.ButtonType;
@@ -105,6 +106,10 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 		ass.setType(ButtonType.RAPIDFIRE);
 		ass.setRelativePosition(200, 300);
 		
+		
+		WindowMoverWidget m = new WindowMoverWidget("poop", ui_manager);
+		m.setGlobalPosition(100, 300);
+		m.setSize(1000, 42);
 
 		Button save = main_menu_buttons.get(1);
 		Button load = main_menu_buttons.get(3);

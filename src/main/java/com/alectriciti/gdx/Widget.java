@@ -67,6 +67,7 @@ public class Widget {
 
 	
 	public transient int z; //for z ordering
+	public int z_layer_offset = 0; //a more static z offset. This gets added to the standard z value when applying new z positions
 	
 	transient boolean hovering = false;
 	transient private boolean currently_clicked = false;
@@ -579,7 +580,9 @@ public class Widget {
 	public int getZIndex() {
 		return z;
 	}
-
+	
+	
+	
 	public void pushNewZPosition(boolean recursive) {
 		z = manager.global_canvas_z;
 		manager.global_canvas_z++;
@@ -701,6 +704,12 @@ public class Widget {
 	        this.shape.width = shapeObj.getFloat("width", shape.width);
 	        this.shape.height = shapeObj.getFloat("height", shape.height);
 	    }
+	}
+
+
+	public boolean isAlwaysEditable() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 	
 }
