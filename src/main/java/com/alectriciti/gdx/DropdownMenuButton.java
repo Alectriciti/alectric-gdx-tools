@@ -65,7 +65,8 @@ public class DropdownMenuButton extends Button{
 		animating = true;
 		updatePositionForChildren();
 		for(Widget w : widgets) {
-			w.setVisible(true);
+			w.setVisible(true, true);
+			w.setTouchable(true, true);
 		}
 		
 		
@@ -74,6 +75,9 @@ public class DropdownMenuButton extends Button{
 	protected void dropdownClose() {
 		expand_amount_target = 0;
 		animating = true;
+		for(Widget w : widgets) {
+			w.setTouchable(false, true);
+		}
 		// TODO Auto-generated method stub
 		
 	}
@@ -102,7 +106,7 @@ public class DropdownMenuButton extends Button{
 					
 				}else {
 					for(Widget w : widgets) {
-						w.setVisible(false);
+						w.setVisible(false, true);
 					}
 					print("widgets set to invisible");
 				}
@@ -158,10 +162,8 @@ public class DropdownMenuButton extends Button{
 		//renderer.set(ShapeType.Line);
 		//renderer.setColor(Color.BLUE);
 		//renderer.rect(dropdown_region.x-2, dropdown_region.y-2, dropdown_region.width+2, dropdown_region.height+2);
-		
-		if(activated) {
+		if(activated)
 			drawShapeChildren(renderer, recursive);
-		}
 	}
 	
 	@Override
@@ -172,9 +174,7 @@ public class DropdownMenuButton extends Button{
 			return false;
 		}
 
-		if(activated) {
 			drawFontChildren(batch, font, recursive);
-		}
 		return true;
 	}
 	

@@ -20,6 +20,7 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 
 import static com.alectriciti.gdx.Toolkit.*;
 
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,6 +50,22 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 	
 	public int width, height;
 	
+	public Runnable run_new_skin = new Runnable() {
+		
+		@Override
+		public void run() {
+			print("making nu skin");
+		}
+	};
+	
+	public Runnable run_poop = new Runnable() {
+		
+		@Override
+		public void run() {
+			print("making nu poop poooo");
+		}
+	};
+	
 	@Override
 	public void create() {
 		
@@ -59,72 +76,27 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 		
 		font = new BitmapFont(font_handle);
 		msg_manager = new MessageManager(font);
-
-    	
-    	Widget w = new Widget("ImageIndex", ui_manager);
-    	w.alignment = Direction.UP;
-    	w.setSize(120, 32);
-    	w.setRelativePosition(10, -76);
-    	w.setColor(Color.WHITE.cpy());
-    	
 		
-		Canvas main_menu = new Canvas("Cool Canvas", ui_manager, new Rectangle(100, 100, 200, 200));
-		Canvas stupid_canvas = new Canvas("Stupid Canvas", ui_manager, new Rectangle(150, 50, 300, 100));
-		
-		//DropdownMenuButton dropdown = new DropdownMenuButton("Dropdown", 0, main_menu);
-		//dropdown.setGlobalPosition(200, 300);
-		
-		DropdownMenuButton left = new DropdownMenuButton("Left", 0, main_menu);
-		left.setDirection(Direction.LEFT);
-		left.setGlobalPosition(180, 200);
-		createTestButtonArray(left, 4);
+		DropdownMenuButton main_menu;
 
-
-		DropdownMenuButton right = new DropdownMenuButton("Right", 0, main_menu);
-		right.setDirection(Direction.RIGHT);
-		right.setGlobalPosition(220, 200);
-		createTestButtonArray(right, 7, "A", "B", "C", "D", "E", "F", "G");
-
-
-		DropdownMenuButton up = new DropdownMenuButton("Up", 0, main_menu);
-		up.setDirection(Direction.UP);
-		up.setGlobalPosition(200, 220);
-		createTestButtonArray(up, 4);
-
-
-		DropdownMenuButton down = new DropdownMenuButton("Menu", Keys.ESCAPE, ui_manager);
-		down.setDirection(Direction.DOWN);
-		down.setSize(128, 24);
-		down.setGlobalPosition(10, 420);
-		down.alignment = Direction.UP;
-		List<Button> main_menu_buttons = createTestButtonArray(down, 4, "New", "Save", "Save As", "Load");
-		
-		Button poop = new Button("poop", main_menu);
-		poop.id = "poopbutton";
-		
-		Button ass = new Button("asspounder 5000", main_menu);
-		ass.setType(ButtonType.RAPIDFIRE);
-		ass.setRelativePosition(200, 300);
-		
-		
-		WindowMoverWidget m = new WindowMoverWidget("poop", ui_manager);
-		m.setGlobalPosition(100, 300);
-		m.setSize(1000, 42);
-
-		Button save = main_menu_buttons.get(1);
-		Button load = main_menu_buttons.get(3);
-		save.addOnActivate(new Runnable() {
-			
+    	main_menu = new DropdownMenuButton("Main Menu", Keys.ESCAPE, ui_manager);
+    	main_menu.alignment = Direction.UP;
+    	main_menu.setRelativePosition(0, 0);
+    	main_menu.setSize(120, 32);
+    	Button button_new_skin = new Button("New Skin", main_menu);
+    	button_new_skin.addOnActivate(new Runnable() {
+    		
 			@Override
 			public void run() {
-				ui_manager.saveAllWidgets();
+				confirmDialogueBox(run_new_skin);
 			}
 		});
-		load.addOnActivate(new Runnable() {
-			
+    	Button button_poop = new Button("Poop", main_menu);
+    	button_poop.addOnActivate(new Runnable() {
+    		
 			@Override
 			public void run() {
-				ui_manager.loadAllWidgets();
+				confirmDialogueBox(run_poop);
 			}
 		});
 		//b.setRelativePosition(100, 00);
@@ -153,7 +125,39 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 		ui_manager.alignAllWidgets();
 		
 	}
+
+	Canvas confirm_box;
 	
+	private void confirmDialogueBox(Runnable run_new_skin) {
+		if(confirm_box == null) {
+			confirm_box = new Canvas("Start a New Skin?", ui_manager, new Rectangle(100, 100, 200, 100));
+			confirm_box.setGlobalPosition(width/2 - 100, height/2 - 50);
+			//Widget img = new Widget("img", confirm_box);
+			Button yes = new Button("Yes", confirm_box) {
+				@Override
+				protected void onActivate() {
+					run_new_skin.run();
+					confirm_box.destroy();
+					confirm_box = null;
+				}
+			};
+			yes.font_offset = new Point(4, 4);
+			yes.setRelativePosition(32, 30);
+			yes.setSize(42, 32);
+			Button no = new Button("No", confirm_box) {
+				@Override
+				protected void onActivate() {
+					// TODO Auto-generated method stub
+					super.onActivate();
+					confirm_box.destroy();
+					confirm_box = null;
+				}
+			};
+			no.setRelativePosition(104, 30);
+			no.font_offset = new Point(4, 4);
+			no.setSize(42, 32);
+		}
+	}
 	
 	int global_test_button_index;
 	

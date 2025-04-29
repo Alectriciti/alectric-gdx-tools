@@ -4,9 +4,12 @@ import java.awt.MouseInfo;
 import java.awt.Point;
 
 import org.lwjgl.glfw.GLFW;
+import org.lwjgl.glfw.GLFWVidMode;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Graphics.Monitor;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Graphics;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Window;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Graphics.Lwjgl3Monitor;
 import com.badlogic.gdx.graphics.Color;
 

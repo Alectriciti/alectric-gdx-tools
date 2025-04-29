@@ -10,12 +10,19 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import org.lwjgl.glfw.GLFW;
+import org.lwjgl.glfw.GLFWVidMode;
+
 import com.alectriciti.gdx.Button.ButtonType;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Input.Keys;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Graphics;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Window;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Graphics.Lwjgl3Monitor;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.Graphics.Monitor;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -72,6 +79,7 @@ public class UIManager implements InputProcessor {
 	int mouseScrollOffset = 0; // add this to your WidgetManager or UI state
 	private float scrollSelectionOffset;
 	
+	int WIDTH, HEIGHT;
 	
 	int mouse_x, mouse_y;
 	
@@ -80,7 +88,8 @@ public class UIManager implements InputProcessor {
 	 */
 	public HashSet<Widget> widgets = new HashSet<Widget>();
 	public HashSet<Widget> widget_orphans = new HashSet<Widget>();
-	
+
+	private List<Widget> widgets_to_destroy = new ArrayList<Widget>();
 	
 	public List<Button> buttons = new ArrayList<Button>();
 	public List<Button> buttons_rapidfiring = new ArrayList<Button>();
@@ -89,7 +98,6 @@ public class UIManager implements InputProcessor {
 	
 	public UIManager(InputMultiplexer input) {
 		input.addProcessor(this);
-		
 	}
 	
 	
@@ -158,6 +166,15 @@ public class UIManager implements InputProcessor {
 				scrollSelectionOffset = 0;
 			}
 		}
+
+		if(!widgets_to_destroy.isEmpty()) {
+			widgets.removeAll(widgets_to_destroy);
+			widget_orphans.removeAll(widgets_to_destroy);
+			canvases.removeAll(widgets_to_destroy);
+			buttons.removeAll(widgets_to_destroy);
+			widgets_to_destroy.clear();
+		}
+		
 		
 		for(Button b : buttons_rapidfiring) {
 			if(ui_tick%b.rapidfire_frequency==0) {
@@ -203,8 +220,9 @@ public class UIManager implements InputProcessor {
 									focus((Canvas) widget_hovering.parent);
 								}
 							}
+						}else {
+							widget_hovering.callOnClicked(); //API call
 						}
-						widget_hovering.callOnClicked(); //API call
 					}
 				}
 			}
@@ -317,8 +335,6 @@ public class UIManager implements InputProcessor {
 			
 			//canvas_proposed_to_attach
 			
-			
-			
 			Widget widget_to_highlight = getSelectableWidgetAtPosition(mouse_x, mouse_y);
 			if(widget_to_highlight!=null) {
 				setWidgetSelectionCandidate(widget_to_highlight);
@@ -391,7 +407,7 @@ public class UIManager implements InputProcessor {
 	private List<Widget> getAllWidgetsAtLocation(int mouseX, int mouseY) {
 		List<Widget> found_widgets = new ArrayList<Widget>();
 		for(Widget w : widgets) {
-			if(w.isVisible()) {
+			if(w.isVisible() && w.isTouchable()) {
 				if(w.containsGlobal(mouseX, mouseY)) {
 					found_widgets.add(w);
 				}
@@ -808,6 +824,65 @@ public class UIManager implements InputProcessor {
 	public void dispose() {
 		for(Widget w : widgets) {
 			w.dispose();
+		}
+	}
+	
+
+
+	public void setfullscreenMode(boolean isFullScreen) {
+		if(isFullScreen) {
+			WIDTH = Gdx.graphics.getWidth();
+			HEIGHT = Gdx.graphics.getHeight();
+		}
+		
+		Lwjgl3Graphics graphics = (Lwjgl3Graphics) Gdx.graphics;
+        Lwjgl3Window window = graphics.getWindow();
+        Monitor monitor = graphics.getMonitor(); // Get the current monitor
+
+        int width = 0;
+        int height = 0;
+        int[] xpos = new int[1];
+        int[] ypos = new int[1];
+        
+        long monitorHandle = ((Lwjgl3Monitor) monitor).getMonitorHandle();
+        
+        // Get monitor position
+        GLFW.glfwGetMonitorPos(monitorHandle, xpos, ypos);
+        GLFWVidMode vidMode = GLFW.glfwGetVideoMode(monitorHandle);
+        
+        if (vidMode != null) {
+            width = vidMode.width();
+            height = vidMode.height();
+            int refreshRate = vidMode.refreshRate();
+            System.out.printf("Monitor: %s | Position: (%d, %d) | Size: %dx%d | Refresh Rate: %dHz%n",
+                monitor.name, xpos[0], ypos[0], width, height, refreshRate);
+        } else {
+            System.out.println("Could not retrieve video mode for monitor: " + monitor.name);
+        }
+
+        if (width > 0 && height > 0) {
+            if (isFullScreen) {
+        		Gdx.graphics.setWindowedMode(width, height);
+                // Set window to borderless fullscreen
+                window.setPosition(xpos[0], ypos[0]); // Position the window at the monitor's (0,0)
+               // window.setSizeLimits(width, height, width, height); // Set the window size to the monitor's resolution
+            } else {
+                // For windowed mode, set specific size limits
+        		Gdx.graphics.setWindowedMode(WIDTH, HEIGHT);
+                //window.setSizeLimits(Lwjgl3Launcher.WIDTH, Lwjgl3Launcher.HEIGHT,Lwjgl3Launcher.WIDTH, Lwjgl3Launcher.HEIGHT); // Set windowed mode size
+                //window.setPosition(100, 100); // Optional, set to desired position
+            }
+        } else {
+            System.out.println("Error: Could not retrieve valid width/height for the monitor.");
+        }
+	    alignAllWidgets();
+	}
+
+
+	public void markForDestruction(Widget widget) {
+		widgets_to_destroy .add(widget);
+		for(Widget w : widget.getAllChildren()) {
+			widgets_to_destroy.add(w);
 		}
 	}
 	

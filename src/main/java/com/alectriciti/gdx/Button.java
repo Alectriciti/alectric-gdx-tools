@@ -3,6 +3,7 @@ package com.alectriciti.gdx;
 import static com.alectriciti.gdx.Toolkit.*;
 
 import java.awt.Desktop;
+import java.awt.Point;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -59,6 +60,8 @@ public class Button extends Widget{
 	public boolean play_effect = true;
 	
 	public ButtonType button_type = ButtonType.PRESS;
+
+	public Point font_offset = new Point(2, 2);
 	
 	/**
 	 * 
@@ -319,16 +322,13 @@ public class Button extends Widget{
 		}else {
 			font.setColor(color_texture_alpha);
 		}
-		font.draw(batch, name, getGlobalX()+2, getGlobalY()+font.getCapHeight()+2);
+		font.draw(batch, name, getGlobalX()+font_offset.x, getGlobalY()+font.getCapHeight()+font_offset.y);
 		if(recursive) {
 			drawFontChildren(batch, font, recursive);
 		}
 		return true;
 	}
 	
-	public void setVisible(boolean b) {
-		visible = b;
-	}
 	
 	@Override
 	protected void OnMouseClicked() {

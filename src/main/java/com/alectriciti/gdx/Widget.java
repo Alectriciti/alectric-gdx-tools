@@ -3,6 +3,7 @@ package com.alectriciti.gdx;
 import static com.alectriciti.gdx.Toolkit.*;
 import static com.alectriciti.gdx.UIManager.*;
 
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -60,6 +61,7 @@ public class Widget {
 	protected Rectangle shape;
 	protected Rectangle shape_base = new Rectangle(); // for UI offset
 	protected Rectangle shape_global = new Rectangle();
+	public Point font_offset = new Point(0, 0);
 	
 	public Direction alignment = Direction.NONE;
 	
@@ -100,6 +102,14 @@ public class Widget {
 	 * With WidgetManager, Widgets are required to be visible in order to render or be interacted with
 	 */
 	public boolean visible = true;
+	
+	
+	/*
+	 * ignores grabbing the object, can be used for intermediate actions
+	 * such as DropdownMenuButton when a widget retracts. It's still visible, but not touchabale.
+	 */
+	public boolean touchable = true;
+	
 	
 	public Color color_default = new Color(0, 0, 0, 1);
 	public Color color_edit = new Color(1, 0.25f, 0.25f, 1);
@@ -516,7 +526,7 @@ public class Widget {
 		if(render_text) {
 		//print(getGlobalX()+" "+getGlobalY());
 			font.setColor(font_color);
-			font.draw(sprite_batch, name, getGlobalX(), getGlobalY()+font.getCapHeight());
+			font.draw(sprite_batch, name, getGlobalX()+font_offset.x, getGlobalY()+font.getCapHeight()+font_offset.y);
 		}
 		if(recursive) {
 			drawFontChildren(sprite_batch, font, recursive);
@@ -576,6 +586,10 @@ public class Widget {
 		return visible;
 	}
 	
+	public boolean isTouchable() {
+		return touchable;
+	}
+	
 	
 	public int getZIndex() {
 		return z;
@@ -629,8 +643,22 @@ public class Widget {
 		}
 	}
 
-	public void setVisible(boolean b) {
+	public void setVisible(boolean b, boolean recursive) {
 		visible = b;
+		if(recursive) {
+			for(Widget w : widgets) {
+				w.setVisible(b, recursive);
+			}
+		}
+	}
+
+	public void setTouchable(boolean b, boolean recursive) {
+		touchable = b;
+		if(recursive) {
+			for(Widget w : widgets) {
+				w.setTouchable(b, recursive);
+			}
+		}
 	}
 
 	public boolean isEditable() {
@@ -711,5 +739,10 @@ public class Widget {
 		// TODO Auto-generated method stub
 		return false;
 	}
+	
+	public void destroy() {
+		manager.markForDestruction(this);
+	}
+	
 	
 }

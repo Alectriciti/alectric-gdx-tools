@@ -2,7 +2,11 @@ package com.alectriciti.gdx;
 
 import static com.alectriciti.gdx.UIManager.*;
 
+import java.awt.Point;
+
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Rectangle;
@@ -27,10 +31,10 @@ public class Canvas extends Widget{
 		this.shape_global = new Rectangle(shape);
 		//this.shape_edit_handle = new Rectangle(shape.x, shape.y+shape.height-EDIT_HANDLE_HEIGHT, shape.width, EDIT_HANDLE_HEIGHT);
 		this.color = new Color(0.2f, 0.2f, 0.2f, 0.5f);
+		this.font_offset = new Point(4, -2);
 		updateGlobalPosition();
 		pushNewZPosition(false);
 	}
-	
 	
 	@Override
 	public void drawShape(ShapeRenderer renderer, boolean recursive) {
@@ -55,6 +59,20 @@ public class Canvas extends Widget{
 				drawShapeChildren(renderer, recursive);
 			}
 		}
+	}
+	
+	@Override
+	public boolean drawFont(SpriteBatch sprite_batch, BitmapFont font, boolean recursive) {
+		
+		if(render_text) {
+		//print(getGlobalX()+" "+getGlobalY());
+			font.setColor(font_color);
+			font.draw(sprite_batch, name, getGlobalX() + font_offset.x, getGlobalY() + shape.height - font_offset.y);
+		}
+		if(recursive) {
+			drawFontChildren(sprite_batch, font, recursive);
+		}
+		return true;
 	}
 	
 	@Override
