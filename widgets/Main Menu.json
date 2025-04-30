@@ -1,0 +1,12 @@
+{
+type: button
+name: Main Menu
+id: Main Menu
+shape: {
+	x: 0.0
+	y: 0.0
+	width: 120.0
+	height: 32.0
+}
+activated: true
+}

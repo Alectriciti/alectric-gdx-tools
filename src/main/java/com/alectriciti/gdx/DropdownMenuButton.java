@@ -14,7 +14,7 @@ public class DropdownMenuButton extends Button{
 	
 	float expand_amount = 0;
 	float expand_amount_target = 0;
-	float expand_speed = 0.1f;
+	float expand_speed = 0.3f;
 	
 	Direction direction = Direction.DOWN;
 	
@@ -23,6 +23,19 @@ public class DropdownMenuButton extends Button{
 	}
 	
 	Rectangle dropdown_region = new Rectangle();
+
+
+	
+	private boolean auto_close_on_button_press = true;
+	private boolean autoclose_settings_initialized = false;
+	
+	private Runnable run_autoclose = new Runnable() {
+		
+		@Override
+		public void run() {
+			deactivate();
+		}
+	};
 	
 	public DropdownMenuButton(String button_name, int key, Widget w) {
 		super(button_name, key, w);
@@ -47,6 +60,15 @@ public class DropdownMenuButton extends Button{
 	@Override
 	public void activate() {
 		// TODO Auto-generated method stub
+		if(!autoclose_settings_initialized) {
+			for(Widget w : widgets) {
+				if(w.getClass().equals(Button.class)) {
+					Button b = (Button) w;
+					b.addOnActivate(run_autoclose);
+				}
+			}
+			autoclose_settings_initialized = true;
+		}
 		super.activate();
 		dropdownOpen();
 		
@@ -65,8 +87,8 @@ public class DropdownMenuButton extends Button{
 		animating = true;
 		updatePositionForChildren();
 		for(Widget w : widgets) {
-			w.setVisible(true, true);
-			w.setTouchable(true, true);
+			w.setVisible(true, false);
+			w.setTouchable(true, false);
 		}
 		
 		
@@ -74,8 +96,12 @@ public class DropdownMenuButton extends Button{
 
 	protected void dropdownClose() {
 		expand_amount_target = 0;
-		animating = true;
+		animating = true; //enables animation within update()
 		for(Widget w : widgets) {
+			if(w instanceof DropdownMenuButton) {
+				DropdownMenuButton db = (DropdownMenuButton) w;
+				db.deactivate();
+			}
 			w.setTouchable(false, true);
 		}
 		// TODO Auto-generated method stub
@@ -108,13 +134,16 @@ public class DropdownMenuButton extends Button{
 					for(Widget w : widgets) {
 						w.setVisible(false, true);
 					}
-					print("widgets set to invisible");
 				}
 			}
 		}
 		
 	}
 	
+	/**
+	 * Sets the new position of the Dropdown's Children based
+	 * on the values previously set in update()
+	 */
 	protected void updatePositionForChildren() {
 		float offset = 0;
 		//Adjust the actual widgets
@@ -124,26 +153,10 @@ public class DropdownMenuButton extends Button{
 			w.setOpacity(Math.max(0, (expand_amount*2)-1));
 		}
 		
+		//apply the button effect to the overall size of the dropdown
 		if(effect_rect!=null) {
 			for(Widget w : widgets) {
 				effect_rect = effect_rect.merge(w.shape_global);
-				//effect_rect.height += w.getHeight()*(expand_amount);
-			}
-			switch(direction) {
-			case DOWN:
-				break;
-			case LEFT:
-				break;
-			case RIGHT:
-				break;
-			case UP:
-				for(Widget w : widgets) {
-					//effect_rect.height += w.getHeight()*(expand_amount);
-				}
-				break;
-			default:
-				break;
-			
 			}
 		}
 	}
@@ -169,12 +182,10 @@ public class DropdownMenuButton extends Button{
 	@Override
 	public boolean drawFont(SpriteBatch batch, BitmapFont font, boolean recursive) {
 		// TODO Auto-generated method stub
-		if (!super.drawFont(batch, font, false)) {
+		super.drawFont(batch, font, false);
 			//font failed to draw
-			return false;
-		}
 
-			drawFontChildren(batch, font, recursive);
+		drawFontChildren(batch, font, recursive);
 		return true;
 	}
 	
@@ -182,7 +193,16 @@ public class DropdownMenuButton extends Button{
 	protected void attachChildWidget(Widget widget_to_attach) {
 		super.attachChildWidget(widget_to_attach);
 		widget_to_attach.editable = false;
-		widget_to_attach.visible = false;
+		widget_to_attach.setVisible(false, true);
+		print(widget_to_attach.name+" : "+widget_to_attach.isVisible());
+	}
+	
+	public boolean doesAutocloseOnButtonPress() {
+		return auto_close_on_button_press;
+	}
+	
+	public void setAutocloseOnButtonPress(boolean b) {
+		this.auto_close_on_button_press = b;
 	}
 	
 	

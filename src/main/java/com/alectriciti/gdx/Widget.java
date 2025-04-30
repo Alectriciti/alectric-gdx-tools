@@ -468,16 +468,15 @@ public class Widget {
 	 * @param recursive 
 	 */
 	public void drawShape(ShapeRenderer renderer, boolean recursive) {
-		if(!visible){
-			return;
-		}
-		if(hovering) {
-			if(manager.edit_mode) {
-				drawEditMode(renderer, recursive);
-			}else {
-				renderer.setColor(color);
-				renderer.set(ShapeType.Line);
-				renderer.rect(getGlobalX(), getGlobalY(), shape.width, shape.height);
+		if(visible) {
+			if(hovering) {
+				if(manager.edit_mode) {
+					drawEditMode(renderer, recursive);
+				}else {
+					renderer.setColor(color);
+					renderer.set(ShapeType.Line);
+					renderer.rect(getGlobalX(), getGlobalY(), shape.width, shape.height);
+				}
 			}
 		}
 		//renderer.rect(shape.x, shape.y, shape.width, shape.height);
@@ -578,6 +577,12 @@ public class Widget {
 		}
 	}
 
+	
+	
+	/**
+	 * If the object shows a highlight around it when hovereds
+	 * @return
+	 */
 	public boolean isHoverable() {
 		return false;
 	}
@@ -586,6 +591,10 @@ public class Widget {
 		return visible;
 	}
 	
+	/**
+	 * If the object is currently interactable
+	 * @return
+	 */
 	public boolean isTouchable() {
 		return touchable;
 	}
@@ -742,6 +751,10 @@ public class Widget {
 	
 	public void destroy() {
 		manager.markForDestruction(this);
+	}
+	
+	public Rectangle getShape() {
+		return shape;
 	}
 	
 	

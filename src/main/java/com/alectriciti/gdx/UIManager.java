@@ -30,6 +30,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
@@ -172,6 +173,18 @@ public class UIManager implements InputProcessor {
 			widget_orphans.removeAll(widgets_to_destroy);
 			canvases.removeAll(widgets_to_destroy);
 			buttons.removeAll(widgets_to_destroy);
+			
+			for(Widget wtd : widgets_to_destroy) {
+				if(wtd instanceof Button) {
+					Button b = (Button)wtd;
+					buttons_by_key.remove(b.key_code);
+					buttons_by_name.remove(b.name);
+				}
+			}
+			for(Widget w : widgets) {
+				w.widgets.removeAll(widgets_to_destroy);
+			}
+			
 			widgets_to_destroy.clear();
 		}
 		
@@ -480,6 +493,17 @@ public class UIManager implements InputProcessor {
 			}
 		}
 
+		if(widget_hovering != null) {
+			shape_renderer.begin();
+			if(edit_mode && widget_hovering.editable) {
+				widget_hovering.drawEditMode(shape_renderer, false);
+			}else if (widget_hovering.isHoverable()){
+				shape_renderer.set(ShapeType.Line);
+				shape_renderer.setColor(widget_hovering.color_trim_highlight);
+				shape_renderer.rect(widget_hovering.getGlobalX(), widget_hovering.getGlobalY(), widget_hovering.shape.width, widget_hovering.shape.height);
+			}
+			shape_renderer.end();
+		}
 		//Draw this ontop to allow for visibility
 		/*
 		if(widget_currently_adjusting!=null) {
@@ -494,23 +518,6 @@ public class UIManager implements InputProcessor {
 		*/
 	}
 	
-	/*
-	public void renderShapes(ShapeRenderer shape_renderer) {
-		for(Canvas canvas : canvases) {
-			if(canvas.visible) {
-				canvas.drawShape(shape_renderer);
-			}
-		}
-		for(Widget w : widget_orphans) {
-			w.drawShape(shape_renderer, true);
-		}
-		
-		//Draw this ontop to allow for visibility
-		if(widget_currently_adjusting!=null) {
-			widget_currently_adjusting.drawEditMode(shape_renderer, false);
-		}
-	}
-	*/
 
 
 	public void registerCanvas(Canvas canvas) {
@@ -880,7 +887,7 @@ public class UIManager implements InputProcessor {
 
 
 	public void markForDestruction(Widget widget) {
-		widgets_to_destroy .add(widget);
+		widgets_to_destroy.add(widget);
 		for(Widget w : widget.getAllChildren()) {
 			widgets_to_destroy.add(w);
 		}

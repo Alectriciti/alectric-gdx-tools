@@ -77,9 +77,8 @@ public class Canvas extends Widget{
 	
 	@Override
 	public boolean isHoverable() {
-		return true;
+		return false;
 	}
-	
 	
 	public void getConfiguration() {
 		

@@ -74,8 +74,7 @@ public class Button extends Widget{
 		//super(wonkaMain, button_name);
 		this.key_code = key;
 		this.color = Color.WHITE;
-		
-		registerSelf();
+		registerButton();
 		updateGlobalPosition();
 	}
 	
@@ -84,14 +83,13 @@ public class Button extends Widget{
 		super(name, widgetManager);
 		this.key_code = key;
 		this.color = Color.WHITE.cpy();
-		registerSelf();
+		registerButton();
 		updateGlobalPosition();
 	}
 
 	
 	public Button(String button_name, Widget parent) {
 		this(button_name, 0, parent);
-		registerSelf();
 	}
 	
 	public Button(String name, UIManager widgetManager) {
@@ -106,7 +104,7 @@ public class Button extends Widget{
 	
 	
 	
-	private void registerSelf() {
+	private void registerButton() {
 		manager.buttons.add(this);
 		manager.buttons_by_name.put(name, this);
 		manager.buttons_by_key.put(key_code, this);
@@ -228,31 +226,22 @@ public class Button extends Widget{
 	@Override
 	public void drawShape(ShapeRenderer renderer, boolean recursive) {
 		
-		if(!visible){
-			return;
-		}
-
-		renderer.set(ShapeType.Filled);
-		renderer.setColor(color);
-		renderer.rect(getGlobalX(), getGlobalY(), shape.width, shape.height);
-		
-
-		if(hovering) {
-			if(manager.edit_mode && editable) {
-				drawEditMode(renderer, recursive);
-			}else {
+		if(visible) {
+	
+			renderer.set(ShapeType.Filled);
+			renderer.setColor(color);
+			renderer.rect(getGlobalX(), getGlobalY(), shape.width, shape.height);
+			
+	
+			if(!hovering) {
 				renderer.set(ShapeType.Line);
-				renderer.setColor(color_trim_highlight);
+				renderer.setColor(color_trim);
 				renderer.rect(getGlobalX(), getGlobalY(), shape.width, shape.height);
 			}
-		}else {
-			renderer.set(ShapeType.Line);
-			renderer.setColor(color_trim);
-			renderer.rect(getGlobalX(), getGlobalY(), shape.width, shape.height);
+			
+			
+			drawButtonEffect(renderer);
 		}
-		
-		
-		drawButtonEffect(renderer);
 		
 		drawShapeChildren(renderer, recursive);
 	}
@@ -274,6 +263,7 @@ public class Button extends Widget{
 	protected void drawButtonEffect(ShapeRenderer renderer) {
 		if(effect_rect!=null) {
 			effect_color.a = effect_rect_a;
+			renderer.set(ShapeType.Line);
 			renderer.setColor(effect_color);
 			renderer.rect(
 					effect_rect.x-effect_delta-effect_offset_start,
@@ -311,18 +301,16 @@ public class Button extends Widget{
 
 	public boolean drawFont(SpriteBatch batch, BitmapFont font, boolean recursive) {
 		// TODO Auto-generated method stub
-
-		if(!visible){
-			return false; 
+		if(visible) {
+			if(pressing) {
+				font.setColor(Color.DARK_GRAY);
+			}else if (activated) {
+				font.setColor(Color.BLACK);
+			}else {
+				font.setColor(color_texture_alpha);
+			}
+			font.draw(batch, name, getGlobalX()+font_offset.x, getGlobalY()+font.getCapHeight()+font_offset.y);
 		}
-		if(pressing) {
-			font.setColor(Color.DARK_GRAY);
-		}else if (activated) {
-			font.setColor(Color.BLACK);
-		}else {
-			font.setColor(color_texture_alpha);
-		}
-		font.draw(batch, name, getGlobalX()+font_offset.x, getGlobalY()+font.getCapHeight()+font_offset.y);
 		if(recursive) {
 			drawFontChildren(batch, font, recursive);
 		}

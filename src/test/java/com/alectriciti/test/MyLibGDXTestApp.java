@@ -85,18 +85,29 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
     	main_menu.setSize(120, 32);
     	Button button_new_skin = new Button("New Skin", main_menu);
     	button_new_skin.addOnActivate(new Runnable() {
-    		
+
+			@Override
+    		public void run() {
+    			confirmDialogueBox(run_new_skin);
+    		}
+		});
+    	
+    	DropdownMenuButton save_confirm_dropdown = new DropdownMenuButton("Save UI", main_menu);
+    	save_confirm_dropdown.setDirection(Direction.RIGHT);
+    	Button save_ui = new Button("Confirm Save", save_confirm_dropdown);
+    	save_ui.addOnActivate(new Runnable() {
 			@Override
 			public void run() {
-				confirmDialogueBox(run_new_skin);
+				ui_manager.saveAllWidgets();
+				save_confirm_dropdown.deactivate();
+				main_menu.deactivate();
 			}
 		});
-    	Button button_poop = new Button("Poop", main_menu);
-    	button_poop.addOnActivate(new Runnable() {
-    		
+    	Button load_ui = new Button("Load UI", main_menu);
+    	load_ui.addOnActivate(new Runnable() {
 			@Override
 			public void run() {
-				confirmDialogueBox(run_poop);
+				ui_manager.loadAllWidgets();
 			}
 		});
 		//b.setRelativePosition(100, 00);
@@ -133,7 +144,7 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 			confirm_box = new Canvas("Start a New Skin?", ui_manager, new Rectangle(100, 100, 200, 100));
 			confirm_box.setGlobalPosition(width/2 - 100, height/2 - 50);
 			//Widget img = new Widget("img", confirm_box);
-			Button yes = new Button("Yes", confirm_box) {
+			Button yes = new Button("Yes", Keys.Y, confirm_box) {
 				@Override
 				protected void onActivate() {
 					run_new_skin.run();
@@ -144,7 +155,7 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 			yes.font_offset = new Point(4, 4);
 			yes.setRelativePosition(32, 30);
 			yes.setSize(42, 32);
-			Button no = new Button("No", confirm_box) {
+			Button no = new Button("No", Keys.N, confirm_box) {
 				@Override
 				protected void onActivate() {
 					// TODO Auto-generated method stub
@@ -156,6 +167,7 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 			no.setRelativePosition(104, 30);
 			no.font_offset = new Point(4, 4);
 			no.setSize(42, 32);
+			ui_manager.focus(confirm_box);
 		}
 	}
 	
