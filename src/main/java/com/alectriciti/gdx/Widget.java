@@ -758,6 +758,15 @@ public class Widget {
 	public Rectangle getShape() {
 		return shape;
 	}
+
+	
+	/**
+	 * An implementable scroll function for when this widget is focused
+	 */
+	public void scroll(float amountX, float amountY) {
+		// TODO Auto-generated method stub
+		
+	}
 	
 	
 }

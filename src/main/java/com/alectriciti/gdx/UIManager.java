@@ -663,7 +663,14 @@ public class UIManager implements InputProcessor {
 	@Override
 	public boolean scrolled(float amountX, float amountY) {
 		scrollSelectionOffset += amountY;
-		return false;
+		
+		if(!edit_mode) {
+			if(widget_hovering!=null) {
+				widget_hovering.scroll(amountX, amountY);
+				return true;
+			}
+		}
+		return true;
 	}
 	
 	
