@@ -221,6 +221,7 @@ public class UIManager implements InputProcessor {
 				 */
 				if(Gdx.input.isButtonJustPressed(Buttons.LEFT)) {
 					if(widget_hovering!=null) {
+						widget_hovering.focus();
 						if(edit_mode || widget_hovering.isAlwaysEditable()) {
 							
 							if(widget_hovering.isEditable()) {
@@ -228,15 +229,9 @@ public class UIManager implements InputProcessor {
 								widget_currently_adjusting = widget_hovering;
 								mouse_config_offset_x = widget_hovering.getGlobalX()-mouse_x;
 								mouse_config_offset_y = widget_hovering.getGlobalY()-mouse_y;
-								if(widget_hovering instanceof Canvas) {
-									focus((Canvas) widget_hovering);
-								}else if(widget_hovering.parent instanceof Canvas) {
-									focus((Canvas) widget_hovering.parent);
-								}
 							}
 						}else {
 							mouse_clicked_widget = widget_hovering;
-							focus(widget_hovering);
 							widget_hovering.callOnClicked(); //API call
 						}
 					}
