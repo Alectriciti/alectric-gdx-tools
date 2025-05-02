@@ -199,8 +199,8 @@ public class Widget {
 			refreshHeirarchyCache();
 			return true;
 		}else {
-			//making this an orphan
-			manager.widget_orphans.add(this);
+			//making this independant
+			manager.widget_independants.add(this);
 			return true;
 		}
 	}
@@ -604,9 +604,11 @@ public class Widget {
 		return z;
 	}
 	
+	public void focus() {
+		manager.focus(this);
+	}
 	
-	
-	public void pushNewZPosition(boolean recursive) {
+	protected void pushNewZPosition(boolean recursive) {
 		z = manager.global_canvas_z;
 		manager.global_canvas_z++;
 		if(recursive) {

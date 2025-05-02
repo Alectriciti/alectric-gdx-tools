@@ -62,7 +62,7 @@ public class UIManager implements InputProcessor {
 	/**
 	 * This is the button that is currently being clicked
 	 */
-	Button mouse_clicked_widget = null;
+	Widget mouse_clicked_widget = null;
 	
 	private float mouse_config_offset_x;
 	private float mouse_config_offset_y;
@@ -70,9 +70,10 @@ public class UIManager implements InputProcessor {
 	BitmapFont font;
 	boolean font_activated = false;
 	
-	List<Canvas> canvases = new ArrayList<Canvas>();
+	//List<Canvas> canvases = new ArrayList<Canvas>();
+	List<Widget> widget_independants = new ArrayList<Widget>();
 	List<Canvas> canvases_active = new ArrayList<Canvas>();
-	Widget canvas_focused;
+	Widget widget_focused;
 	int global_canvas_z = 0;
 	
 	public int ui_tick = 0;
@@ -88,7 +89,7 @@ public class UIManager implements InputProcessor {
 	 * These references exist globally to allow for extra functionality
 	 */
 	public HashSet<Widget> widgets = new HashSet<Widget>();
-	public HashSet<Widget> widget_orphans = new HashSet<Widget>();
+	//public HashSet<Widget> widget_orphans = new HashSet<Widget>();
 
 	private List<Widget> widgets_to_destroy = new ArrayList<Widget>();
 	
@@ -116,9 +117,9 @@ public class UIManager implements InputProcessor {
 			global_canvas_z++;
 			//TODO Do extra checks such as unclicking buttons etc.
 			//mouse_adjusting_widfget = null;
-			canvas_focused = w;
-			canvas_focused.pushNewZPosition(true);
-			canvases.sort(Comparator.comparingInt(Widget::getZIndex));
+			widget_focused = w;
+			widget_focused.pushNewZPosition(true);
+			widget_independants.sort(Comparator.comparingInt(Widget::getZIndex));
 			print("Canvas focused: "+w.name);
 		}
 	}
@@ -170,8 +171,8 @@ public class UIManager implements InputProcessor {
 
 		if(!widgets_to_destroy.isEmpty()) {
 			widgets.removeAll(widgets_to_destroy);
-			widget_orphans.removeAll(widgets_to_destroy);
-			canvases.removeAll(widgets_to_destroy);
+			//widget_orphans.removeAll(widgets_to_destroy);
+			widget_independants.removeAll(widgets_to_destroy);
 			buttons.removeAll(widgets_to_destroy);
 			
 			for(Widget wtd : widgets_to_destroy) {
@@ -234,6 +235,8 @@ public class UIManager implements InputProcessor {
 								}
 							}
 						}else {
+							mouse_clicked_widget = widget_hovering;
+							focus(widget_hovering);
 							widget_hovering.callOnClicked(); //API call
 						}
 					}
@@ -246,20 +249,24 @@ public class UIManager implements InputProcessor {
 				//moves the widget around
 				AdjustWidgetPosition();
 				
-			}if(mouse_clicked_widget!=null) { //If a button is already selected
+			}
+			if(mouse_clicked_widget!=null) { //If a button is already selected
 				
 				
 				/*
 				 * IF mouse moves out of position while held...
 				 */
-				if(!mouse_clicked_widget.containsGlobal(mouse_x, mouse_y)) {
-					mouse_clicked_widget.pressing = false;
-					if(mouse_clicked_widget.button_type == ButtonType.RAPIDFIRE) {
-						buttons_rapidfiring.remove(mouse_clicked_widget);
-						mouse_clicked_widget.deactivate();
+				if(mouse_clicked_widget instanceof Button) {
+					Button button_clicked = (Button) mouse_clicked_widget;
+					if(!button_clicked.containsGlobal(mouse_x, mouse_y)) {
+						button_clicked.pressing = false;
+						if(button_clicked.button_type == ButtonType.RAPIDFIRE) {
+							buttons_rapidfiring.remove(button_clicked);
+							button_clicked.deactivate();
+						}
+						mouse_clicked_widget = null; //finally nullify clicked button
+						//print("deselected");
 					}
-					mouse_clicked_widget = null; //finally nullify clicked button
-					//print("deselected");
 				}
 			}else{ // Just now selecting a new widget
 				
@@ -274,34 +281,37 @@ public class UIManager implements InputProcessor {
 				widget_currently_adjusting = null;
 			}
 			if(mouse_clicked_widget != null) {
-				if(mouse_clicked_widget.is_key_down) {
-					mouse_clicked_widget.pressing = false;
-					mouse_clicked_widget.cancelled = true;
-				}else {
-					switch(mouse_clicked_widget.button_type) {
-					case PRESS:
-						mouse_clicked_widget.activate();
-						break;
-					case RAPIDFIRE:
-						buttons_rapidfiring.remove(mouse_clicked_widget);
-						mouse_clicked_widget.deactivate();
-						break;
-					case PRESS_AND_RELEASE:
-						mouse_clicked_widget.deactivate();
-						break;
-					case TOGGLE:
-						if(!mouse_clicked_widget.activated) {
-							mouse_clicked_widget.activate();
-							print(mouse_clicked_widget.name+ " ACTIVATED");
-						}else {
-							mouse_clicked_widget.deactivate();
-							print(mouse_clicked_widget.name+ " DEACTIVATED");
+				if(mouse_clicked_widget instanceof Button) {
+					Button button_clicked = (Button) mouse_clicked_widget;
+					if (button_clicked.is_key_down) {
+						button_clicked.pressing = false;
+						button_clicked.cancelled = true;
+					} else {
+						switch (button_clicked.button_type) {
+						case PRESS:
+							button_clicked.activate();
+							break;
+						case RAPIDFIRE:
+							buttons_rapidfiring.remove(button_clicked);
+							button_clicked.deactivate();
+							break;
+						case PRESS_AND_RELEASE:
+							button_clicked.deactivate();
+							break;
+						case TOGGLE:
+							if (!button_clicked.activated) {
+								button_clicked.activate();
+								print(button_clicked.name + " ACTIVATED");
+							} else {
+								button_clicked.deactivate();
+								print(button_clicked.name + " DEACTIVATED");
+							}
+							break;
 						}
-						break;
 					}
+					button_clicked.pressing = false;
 				}
 				mouse_clicked_widget.callOnReleased();
-				mouse_clicked_widget.pressing = false;
 				mouse_clicked_widget = null;
 			}
 			if(widget_hovering!=null) {
@@ -429,7 +439,7 @@ public class UIManager implements InputProcessor {
 		found_widgets.sort(Comparator.comparingInt(Widget::getZIndex));
 		return found_widgets;
 	}
-
+	
 	/**
 	 * Renders all canvases in the order they were created
 	 * @param renderer
@@ -442,57 +452,31 @@ public class UIManager implements InputProcessor {
 		Gdx.gl.glEnable(GL20.GL_BLEND);
 		
 		Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-
-		
-		/*
-		 * START WITH ORPHANS
-		 */
-		shape_renderer.begin();
-		for(Widget w : widget_orphans) {
-			w.drawShape(shape_renderer, true);
-		}
-		shape_renderer.end();
-		sprite_batch.begin();
-		Gdx.gl.glEnable(GL20.GL_BLEND);
-		for(Widget w : widget_orphans) {
-			if(w.texture!=null) {
-				w.drawTexture(sprite_batch, true);
-			}
-		}
-		
-		if(font_valid) {
-			for(Widget w : widget_orphans) {
-				w.drawFont(sprite_batch, font, true);
-			}
-		}
 		if(debug_mode) {
 			
 		}
 		//font.setColor(Color.WHITE);
 		//font.draw(sprite_batch, "Widget Scroll Selector: "+scrollSelectionOffset, 20, 500);
 		//font.draw(sprite_batch, "Widget Candidate "+(widget_hovering!=null?widget_hovering:"null"), 20, 524);
-		sprite_batch.end();
-		Gdx.gl.glEnable(GL20.GL_BLEND);
 		
 		
 		/*
 		 * Now Canvas Groups
 		 */
-		if(font!=null) {
-			for(Canvas canvas : canvases) {
-				if(canvas.visible) {
-					shape_renderer.begin();
-					canvas.drawShape(shape_renderer, true);
-					shape_renderer.end();
-					sprite_batch.begin();
-					canvas.drawTexture(sprite_batch, true);
-					canvas.drawFont(sprite_batch, font, true);
-					sprite_batch.end();
-					Gdx.gl.glEnable(GL20.GL_BLEND);
-				}
+		//if(font!=null) {
+		for (Widget widget : widget_independants) {
+			if (widget.visible) {
+				shape_renderer.begin();
+				widget.drawShape(shape_renderer, true);
+				shape_renderer.end();
+				sprite_batch.begin();
+				widget.drawTexture(sprite_batch, true);
+				widget.drawFont(sprite_batch, font, true);
+				sprite_batch.end();
+				Gdx.gl.glEnable(GL20.GL_BLEND);
 			}
 		}
-
+		
 		if(widget_hovering != null) {
 			shape_renderer.begin();
 			if(edit_mode && widget_hovering.editable) {
@@ -520,11 +504,11 @@ public class UIManager implements InputProcessor {
 	
 
 
-	public void registerCanvas(Canvas canvas) {
-		this.canvases.add(canvas);
-		if(this.canvas_focused == null) {
+	public void registerGroup(Widget w) {
+		this.widget_independants.add(w);
+		if(this.widget_focused == null) {
 			//ensures there's an initialization of canvases
-			this.canvas_focused = canvas;
+			this.widget_focused = w;
 		}
 	}
 	
@@ -757,7 +741,8 @@ public class UIManager implements InputProcessor {
 	void registerWidget(Widget widget) {
 		
 		if(widget.getParent()==null) {
-			widget_orphans.add(widget);
+			//widget_orphans.add(widget);
+			widget_independants.add(widget);
 		}
 		
 		widgets.add(widget);
