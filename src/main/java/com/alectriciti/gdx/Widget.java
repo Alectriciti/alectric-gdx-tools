@@ -161,6 +161,17 @@ public class Widget {
 		pushNewZPosition(false);
 	}
 	
+	/**
+	 * A barebones constructor which registers
+	 * @param manager
+	 */
+	public Widget(UIManager manager) {
+		this.manager = manager;
+		this.manager.registerWidget(this);
+		this.shape = new Rectangle();
+		//pushNewZPosition(false);
+	}
+	
 	public String getName() {
 		return name;
 	}

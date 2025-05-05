@@ -1,8 +1,5 @@
 package com.alectriciti.gdx;
 
-import java.awt.Desktop;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -26,7 +23,6 @@ import com.badlogic.gdx.Graphics.Monitor;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -521,9 +517,9 @@ public class UIManager implements InputProcessor {
 		
 		if(buttons_by_key.containsKey(keycode)) {
 			Button b = buttons_by_key.get(keycode);
-			if(!b.visible) {
-				return false;
-			}
+			//if(!b.visible) {
+				//return false;
+			//}
 		
 		switch(b.button_type) {
 			case RAPIDFIRE:
@@ -576,9 +572,9 @@ public class UIManager implements InputProcessor {
 	public boolean keyUp(int keycode) {
 		if(buttons_by_key.containsKey(keycode)) {
 			Button b = buttons_by_key.get(keycode);
-			if(!b.visible) {
-				return false;
-			}
+			//if(!b.visible) {
+				//return false;
+			//}
 		
 		switch(b.button_type) {
 			case RAPIDFIRE:

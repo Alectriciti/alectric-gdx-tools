@@ -3,7 +3,7 @@ type: button
 name: Confirm Save
 id: Confirm Save
 shape: {
-	x: 31.35118293762207
+	x: 31.11359977722168
 	y: 0.0
 	width: 32.0
 	height: 32.0

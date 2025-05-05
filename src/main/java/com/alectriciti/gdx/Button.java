@@ -95,13 +95,6 @@ public class Button extends Widget{
 	public Button(String name, UIManager widgetManager) {
 		this(name, 0, widgetManager);
 	}
-
-	
-	public Button() {
-		super();
-		//USED FOR CONSTRUCTOR PURPOSES
-	}
-	
 	
 	
 	private void registerButton() {
@@ -145,9 +138,6 @@ public class Button extends Widget{
 	 * This activates the button
 	 */
 	public void activate() {
-		if(!visible) {
-			return;
-		}
 		if(button_type == ButtonType.TOGGLE) {
 			activated = true;
 		}
@@ -169,9 +159,6 @@ public class Button extends Widget{
 	 * This deactivates the button
 	 */
 	public void deactivate() {
-		if(!visible) {
-			return;
-		}
 		if(button_type == ButtonType.TOGGLE) {
 			activated = false;
 		}
@@ -253,10 +240,13 @@ public class Button extends Widget{
 
 	
 	protected void spawnButtonEffect(Color c) {
-		effect_rect = new Rectangle(shape_global);
-		effect_color = c.cpy();
-		effect_rect_a = 1f;
-		effect_delta = 0;
+		
+		new EffectPulse(this, new Rectangle(shape_global), color_activated);
+		
+		//effect_rect = new Rectangle(shape_global);
+		//effect_color = c.cpy();
+		//effect_rect_a = 1f;
+		//effect_delta = 0;
 	}
 
 	
