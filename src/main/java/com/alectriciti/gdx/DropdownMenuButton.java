@@ -154,9 +154,9 @@ public class DropdownMenuButton extends Button{
 		}
 		
 		//apply the button effect to the overall size of the dropdown
-		if(effect_rect!=null) {
+		if(effect!=null) {
 			for(Widget w : widgets) {
-				effect_rect = effect_rect.merge(w.shape_global);
+				effect.shape = effect.shape.merge(w.shape_global);
 			}
 		}
 	}

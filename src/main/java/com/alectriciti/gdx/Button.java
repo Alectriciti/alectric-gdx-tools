@@ -49,15 +49,14 @@ public class Button extends Widget{
 	public float effect_offset_start = 2;
 	public static float effect_move_speed = 0.3333f;
 
-	Rectangle effect_rect;
 	public Color color_default = manager.COLOR_BUTTON_DEFAULT;
 	public Color color_pressing = manager.COLOR_BUTTON_PRESSING.cpy();
 	public Color color_activated = manager.COLOR_BUTTON_ACTIVATED.cpy();
 	public Color effect_color = new Color(Color.WHITE);
-	float effect_rect_a = 1f;
-	float effect_delta = 0;
 	
 	public boolean play_effect = true;
+	
+	public EffectPulse effect;
 	
 	public ButtonType button_type = ButtonType.PRESS;
 
@@ -197,13 +196,6 @@ public class Button extends Widget{
 				color = LerpColor(color, color_default, 0.25f);
 				//color.set(color_default.r*d, color_default.g*d, color_default.b*d, color_default.a);
 			}
-			if(effect_rect!=null) {
-				effect_rect_a *= 0.92f;
-				effect_delta += effect_move_speed;
-				if(effect_rect_a<0.01) {
-					effect_rect = null;
-				}
-			}
 		super.update();
 	}
 	
@@ -226,8 +218,6 @@ public class Button extends Widget{
 				renderer.rect(getGlobalX(), getGlobalY(), shape.width, shape.height);
 			}
 			
-			
-			drawButtonEffect(renderer);
 		}
 		
 		drawShapeChildren(renderer, recursive);
@@ -241,30 +231,15 @@ public class Button extends Widget{
 	
 	protected void spawnButtonEffect(Color c) {
 		
-		new EffectPulse(this, new Rectangle(shape_global), color_activated);
+		if(visible) {
+			effect = new EffectPulse(this, new Rectangle(shape_global), color_activated);
+		}
 		
 		//effect_rect = new Rectangle(shape_global);
 		//effect_color = c.cpy();
 		//effect_rect_a = 1f;
 		//effect_delta = 0;
 	}
-
-	
-	protected void drawButtonEffect(ShapeRenderer renderer) {
-		if(effect_rect!=null) {
-			effect_color.a = effect_rect_a;
-			renderer.set(ShapeType.Line);
-			renderer.setColor(effect_color);
-			renderer.rect(
-					effect_rect.x-effect_delta-effect_offset_start,
-					effect_rect.y-effect_delta-effect_offset_start,
-					effect_rect.width+((effect_delta+effect_offset_start)*2),
-					effect_rect.height+((effect_delta+effect_offset_start)*2)
-					);
-			//renderer.rect(getGlobalX()-(effect_delta/2)-effect_offset_start, getGlobalY()-(effect_delta/2)-effect_offset_start, shape.width+effect_delta+effect_offset_start, shape.height+effect_delta+effect_offset_start);
-		}
-	}
-
 
 	public boolean drawTexture(SpriteBatch batch, boolean recursive) {
 		boolean valid = texture != null;
