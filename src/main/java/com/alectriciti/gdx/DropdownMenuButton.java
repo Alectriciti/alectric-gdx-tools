@@ -194,7 +194,7 @@ public class DropdownMenuButton extends Button{
 		super.attachChildWidget(widget_to_attach);
 		widget_to_attach.editable = false;
 		widget_to_attach.setVisible(false, true);
-		print(widget_to_attach.name+" : "+widget_to_attach.isVisible());
+		print(widget_to_attach.name_for_display+" : "+widget_to_attach.isVisible());
 	}
 	
 	public boolean doesAutocloseOnButtonPress() {

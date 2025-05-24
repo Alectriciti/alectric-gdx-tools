@@ -98,7 +98,7 @@ public class Button extends Widget{
 	
 	private void registerButton() {
 		manager.buttons.add(this);
-		manager.buttons_by_name.put(name, this);
+		manager.buttons_by_name.put(name_for_display, this);
 		manager.buttons_by_key.put(key_code, this);
 	}
 	
@@ -274,7 +274,7 @@ public class Button extends Widget{
 			}else {
 				font.setColor(color_texture_alpha);
 			}
-			font.draw(batch, name, getGlobalX()+font_offset.x, getGlobalY()+font.getCapHeight()+font_offset.y);
+			font.draw(batch, name_for_display, getGlobalX()+font_offset.x, getGlobalY()+font.getCapHeight()+font_offset.y);
 		}
 		if(recursive) {
 			drawFontChildren(batch, font, recursive);

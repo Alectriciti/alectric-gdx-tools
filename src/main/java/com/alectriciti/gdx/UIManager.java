@@ -63,7 +63,7 @@ public class UIManager implements InputProcessor {
 	private float mouse_config_offset_x;
 	private float mouse_config_offset_y;
 	
-	BitmapFont font;
+	static BitmapFont primary_font;
 	boolean font_activated = false;
 	
 	//List<Canvas> canvases = new ArrayList<Canvas>();
@@ -94,8 +94,9 @@ public class UIManager implements InputProcessor {
 	public Map<String, Button> buttons_by_name = new HashMap<String, Button>();
 	public Map<Integer, Button> buttons_by_key = new HashMap<Integer, Button>();
 	
-	public UIManager(InputMultiplexer input) {
+	public UIManager(InputMultiplexer input, BitmapFont font) {
 		input.addProcessor(this);
+		primary_font = font;
 	}
 	
 	
@@ -116,7 +117,7 @@ public class UIManager implements InputProcessor {
 			widget_focused = w;
 			widget_focused.pushNewZPosition(true);
 			widget_independants.sort(Comparator.comparingInt(Widget::getZIndex));
-			print("Canvas focused: "+w.name);
+			print("Canvas focused: "+w.name_for_display);
 		}
 	}
 	
@@ -175,7 +176,7 @@ public class UIManager implements InputProcessor {
 				if(wtd instanceof Button) {
 					Button b = (Button)wtd;
 					buttons_by_key.remove(b.key_code);
-					buttons_by_name.remove(b.name);
+					buttons_by_name.remove(b.name_for_display);
 				}
 			}
 			for(Widget w : widgets) {
@@ -292,10 +293,10 @@ public class UIManager implements InputProcessor {
 						case TOGGLE:
 							if (!button_clicked.activated) {
 								button_clicked.activate();
-								print(button_clicked.name + " ACTIVATED");
+								print(button_clicked.name_for_display + " ACTIVATED");
 							} else {
 								button_clicked.deactivate();
-								print(button_clicked.name + " DEACTIVATED");
+								print(button_clicked.name_for_display + " DEACTIVATED");
 							}
 							break;
 						}
@@ -435,9 +436,9 @@ public class UIManager implements InputProcessor {
 	 * Renders all canvases in the order they were created
 	 * @param renderer
 	 */
-	public void renderAll(ShapeRenderer shape_renderer, SpriteBatch sprite_batch, BitmapFont font) {
+	public void renderAll(ShapeRenderer shape_renderer, SpriteBatch sprite_batch) {
 		
-		boolean font_valid = font!=null;
+		boolean font_valid = primary_font!=null;
 
 
 		Gdx.gl.glEnable(GL20.GL_BLEND);
@@ -462,7 +463,7 @@ public class UIManager implements InputProcessor {
 				shape_renderer.end();
 				sprite_batch.begin();
 				widget.drawTexture(sprite_batch, true);
-				widget.drawFont(sprite_batch, font, true);
+				widget.drawFont(sprite_batch, primary_font, true);
 				sprite_batch.end();
 				Gdx.gl.glEnable(GL20.GL_BLEND);
 			}
@@ -555,11 +556,11 @@ public class UIManager implements InputProcessor {
 					if(!b.activated) {
 						b.activate();
 						b.activated = true;
-						print(b.name+ " ACTIVATED");
+						print(b.name_for_display+ " ACTIVATED");
 					} else {
 						b.deactivate();
 						b.activated = false;
-						print(b.name+ " DEACTIVATED");
+						print(b.name_for_display+ " DEACTIVATED");
 					}
 				break;
 				}
@@ -778,6 +779,7 @@ public class UIManager implements InputProcessor {
 	public void loadAllWidgets() {
 	    FileHandle file = Gdx.files.local(folder_widgets);
 	    if (!file.exists()) return;
+	    
 
 	    for (Widget w : widgets) {
 	        if (w.getId() != null) {
@@ -874,6 +876,11 @@ public class UIManager implements InputProcessor {
 		for(Widget w : widget.getAllChildren()) {
 			widgets_to_destroy.add(w);
 		}
+	}
+
+
+	public static BitmapFont getDefaultFont() {
+			return primary_font;
 	}
 	
 	

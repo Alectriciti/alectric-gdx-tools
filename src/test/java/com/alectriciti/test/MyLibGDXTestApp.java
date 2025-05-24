@@ -28,10 +28,7 @@ import com.alectriciti.gdx.Canvas;
 import com.alectriciti.gdx.Direction;
 import com.alectriciti.gdx.DropdownMenuButton;
 import com.alectriciti.gdx.Widget;
-import com.alectriciti.gdx.WindowMoverWidget;
-import com.alectriciti.gdx.chat.MessageManager;
 import com.alectriciti.gdx.Button;
-import com.alectriciti.gdx.Button.ButtonType;
 import com.alectriciti.gdx.UIManager;
 
 public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListener {
@@ -39,8 +36,7 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 	
 	
 	InputMultiplexer input = new InputMultiplexer();
-	UIManager ui_manager = new UIManager(input);
-	MessageManager msg_manager;
+	UIManager ui_manager;
 	ShapeRenderer shape_renderer;
 	SpriteBatch sprite_batch;
 	BitmapFont font;
@@ -75,9 +71,14 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 		FileHandle font_handle = Gdx.files.internal("lucida_console16.fnt");
 		
 		font = new BitmapFont(font_handle);
-		msg_manager = new MessageManager(font);
+		ui_manager = new UIManager(input, font);
 		
 		DropdownMenuButton main_menu;
+		
+		Widget hello_widget = new Widget("Hello Widget", ui_manager);
+		hello_widget.setGlobalPosition(100, 100);
+		//hello_widget.editable = true;
+		//hello_widget.setTouchable(true, true);
 
     	main_menu = new DropdownMenuButton("Main Menu", Keys.ESCAPE, ui_manager);
     	main_menu.alignment = Direction.UP;
@@ -144,6 +145,11 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 			confirm_box = new Canvas("Start a New Skin?", ui_manager, new Rectangle(100, 100, 200, 100));
 			confirm_box.setGlobalPosition(width/2 - 100, height/2 - 50);
 			//Widget img = new Widget("img", confirm_box);
+			
+			Widget hello_widget = new Widget(ui_manager);
+			//hello_widget.render_text
+			//Message hello_world = new Message(new ColoredText());
+			
 			Button yes = new Button("Yes", Keys.Y, confirm_box) {
 				@Override
 				protected void onActivate() {
@@ -167,6 +173,10 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 			no.setRelativePosition(104, 30);
 			no.font_offset = new Point(4, 4);
 			no.setSize(42, 32);
+			
+			
+			
+			
 			ui_manager.focus(confirm_box);
 		}
 	}
@@ -223,7 +233,7 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 		Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 		
 		//Gdx.gl.glDisable(GL20.GL_BLEND);
-		ui_manager.renderAll(shape_renderer, sprite_batch, font);
+		ui_manager.renderAll(shape_renderer, sprite_batch);
 		
 	}
 

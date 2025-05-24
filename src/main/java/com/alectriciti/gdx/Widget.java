@@ -27,17 +27,11 @@ import com.badlogic.gdx.utils.JsonValue;
  * @author alectriciti
  */
 public class Widget {
-	
-	
-	transient protected UIManager manager;
-	
 
+	//Class stuff for Serialization
 	public String type = "widget";
 	
-	public boolean render_text = true;
-	
-	
-	public String name;
+	transient protected UIManager manager;
 	
 	protected transient Widget parent;
 	
@@ -48,8 +42,9 @@ public class Widget {
 	public String getId() {
 		return id;
 	}
-	
 
+	public String name_for_display; //The display name
+	public boolean render_text = true;
 
 	public transient LinkedList<Widget> widgets = new LinkedList<Widget>();
 
@@ -137,7 +132,7 @@ public class Widget {
 	 * @param canvas name of the container to apply it to
 	 */
 	public Widget(String name, Widget parent) {
-		this.name = name;
+		this.name_for_display = name;
 		this.shape = new Rectangle();
 		if(parent != null) {
 			this.manager = parent.manager;
@@ -152,7 +147,7 @@ public class Widget {
 	}
 	
 	public Widget(String name, UIManager manager) {
-		this.name = name;
+		this.name_for_display = name;
 		this.manager = manager;
 		this.manager.registerWidget(this);
 		this.shape = new Rectangle();
@@ -173,7 +168,7 @@ public class Widget {
 	}
 	
 	public String getName() {
-		return name;
+		return name_for_display;
 	}
 	
 	
@@ -272,6 +267,10 @@ public class Widget {
 	
 	
 	
+	
+	public void setSizeToFont() {
+		
+	}
 	
 	
 	
@@ -536,7 +535,7 @@ public class Widget {
 		if(render_text) {
 		//print(getGlobalX()+" "+getGlobalY());
 			font.setColor(font_color);
-			font.draw(sprite_batch, name, getGlobalX()+font_offset.x, getGlobalY()+font.getCapHeight()+font_offset.y);
+			font.draw(sprite_batch, name_for_display, getGlobalX()+font_offset.x, getGlobalY()+font.getCapHeight()+font_offset.y);
 		}
 		if(recursive) {
 			drawFontChildren(sprite_batch, font, recursive);
@@ -689,7 +688,7 @@ public class Widget {
 	}
 	
 	public String toString() {
-		return name;
+		return name_for_display;
 	}
 
 
@@ -700,19 +699,19 @@ public class Widget {
 		//make it us a set or list, and use "cotains(proposed_id)"
 		if(id == null) {
 			//ensure the new id hasn't been used
-			if(name!=null) {
+			if(name_for_display!=null) {
 				boolean free_to_use = true;
 				for(Widget w : manager.widgets) {
 					if(w == this) {
 						continue;
 					}
-					if(id!=null && w.id.equalsIgnoreCase(this.name)) {
+					if(id!=null && w.id.equalsIgnoreCase(this.name_for_display)) {
 						free_to_use = false;
 						return;
 					}
 				}
 				if(free_to_use) {
-					id = name;
+					id = name_for_display;
 					
 				}
 			}
@@ -723,7 +722,7 @@ public class Widget {
 	public JsonValue saveToJson() {
 	    JsonValue out = new JsonValue(JsonValue.ValueType.object);
 	    out.addChild("type", new JsonValue("widget"));
-	    out.addChild("name", new JsonValue(name));
+	    out.addChild("name", new JsonValue(name_for_display));
 	    out.addChild("id", new JsonValue(id));
 	    if(texture_file!=null)
 	    out.addChild("texture", new JsonValue(texture_file.path()));
@@ -739,7 +738,7 @@ public class Widget {
 	}
 
 	public void loadFromJson(JsonValue data) {
-	    this.name = data.getString("name", name);
+	    this.name_for_display = data.getString("name", name_for_display);
 	    this.id = data.getString("id", id);
 	    
 		if (data.has("texture")) {

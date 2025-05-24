@@ -20,7 +20,7 @@ public class MessageManager {
     
     public void render(SpriteBatch batch){
         for(Message msg : messages){
-            msg.renderText(batch);
+           // msg.renderText(batch);
         }
     }
     

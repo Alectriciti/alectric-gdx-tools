@@ -23,7 +23,7 @@ public class Canvas extends Widget{
 	
 	public Canvas(String name, UIManager manager, Rectangle shape) {
 		super();
-		this.name = name;
+		this.name_for_display = name;
 		this.manager = manager;
 		this.manager.registerWidget(this);
 		//this.manager.registerCanvas(this);
@@ -68,7 +68,7 @@ public class Canvas extends Widget{
 		if(render_text) {
 		//print(getGlobalX()+" "+getGlobalY());
 			font.setColor(font_color);
-			font.draw(sprite_batch, name, getGlobalX() + font_offset.x, getGlobalY() + shape.height - font_offset.y);
+			font.draw(sprite_batch, name_for_display, getGlobalX() + font_offset.x, getGlobalY() + shape.height - font_offset.y);
 		}
 		if(recursive) {
 			drawFontChildren(sprite_batch, font, recursive);
