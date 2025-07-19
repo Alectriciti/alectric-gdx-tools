@@ -38,7 +38,6 @@ public class EffectPulse extends Widget{
 		effect_size_delta += effect_move_speed;
 		if(effect_alpha<0.01) {
 			destroy();
-			print("effect ended");
 		}
 	}
 	

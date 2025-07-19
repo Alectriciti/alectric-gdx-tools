@@ -111,12 +111,16 @@ public class UIManager implements InputProcessor {
 	
 	public void focus(Widget w) {
 		if(w!=null) {
+			if(widget_focused!=null) {
+				widget_focused.focused = false; //unset the previous widget
+			}
 			global_canvas_z++;
 			//TODO Do extra checks such as unclicking buttons etc.
 			//mouse_adjusting_widfget = null;
 			widget_focused = w;
 			widget_focused.pushNewZPosition(true);
 			widget_independants.sort(Comparator.comparingInt(Widget::getZIndex));
+			w.focused = true;
 			print("Canvas focused: "+w.name_for_display);
 		}
 	}

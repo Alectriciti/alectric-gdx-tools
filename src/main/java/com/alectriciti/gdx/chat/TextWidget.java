@@ -18,7 +18,7 @@ import com.alectriciti.gdx.Widget;
 /**
  * A chat message is a divided collection of [ColoredText]s, which allow for multi-colored lines of text
  */
-public class Message extends Widget{
+public class TextWidget extends Widget{
 
 
     ColoredText[] msgs; //The array of messages separated by color
@@ -31,29 +31,36 @@ public class Message extends Widget{
     BitmapFontCache font_cache;
     GlyphLayout layout;
     
-    BitmapFont last_used_font;
+    BitmapFont font;
     
     boolean animating = false;
 
-    public Message(BitmapFont font, ColoredText...msgs){
-    	last_used_font = font;
-        construct(last_used_font, msgs);
+//    public Message(BitmapFont font, ColoredText...msgs){
+//        construct(last_used_font, msgs);
+//    }
+
+    public TextWidget(Widget parent, ColoredText...msgs){
+    	super("msg", parent);
+        construct(msgs);
+    }
+    public TextWidget(UIManager manager, ColoredText...msgs){
+    	super("msg", manager);
+        construct(msgs);
     }
 
-    public Message(ColoredText...msgs){
-        construct(last_used_font, msgs);
-    }
-
-    public void construct(BitmapFont font, ColoredText...msgs){
+    public void construct(ColoredText...msgs){
         this.msgs = msgs;
         msg_raw = "";
         for(ColoredText t : msgs){
             msg_raw += t.getText();
         }
-    	if(last_used_font==null) {
-    		last_used_font = UIManager.getDefaultFont();
-    		printWarning("no font supplied!");
-    		return;
+    	if(font==null) {
+    		font = UIManager.getDefaultFont();
+    		if(font==null) {
+    			printWarning("no font supplied for Message:"+this.id+"!");
+    			return;
+    		}
+//    		return;
     	}
         font_cache = new BitmapFontCache(font);
         font_cache.setUseIntegerPositions(true);
@@ -62,16 +69,16 @@ public class Message extends Widget{
 
         updateColors();
     }
-
+    
     /**
      * Is only activated for console messages
      * This handles individual glyph color and opacity
      */
     void updateColors() {
+    	print("updating colors");
         int i = 0;
         length = 0;
         for(ColoredText ct : msgs) {
-
             length += ct.length();
             for(int x = 0; x < ct.length();x++) {
                 Color color = new Color(ct.color.r, ct.color.g, ct.color.b, 1);//animated?opacities[i]:1);
@@ -81,7 +88,37 @@ public class Message extends Widget{
             //i +=ct.length();
         }
     }
+    
+    
+    @Override
+    protected void onPositionUpdate() {
+    	super.onPositionUpdate();
+    	//the font cache is independent from the widget, so link it here when the widget moves.
+		if(font_cache!=null) {
+			System.out.println("POS UDPATED to "+getGlobalX());
+			font_cache.setPosition(getGlobalX(), getGlobalY()+font.getCapHeight());
+		}
+    }
 
+	
+	public boolean drawFont(SpriteBatch sprite_batch, BitmapFont font, boolean recursive) {
+		
+		if(!visible){
+			return false;
+		}
+		
+		font_cache.draw(sprite_batch);
+		
+		if(render_text && name_for_display != null) {
+		//print(getGlobalX()+" "+getGlobalY());
+//			font.setColor(font_color);
+//			font.draw(sprite_batch, name_for_display, getGlobalX()+font_offset.x, getGlobalY()+font.getCapHeight()+font_offset.y);
+		}
+		if(recursive) {
+			drawFontChildren(sprite_batch, font, recursive);
+		}
+		return true;
+	}
     
     
 //    

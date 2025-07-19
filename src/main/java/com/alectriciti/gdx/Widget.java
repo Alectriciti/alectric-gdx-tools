@@ -118,6 +118,11 @@ public class Widget {
 	public Color color = new Color(0, 0, 0, 1);
 	private float opacity = 1;
 
+	public boolean focused;
+	
+	public boolean isFocused() {
+		return focused;
+	}
 	
 	/**
 	 * Reserved for Canvas
@@ -356,7 +361,6 @@ public class Widget {
 	}
 	
 	public void updateGlobalPosition() {
-		
 		if(parent!=null) {
 			shape_global.x = parent.getGlobalX() + shape.x;
 			shape_global.y = parent.getGlobalY() + shape.y;
@@ -368,7 +372,18 @@ public class Widget {
 		for(Widget w : widgets) {
 			w.updateGlobalPosition();
 		}
+		onPositionUpdate();
 	}
+	
+	
+	/**
+	 * This is for implementation to update various properties when this widget moves
+	 */
+	protected void onPositionUpdate() {
+		
+	}
+
+
 	public void setGlobalPosition(float x, float y) {
 		int width = Gdx.graphics.getWidth();
 		int height = Gdx.graphics.getHeight();
@@ -428,6 +443,7 @@ public class Widget {
 	    
 	    updateAlignment();
 	    updateGlobalPosition();
+	    
 	}
 
 
@@ -532,7 +548,7 @@ public class Widget {
 			return false;
 		}
 		
-		if(render_text) {
+		if(render_text && name_for_display != null) {
 		//print(getGlobalX()+" "+getGlobalY());
 			font.setColor(font_color);
 			font.draw(sprite_batch, name_for_display, getGlobalX()+font_offset.x, getGlobalY()+font.getCapHeight()+font_offset.y);

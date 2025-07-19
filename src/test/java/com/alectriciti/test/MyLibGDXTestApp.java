@@ -28,6 +28,9 @@ import com.alectriciti.gdx.Canvas;
 import com.alectriciti.gdx.Direction;
 import com.alectriciti.gdx.DropdownMenuButton;
 import com.alectriciti.gdx.Widget;
+import com.alectriciti.gdx.chat.ColoredText;
+import com.alectriciti.gdx.chat.TextWidget;
+import com.alectriciti.gdx.chat.TextInput;
 import com.alectriciti.gdx.Button;
 import com.alectriciti.gdx.UIManager;
 
@@ -75,8 +78,33 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 		
 		DropdownMenuButton main_menu;
 		
-		Widget hello_widget = new Widget("Hello Widget", ui_manager);
-		hello_widget.setGlobalPosition(100, 100);
+		Button test_button_a = new Button("Test Button A", ui_manager);
+		test_button_a.setGlobalPosition(100, 100);
+		test_button_a.setSize(142, 32);
+		
+		Button test_button_b = new Button("Test Button B", ui_manager);
+		test_button_b.setGlobalPosition(280, 100);
+		test_button_b.setSize(142, 32);
+
+		test_button_a.addOnActivate(new Runnable() {
+			
+			@Override
+			public void run() {
+				testA();
+			}
+		});
+
+
+		test_button_b.addOnActivate(new Runnable() {
+			
+			@Override
+			public void run() {
+				testB();
+			}
+		});
+		
+		
+		
 		//hello_widget.editable = true;
 		//hello_widget.setTouchable(true, true);
 
@@ -206,6 +234,40 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 		
 		return buttons;
 	}
+	
+	
+	
+	
+	
+
+
+	public void testA() {
+		
+//		TextInput widget = new TextInput(ui_manager);
+		TextInput m = new TextInput(ui_manager, new ColoredText("Hey!\n", Color.GREEN), new ColoredText("What's up?", Color.BLUE));
+		m.setRelativePosition(50, 50);
+		
+	}
+
+
+	public void testB() {
+		
+		
+		
+		
+		
+		
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 
 	@Override
 	public void resize(int width, int height) {
