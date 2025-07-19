@@ -35,7 +35,6 @@ public class Widget {
 	
 	protected transient Widget parent;
 	
-	
 	//for serializations
 	public String id;
 	
@@ -644,6 +643,14 @@ public class Widget {
 		}
 	}
 
+	
+
+
+
+	final void callOnFocus() {
+		OnFocus();
+	}
+
 	final void callOnClicked() {
 		currently_clicked = true;
 		OnMouseClicked();
@@ -661,6 +668,11 @@ public class Widget {
 	protected void OnMouseReleased() {
 		// TODO Auto-generated method stub
 	}
+	
+	protected void OnFocus() {
+		// TODO Auto-generated method stub
+	}
+
 	
 	public boolean getCurrentlyClicked() {
 		return currently_clicked;

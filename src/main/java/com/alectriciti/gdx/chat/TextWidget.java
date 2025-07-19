@@ -47,7 +47,12 @@ public class TextWidget extends Widget{
     	super("msg", manager);
         construct(msgs);
     }
-
+    
+    
+    /**
+     * Used for initialization
+     * @param msgs
+     */
     public void construct(ColoredText...msgs){
         this.msgs = msgs;
         msg_raw = "";
@@ -65,7 +70,7 @@ public class TextWidget extends Widget{
         font_cache = new BitmapFontCache(font);
         font_cache.setUseIntegerPositions(true);
         //manager.registerMsg(this);
-        font_cache.setText(msg_raw, 0, 0);
+        font_cache.setText(msg_raw, getGlobalX(), getGlobalY());
 
         updateColors();
     }
@@ -89,13 +94,39 @@ public class TextWidget extends Widget{
         }
     }
     
+    private void reconstruct() {
+        // Rebuild raw text
+        StringBuilder builder = new StringBuilder();
+        for (ColoredText t : msgs) {
+            builder.append(t.getText());
+        }
+        msg_raw = builder.toString();
+
+        // Update font cache with new text
+        font_cache.clear();
+        font_cache.setText(msg_raw, 0, 0);
+		font_cache.setPosition(getGlobalX(), getGlobalY()+font.getCapHeight());
+
+        // Update colors
+        updateColors();
+    }
+
     
-    @Override
+    
+    public void setText(int line, String text) {
+    	msgs[line].updateText(text);
+    	reconstruct();
+    }
+    
+    
+    
+    
+	@Override
     protected void onPositionUpdate() {
     	super.onPositionUpdate();
     	//the font cache is independent from the widget, so link it here when the widget moves.
+    	//TODO optimize this to only be called when the position actually gets moved
 		if(font_cache!=null) {
-			System.out.println("POS UDPATED to "+getGlobalX());
 			font_cache.setPosition(getGlobalX(), getGlobalY()+font.getCapHeight());
 		}
     }

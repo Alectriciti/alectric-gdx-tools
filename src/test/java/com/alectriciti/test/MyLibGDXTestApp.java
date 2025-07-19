@@ -244,7 +244,7 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 	public void testA() {
 		
 //		TextInput widget = new TextInput(ui_manager);
-		TextInput m = new TextInput(ui_manager, new ColoredText("Hey!\n", Color.GREEN), new ColoredText("What's up?", Color.BLUE));
+		TextInput m = new TextInput(ui_manager, new ColoredText("Type Here!", Color.GRAY));
 		m.setRelativePosition(50, 50);
 		
 	}
