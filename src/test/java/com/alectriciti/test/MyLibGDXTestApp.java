@@ -235,40 +235,16 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 		return buttons;
 	}
 	
-	
-	
-	
-	
-
-
 	public void testA() {
-		
 //		TextInput widget = new TextInput(ui_manager);
 		TextInput m = new TextInput(ui_manager, new ColoredText("Type Here!", Color.GRAY));
 		m.setRelativePosition(50, 50);
-		
 	}
-
-
+	
 	public void testB() {
 		
-		
-		
-		
-		
-		
 	}
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-
 	@Override
 	public void resize(int width, int height) {
 		this.width = width;

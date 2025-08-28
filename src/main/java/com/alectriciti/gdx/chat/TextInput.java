@@ -17,9 +17,11 @@ public class TextInput extends TextWidget implements InputProcessor{
 	
 	Widget target_widget;
 	
+	ReturnKeyMode mode = ReturnKeyMode.NEW_LINE;
+	
 	public enum ReturnKeyMode{
-		ACTIVATE_TARGET_WIDGET,
-		SHIFT_NEW_LINE,
+		ACTIVATE_TARGET,
+		ACTIVATE_TARGET_SHIFT_NEW_LINE,
 		NEW_LINE,
 	}
 	
@@ -37,13 +39,14 @@ public class TextInput extends TextWidget implements InputProcessor{
 		// TODO Auto-generated constructor stub
 	}
 	
-	
 	/**
 	 * Only utilized
 	 */
 	public void setTargetWidget(Widget target_widget) {
 		this.target_widget = target_widget;
 	}
+	
+	
 	
 	
 	
@@ -77,11 +80,9 @@ public class TextInput extends TextWidget implements InputProcessor{
 		
 		if(isFocused()) {
 			if(tick%20<10) {
-
 				renderer.set(ShapeType.Filled);
 				renderer.setColor(color);
 				renderer.rect(getGlobalX(), getGlobalY(), shape.width, shape.height);
-				
 			}
 			
 //			focus();
@@ -111,7 +112,7 @@ public class TextInput extends TextWidget implements InputProcessor{
 
 	@Override
 	public boolean keyTyped(char character) {
-		print(""+character);
+//		print(""+character);
 	
 		if(Character.isDefined(character)) {
 			setText(0, msgs[0].getText()+character);

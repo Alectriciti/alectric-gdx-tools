@@ -32,6 +32,7 @@ public class EffectPulse extends Widget{
 	@Override
 	protected void update() {
 		// TODO Auto-generated method stub
+		
 		super.update();
 		effect_alpha *= 0.92f;
 		thickness = lerp(thickness_target, thickness, thickness_lerp_a);
