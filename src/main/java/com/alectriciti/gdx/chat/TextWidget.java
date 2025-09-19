@@ -19,14 +19,12 @@ import com.alectriciti.gdx.Widget;
  * A chat message is a divided collection of [ColoredText]s, which allow for multi-colored lines of text
  */
 public class TextWidget extends Widget{
-
-
+	
     ColoredText[] msgs; //The array of messages separated by color
     float[] opacities; // The array of opacities separated by individual glyph
     int length; //Actual length of the string
 
     public String msg_raw = ""; // The full message for console printing purposes
-    
     
     BitmapFontCache font_cache;
     GlyphLayout layout;
@@ -47,7 +45,6 @@ public class TextWidget extends Widget{
     	super("msg", manager);
         construct(msgs);
     }
-    
     
     /**
      * Used for initialization
@@ -80,7 +77,7 @@ public class TextWidget extends Widget{
      * This handles individual glyph color and opacity
      */
     void updateColors() {
-    	print("updating colors");
+//    	print("updating colors");
         int i = 0;
         length = 0;
         for(ColoredText ct : msgs) {
@@ -94,7 +91,7 @@ public class TextWidget extends Widget{
         }
     }
     
-    private void reconstruct() {
+    protected void reconstruct() {
         // Rebuild raw text
         StringBuilder builder = new StringBuilder();
         for (ColoredText t : msgs) {
@@ -150,42 +147,7 @@ public class TextWidget extends Widget{
 		}
 		return true;
 	}
-    
-    
-//    
-//    
-//    public void renderText(SpriteBatch batch){
-//
-//        updateColors();
-//
-//
-//        batch.setBlendFunctionSeparate(
-//            GL_ONE_MINUS_DST_COLOR,
-//            GL_ONE,
-//            GL_ONE_MINUS_CONSTANT_ALPHA,
-//            GL_ONE_MINUS_SRC_COLOR);
-//        Gdx.gl.glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
-//        font_cache.setPosition(getX()+1, getY()-1);
-//        font_cache.draw(batch, 0, length());
-//
-//        batch.setBlendFunctionSeparate(
-//            GL_ONE_MINUS_DST_COLOR,
-//            GL_ONE_MINUS_SRC_COLOR,
-//            GL_SRC_ALPHA,
-//            GL_SRC_ALPHA_SATURATE);
-//        Gdx.gl.glBlendEquation(GL_FUNC_ADD);
-//
-//
-//
-//        font_cache.setPosition(getX(), getY());
-//        font_cache.draw(batch, 0, length());
-//
-//
-//
-//        //font_cache.setPosition(x, y);
-//        //font_cache.draw(batch, 0, msg_raw.length());
-//    }
-
+	
     public int length() {
         // TODO Auto-generated method stub
         return length;

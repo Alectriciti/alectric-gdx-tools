@@ -7,6 +7,7 @@ import java.awt.Point;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
@@ -22,10 +23,7 @@ import com.badlogic.gdx.utils.JsonValue;
  * A Button widget which can be added directly to a canvas, or added standalone
  * @author alectriciti
  */
-public class Button extends Widget{
-	
-	public int key_code;
-	
+public class Button extends Widget implements Activatable{
 	
 	
 	public enum ButtonType{
@@ -61,6 +59,8 @@ public class Button extends Widget{
 	public ButtonType button_type = ButtonType.PRESS;
 
 	public Point font_offset = new Point(2, 2);
+
+	int[] button_codes; //used for unregistering buttons in UIManager for widget_to_destroy
 	
 	/**
 	 * 
@@ -68,38 +68,41 @@ public class Button extends Widget{
 	 * @param key
 	 * @param canvas
 	 */
-	public Button(String button_name, int key, Widget parent) {
+	public Button(String button_name, Widget parent, int...button_codes) {
 		super(button_name, parent);
 		//super(wonkaMain, button_name);
-		this.key_code = key;
 		this.color = Color.WHITE;
-		registerButton();
+		registerButton(button_codes);
 		updateGlobalPosition();
 	}
 	
 	
-	public Button(String name, int key, UIManager widgetManager) {
+	public Button(String name, UIManager widgetManager, int...button_codes) {
 		super(name, widgetManager);
-		this.key_code = key;
 		this.color = Color.WHITE.cpy();
-		registerButton();
+		registerButton(button_codes);
 		updateGlobalPosition();
 	}
-
 	
 	public Button(String button_name, Widget parent) {
-		this(button_name, 0, parent);
+		this(button_name, parent, null);
 	}
 	
 	public Button(String name, UIManager widgetManager) {
-		this(name, 0, widgetManager);
+		this(name, widgetManager, null);
 	}
 	
 	
-	private void registerButton() {
+	private void registerButton(int...button_codes) {
 		manager.buttons.add(this);
 		manager.buttons_by_name.put(name_for_display, this);
-		manager.buttons_by_key.put(key_code, this);
+		
+		if(button_codes!=null) {
+			for(int code : button_codes) {
+				manager.buttons_by_key.put(code, this);
+			}
+			this.button_codes = button_codes;
+		}
 	}
 	
 	

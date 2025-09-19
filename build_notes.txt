@@ -1,0 +1,10 @@
+Right click on project do "Show in Local Terminal"
+
+Run: mvn clean install
+
+Build path is here:
+C:\Users\alect\.m2\repository\com\github\alectriciti\alectric-gdx-tools
+
+
+errors are expected, which is the java doc failing to resolve headers
+

@@ -1,8 +1,22 @@
 This is my personal use library for LibGDX.
 It features a Custom UI Toolkit as well as several other odds and ends.
 
+
+Note: This is a Desktop-Only API
+
+Steps to apply this to your LibGDX Project:
+
+
+> Personal Note: To build this within maven, do ```mvn clean install``` in a local terminal
+```> C:\Users\alect\design\gamedev\projects_gdx\alectric-gdx-tools\target\alectric-gdx-tools-0.0.1-sources.jar```
+```C:\Users\alect\.m2\repository\com\github\alectriciti\alectric-gdx-tools\0.0.1\alectric-gdx-tools-0.0.1-sources.jar```
+1. Create a new LibGDX Project using gdx-liftoff
+2. Add this line to the dependencies in the lwjgl3 build.gradle: ```implementation 'com.github.alectriciti:alectric-gdx-tools:0.0.1'```
+
+
 # Toolkit.class
 This class is intended to be imported statically to access to various useful common functions such as lerp, mapRange, etc.
+
 
 # WidgetManager.class
 This class holds the primary logic for Alectric-UI.

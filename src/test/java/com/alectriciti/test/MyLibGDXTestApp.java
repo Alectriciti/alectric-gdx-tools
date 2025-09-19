@@ -31,6 +31,7 @@ import com.alectriciti.gdx.Widget;
 import com.alectriciti.gdx.chat.ColoredText;
 import com.alectriciti.gdx.chat.TextWidget;
 import com.alectriciti.gdx.chat.TextInput;
+import com.alectriciti.gdx.chat.TextInput.ReturnKeyMode;
 import com.alectriciti.gdx.Button;
 import com.alectriciti.gdx.UIManager;
 
@@ -108,11 +109,12 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 		//hello_widget.editable = true;
 		//hello_widget.setTouchable(true, true);
 
-    	main_menu = new DropdownMenuButton("Main Menu", Keys.ESCAPE, ui_manager);
+    	main_menu = new DropdownMenuButton("Main Menu", ui_manager, Keys.ESCAPE, Keys.B);
     	main_menu.alignment = Direction.UP;
     	main_menu.setRelativePosition(0, 0);
     	main_menu.setSize(120, 32);
     	Button button_new_skin = new Button("New Skin", main_menu);
+    	button_new_skin.addOnActivate(main_menu.getAutocloseRunnable());
     	button_new_skin.addOnActivate(new Runnable() {
 
 			@Override
@@ -178,7 +180,7 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 			//hello_widget.render_text
 			//Message hello_world = new Message(new ColoredText());
 			
-			Button yes = new Button("Yes", Keys.Y, confirm_box) {
+			Button yes = new Button("Yes", confirm_box, Keys.Y) {
 				@Override
 				protected void onActivate() {
 					run_new_skin.run();
@@ -189,7 +191,7 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 			yes.font_offset = new Point(4, 4);
 			yes.setRelativePosition(32, 30);
 			yes.setSize(42, 32);
-			Button no = new Button("No", Keys.N, confirm_box) {
+			Button no = new Button("No", confirm_box, Keys.N) {
 				@Override
 				protected void onActivate() {
 					// TODO Auto-generated method stub
@@ -215,7 +217,7 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 		List<Button> buttons = new ArrayList<Button>();
 		if(names.length == 0) {
 			for(int i = 0; i <amount; i++) {
-				Button b = new Button((""+i), 0, ui_manager);
+				Button b = new Button((""+i), ui_manager);
 				buttons.add(b);
 			}
 		}else {
@@ -223,7 +225,7 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 				String name = names[i];
 				if(names!=null) {
 					print("NEW BUTTON: "+name);
-					Button b = new Button(name, 0, ui_manager);
+					Button b = new Button(name, ui_manager);
 					buttons.add(b);
 				}
 			}
@@ -238,6 +240,7 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 	public void testA() {
 //		TextInput widget = new TextInput(ui_manager);
 		TextInput m = new TextInput(ui_manager, new ColoredText("Type Here!", Color.GRAY));
+		m.return_mode = ReturnKeyMode.ACTIVATE_TARGET_SHIFT_NEW_LINE;
 		m.setRelativePosition(50, 50);
 	}
 	

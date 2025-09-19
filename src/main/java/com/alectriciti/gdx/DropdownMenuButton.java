@@ -2,6 +2,9 @@ package com.alectriciti.gdx;
 
 import static com.alectriciti.gdx.Toolkit.*;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -23,11 +26,6 @@ public class DropdownMenuButton extends Button{
 	}
 	
 	Rectangle dropdown_region = new Rectangle();
-
-
-	
-	private boolean auto_close_on_button_press = true;
-	private boolean autoclose_settings_initialized = false;
 	
 	private Runnable run_autoclose = new Runnable() {
 		
@@ -37,8 +35,8 @@ public class DropdownMenuButton extends Button{
 		}
 	};
 	
-	public DropdownMenuButton(String button_name, int key, Widget w) {
-		super(button_name, key, w);
+	public DropdownMenuButton(String button_name, Widget w, int...button_codes) {
+		super(button_name, w, button_codes);
 		button_type = ButtonType.TOGGLE; //default type for this class should be toggle
 	}
 	
@@ -47,8 +45,8 @@ public class DropdownMenuButton extends Button{
 		button_type = ButtonType.TOGGLE;
 	}
 	
-	public DropdownMenuButton(String button_name, int keycode, UIManager manager) {
-		super(button_name, keycode, manager);
+	public DropdownMenuButton(String button_name, UIManager manager, int...button_codes) {
+		super(button_name, manager, button_codes);
 		button_type = ButtonType.TOGGLE;
 	}
 	
@@ -60,15 +58,15 @@ public class DropdownMenuButton extends Button{
 	@Override
 	public void activate() {
 		// TODO Auto-generated method stub
-		if(!autoclose_settings_initialized) {
-			for(Widget w : widgets) {
-				if(w.getClass().equals(Button.class)) {
-					Button b = (Button) w;
-					b.addOnActivate(run_autoclose);
-				}
-			}
-			autoclose_settings_initialized = true;
-		}
+//		if(!autoclose_settings_initialized) {
+//			for(Widget w : widgets) {
+//				if(w.getClass().equals(Button.class)) {
+//					Button b = (Button) w;
+//					b.addOnActivate(run_autoclose);
+//				}
+//			}
+//			autoclose_settings_initialized = true;
+//		}
 		super.activate();
 		dropdownOpen();
 		
@@ -196,14 +194,16 @@ public class DropdownMenuButton extends Button{
 		widget_to_attach.setVisible(false, true);
 		print(widget_to_attach.name_for_display+" : "+widget_to_attach.isVisible());
 	}
+
 	
-	public boolean doesAutocloseOnButtonPress() {
-		return auto_close_on_button_press;
+	/**
+	 * Apply this to a button onActivate to have it register as autoclose
+	 * @return
+	 */
+	public Runnable getAutocloseRunnable() {
+		return run_autoclose;
 	}
 	
-	public void setAutocloseOnButtonPress(boolean b) {
-		this.auto_close_on_button_press = b;
-	}
 	
 	
 	

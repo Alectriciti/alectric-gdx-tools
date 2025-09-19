@@ -198,7 +198,10 @@ public class UIManager implements InputProcessor {
 			for (Widget wtd : widgets_to_destroy) {
 				if (wtd instanceof Button) {
 					Button b = (Button) wtd;
-					buttons_by_key.remove(b.key_code);
+					if(b.button_codes!=null)
+						for(int code : b.button_codes) {
+							buttons_by_key.remove(code);
+						}
 					buttons_by_name.remove(b.name_for_display);
 				}
 			}

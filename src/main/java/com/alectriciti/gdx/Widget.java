@@ -26,7 +26,7 @@ import com.badlogic.gdx.utils.JsonValue;
  * Widgets are the building blocks of Alectric UI which can be updated/rendered manually, or using WidgetManager
  * @author alectriciti
  */
-public class Widget {
+public class Widget{
 
 	//Class stuff for Serialization
 	public String type = "widget";
