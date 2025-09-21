@@ -2,6 +2,10 @@ package com.alectriciti.gdx;
 
 import java.awt.MouseInfo;
 import java.awt.Point;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Set;
 
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWVidMode;
@@ -102,6 +106,87 @@ public class Toolkit {
         int screenY = (int) p.getY();
         return new int[]{screenX, screenY};
     }
-	
+	 // Reserved device names (Windows) — case-insensitive
+    private static final Set<String> RESERVED_NAMES = new HashSet<>(
+        Arrays.asList(
+            "CON", "PRN", "AUX", "NUL",
+            "COM1","COM2","COM3","COM4","COM5","COM6","COM7","COM8","COM9",
+            "LPT1","LPT2","LPT3","LPT4","LPT5","LPT6","LPT7","LPT8","LPT9"
+        )
+    );
+
+    /**
+     * Return true if the given filename is valid/safe for Windows filesystem usage.
+     * This enforces:
+     *  - not null/empty
+     *  - length <= 255
+     *  - no ASCII control chars (0..31)
+     *  - no characters:  < > : " / \ | ? *
+     *  - does not end with space or dot
+     *  - not a reserved device name (CON, PRN, AUX, NUL, COM1..COM9, LPT1..LPT9)
+     */
+    public static boolean isValidFilename(String filename) {
+        if (filename == null) return false;
+        if (filename.isEmpty()) return false;
+
+        // conservative max length for a single filename component
+        if (filename.length() > 255) return false;
+
+        // cannot end with space or dot on Windows
+        if (filename.endsWith(" ") || filename.endsWith(".")) return false;
+
+        // disallowed characters
+        String forbidden = "<>:\"/\\|?*";
+        for (int i = 0; i < filename.length(); i++) {
+            char ch = filename.charAt(i);
+            // control characters
+            if (ch <= 31) return false;
+            if (forbidden.indexOf(ch) >= 0) return false;
+        }
+
+        // check reserved names (compare base name before first dot)
+        int dot_index = filename.indexOf('.');
+        String name_without_extension = dot_index == -1 ? filename : filename.substring(0, dot_index);
+        String name_upper = name_without_extension.toUpperCase(Locale.ROOT);
+        if (RESERVED_NAMES.contains(name_upper)) return false;
+
+        return true;
+    }
+
+    /**
+     * Optional: quick sanitizer that replaces invalid chars with '_' and trims trailing dots/spaces.
+     * Use this if you want to auto-fix widget.id instead of rejecting it.
+     */
+    public static String sanitizeFilename(String filename) {
+        if (filename == null) return null;
+        // replace control chars and forbidden chars with underscore
+        StringBuilder sb = new StringBuilder();
+        String forbidden = "<>:\"/\\|?*";
+        for (int i = 0; i < filename.length(); i++) {
+            char ch = filename.charAt(i);
+            if (ch <= 31 || forbidden.indexOf(ch) >= 0) {
+                sb.append('_');
+            } else {
+                sb.append(ch);
+            }
+        }
+        // trim trailing spaces/dots
+        String cleaned = sb.toString();
+        while (cleaned.endsWith(" ") || cleaned.endsWith(".")) {
+            cleaned = cleaned.substring(0, cleaned.length() - 1);
+            if (cleaned.isEmpty()) break;
+        }
+        // avoid reserved names: prefix with underscore if reserved
+        int dot_index = cleaned.indexOf('.');
+        String base = dot_index == -1 ? cleaned : cleaned.substring(0, dot_index);
+        if (base != null && RESERVED_NAMES.contains(base.toUpperCase(Locale.ROOT))) {
+            cleaned = "_" + cleaned;
+        }
+        // enforce max length
+        if (cleaned.length() > 255) {
+            cleaned = cleaned.substring(0, 255);
+        }
+        return cleaned;
+    }
 
 }

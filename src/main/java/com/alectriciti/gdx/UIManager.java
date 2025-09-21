@@ -19,6 +19,7 @@ import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Window;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Graphics.Lwjgl3Monitor;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.Graphics.DisplayMode;
 import com.badlogic.gdx.Graphics.Monitor;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
@@ -775,9 +776,13 @@ public class UIManager implements InputProcessor {
 
 		for (Widget w : widgets) {
 			if (w.getId() != null) {
-				FileHandle widgetFile = Gdx.files.local(folder_widgets + w.getId() + ".json");
-				Json json = new Json();
-				widgetFile.writeString(w.saveToJson().toString(), false);
+				if(isValidFilename(w.getId())) {
+					FileHandle widgetFile = Gdx.files.local(folder_widgets + w.getId() + ".json");
+					Json json = new Json();
+					widgetFile.writeString(w.saveToJson().toString(), false);
+				}else {
+					printError("Invalid Filename for Widget: "+w.getId()+"... keep ID and display name separate!");
+				}
 			}
 		}
 	}
@@ -825,17 +830,23 @@ public class UIManager implements InputProcessor {
 			w.dispose();
 		}
 	}
+	
+	
 
-	public void setfullscreenMode(boolean isFullScreen) {
+	public void setfullscreenMode(boolean isFullScreen, boolean decorated) {
 		if (isFullScreen) {
 			WIDTH = Gdx.graphics.getWidth();
 			HEIGHT = Gdx.graphics.getHeight();
 		}
-
+		
+		
 		Lwjgl3Graphics graphics = (Lwjgl3Graphics) Gdx.graphics;
 		Lwjgl3Window window = graphics.getWindow();
 		Monitor monitor = graphics.getMonitor(); // Get the current monitor
-
+		
+		graphics.setUndecorated(!decorated); //look here for SEVERAL other features
+		
+		
 		int width = 0;
 		int height = 0;
 		int[] xpos = new int[1];
@@ -846,6 +857,8 @@ public class UIManager implements InputProcessor {
 		// Get monitor position
 		GLFW.glfwGetMonitorPos(monitorHandle, xpos, ypos);
 		GLFWVidMode vidMode = GLFW.glfwGetVideoMode(monitorHandle);
+		
+//		DisplayMode
 
 		if (vidMode != null) {
 			width = vidMode.width();
@@ -859,6 +872,7 @@ public class UIManager implements InputProcessor {
 
 		if (width > 0 && height > 0) {
 			if (isFullScreen) {
+				
 				Gdx.graphics.setWindowedMode(width, height);
 				// Set window to borderless fullscreen
 				window.setPosition(xpos[0], ypos[0]); // Position the window at the monitor's (0,0)

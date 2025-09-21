@@ -113,7 +113,7 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
     	main_menu.alignment = Direction.UP;
     	main_menu.setRelativePosition(0, 0);
     	main_menu.setSize(120, 32);
-    	Button button_new_skin = new Button("New Skin", main_menu);
+    	Button button_new_skin = new Button("New Menu", main_menu);
     	button_new_skin.addOnActivate(main_menu.getAutocloseRunnable());
     	button_new_skin.addOnActivate(new Runnable() {
 
@@ -245,7 +245,7 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 	}
 	
 	public void testB() {
-		
+		ui_manager.setfullscreenMode(true, false);
 	}
 	
 	@Override

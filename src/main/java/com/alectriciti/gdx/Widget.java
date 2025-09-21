@@ -132,26 +132,28 @@ public class Widget{
 	
 	/**
 	 * Used for other widgets
-	 * @param name name of the widget
+	 * @param id name of the widget
 	 * @param canvas name of the container to apply it to
 	 */
-	public Widget(String name, Widget parent) {
-		this.name_for_display = name;
+	public Widget(String id, Widget parent) {
+		this.id = id;
+		this.name_for_display = id;
 		this.shape = new Rectangle();
 		if(parent != null) {
 			this.manager = parent.manager;
 			this.attachToWidget(parent); //parent first!
 			this.manager.registerWidget(this); // do this last, it might make an orphan
 		}else {
-			printError("Error instantiating "+name+" ... Canvas is NULL. Register with a WidgetManager instead");
+			printError("Error instantiating "+id+" ... Canvas is NULL. Register with a WidgetManager instead");
 		}
 		setSize(32, 32);
 		updateGlobalPosition();
 		pushNewZPosition(false);
 	}
 	
-	public Widget(String name, UIManager manager) {
-		this.name_for_display = name;
+	public Widget(String id, UIManager manager) {
+		this.id = id;
+		this.name_for_display = id;
 		this.manager = manager;
 		this.manager.registerWidget(this);
 		this.shape = new Rectangle();
