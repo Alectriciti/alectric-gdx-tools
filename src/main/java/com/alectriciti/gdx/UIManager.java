@@ -28,6 +28,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
@@ -63,6 +64,9 @@ public class UIManager implements InputProcessor {
 
 	private float mouse_config_offset_x;
 	private float mouse_config_offset_y;
+	
+	private Widget pointerCapturedWidget = null; // widget that captured pointer (for drag)
+	private int pointerCapturedId = -1; // pointer id (if you support multi-touch) - we use 0 for mouse
 
 	static BitmapFont primary_font;
 	boolean font_activated = false;
@@ -231,6 +235,11 @@ public class UIManager implements InputProcessor {
 
 		mouse_x = getMouseX();
 		mouse_y = getMouseY();
+		
+		if (mouse_is_down && pointerCapturedWidget != null) {
+		    // For mouse we use pointer id 0
+		    pointerCapturedWidget.onPointerDragged(mouse_x, mouse_y, 0);
+		}
 
 		if (Gdx.input.isButtonPressed(Buttons.LEFT)) {
 			left_click_down();
@@ -243,117 +252,163 @@ public class UIManager implements InputProcessor {
 	}
 
 	private void left_click_down() {
-		mouse_is_down = true;
+	    mouse_is_down = true;
 
-		if (mouse_clicked_widget == null) {
-			/*
-			 * No Button is clicked yet
-			 */
-			if (Gdx.input.isButtonJustPressed(Buttons.LEFT)) {
-				if (widget_hovering != null) {
-					if (edit_mode || widget_hovering.isAlwaysEditable()) {
+	    // Update mouse_x/mouse_y earlier in update() already; still get local copy
+	    int mx = mouse_x;
+	    int my = mouse_y;
 
-						if (widget_hovering.isEditable()) {
-							// moving button config mode
-							widget_currently_adjusting = widget_hovering;
-							mouse_config_offset_x = widget_hovering.getGlobalX() - mouse_x;
-							mouse_config_offset_y = widget_hovering.getGlobalY() - mouse_y;
-						}
-					} else {
-						widget_hovering.focus();
-						mouse_clicked_widget = widget_hovering;
-						widget_hovering.callOnClicked(); // API call
-					}
-				} else {
-					focus(null);
-				}
-			}
-		}
+	    // If there is currently no captured pointer widget, try to capture
+	    if (pointerCapturedWidget == null) {
+	        // If a widget_hovering exists, let it handle pointerDown first (gives it priority)
+	        if (Gdx.input.isButtonJustPressed(Buttons.LEFT)) {
+	        	if (widget_hovering != null) {
 
-		// while mouse is held and adjusting widget
-		if (widget_currently_adjusting != null) {
-			// moves the widget around
-			AdjustWidgetPosition();
+	        	    // If we are in edit mode (or widget forces editability), prefer the "move widget" behavior.
+	        	    // This prevents interactive widgets (sliders, color pickers) from capturing pointer while editing.
+	        	    if (edit_mode || widget_hovering.isAlwaysEditable()) {
+	        	        if (widget_hovering.isEditable()) {
+	        	            // Start moving/adjusting the widget (existing behavior)
+	        	            widget_currently_adjusting = widget_hovering;
+	        	            mouse_config_offset_x = widget_hovering.getGlobalX() - mx;
+	        	            mouse_config_offset_y = widget_hovering.getGlobalY() - my;
+	        	            // Note: we DO NOT call onPointerDown in edit mode; movement has priority.
+	        	        } else {
+	        	            // Not editable: fall back to focusing / clicking behavior
+	        	            widget_hovering.focus();
+	        	            mouse_clicked_widget = widget_hovering;
+	        	            widget_hovering.callOnClicked();
+	        	        }
+	        	    } else {
+	        	        // Normal (non-edit) mode: give the widget a chance to capture pointer (e.g. Slider).
+	        	        boolean captured = widget_hovering.onPointerDown(mx, my, 0, Buttons.LEFT);
+	        	        if (captured) {
+	        	            pointerCapturedWidget = widget_hovering;
+	        	            pointerCapturedId = 0;
+	        	            // also set as clicked widget for legacy logic
+	        	            mouse_clicked_widget = widget_hovering;
+	        	            widget_hovering.callOnClicked();
+	        	            return; // captured — consume event
+	        	        }
 
-		}
-		if (mouse_clicked_widget != null) { // If a button is already selected
+	        	        // If not captured, fall back to default focus/click behavior (buttons, etc.)
+	        	        widget_hovering.focus();
+	        	        mouse_clicked_widget = widget_hovering;
+	        	        widget_hovering.callOnClicked(); // existing API call
+	        	    }
 
-			/*
-			 * IF mouse moves out of position while held...
-			 */
-			if (mouse_clicked_widget instanceof Button) {
-				Button button_clicked = (Button) mouse_clicked_widget;
-				if (!button_clicked.containsGlobal(mouse_x, mouse_y)) {
-					button_clicked.pressing = false;
-					if (button_clicked.button_type == ButtonType.RAPIDFIRE) {
-						buttons_rapidfiring.remove(button_clicked);
-						button_clicked.deactivate();
-					}
-					mouse_clicked_widget = null; // finally nullify clicked button
-					// print("deselected");
-				}
-			}
-		} else { // Just now selecting a new widget
+	        	} else {
+	        	    focus(null);
+	        	}
+	        }
+	    } else {
+	        // A widget already captured pointer previously. In most mouse cases this won't happen
+	        // because we capture at press; but if it did, we could route pressed-to-it.
+	        // (no action required here)
+	    }
 
-		}
+	    // while mouse is held and adjusting widget
+	    if (widget_currently_adjusting != null) {
+	        AdjustWidgetPosition();
+	    }
+
+	    // Existing behavior if a button is already selected:
+	    if (mouse_clicked_widget != null) {
+	        if (mouse_clicked_widget instanceof Button) {
+	            Button button_clicked = (Button) mouse_clicked_widget;
+	            if (!button_clicked.containsGlobal(mx, my)) {
+	                button_clicked.pressing = false;
+	                if (button_clicked.button_type == ButtonType.RAPIDFIRE) {
+	                    buttons_rapidfiring.remove(button_clicked);
+	                    button_clicked.deactivate();
+	                }
+	                mouse_clicked_widget = null;
+	            }
+	        }
+	    }
 	}
+
 
 	private void left_click_release() {
-		// RELEASE MOUSE EVENT
-		// print("released");
-		mouse_is_down = false;
+	    mouse_is_down = false;
 
-		if (widget_currently_adjusting != null) {
-			widget_currently_adjusting = null;
-		}
-		if (mouse_clicked_widget == null) {
-//			focus(null);
-		} else {
-			if (mouse_clicked_widget instanceof Button) {
-				Button button_clicked = (Button) mouse_clicked_widget;
-				if (button_clicked.is_key_down) {
-					button_clicked.pressing = false;
-					button_clicked.cancelled = true;
-				} else {
-					switch (button_clicked.button_type) {
-					case PRESS:
-						button_clicked.activate();
-						break;
-					case RAPIDFIRE:
-						buttons_rapidfiring.remove(button_clicked);
-						button_clicked.deactivate();
-						break;
-					case PRESS_AND_RELEASE:
-						button_clicked.deactivate();
-						break;
-					case TOGGLE:
-						if (!button_clicked.activated) {
-							button_clicked.activate();
-							print(button_clicked.name_for_display + " ACTIVATED");
-						} else {
-							button_clicked.deactivate();
-							print(button_clicked.name_for_display + " DEACTIVATED");
-						}
-						break;
-					}
-				}
-				button_clicked.pressing = false;
-			}
-			mouse_clicked_widget.callOnReleased();
-			mouse_clicked_widget = null;
-		}
-		if (widget_hovering != null) {
-			widget_hovering.hovering = false;
-			widget_hovering = null;
-		}
-		scrollSelectionOffset = 0;
-		// print("releasing... all should be set to null");
+	    int mx = mouse_x;
+	    int my = mouse_y;
 
-		// release all buttons, trigger button if still highlighted
-		for (Button b : buttons) {
-			b.pressing = false;
-		}
+	    // If a widget captured the pointer, give it a chance to handle pointerUp
+	    if (pointerCapturedWidget != null) {
+	        boolean consumed = pointerCapturedWidget.onPointerUp(mx, my, pointerCapturedId, Buttons.LEFT);
+	        // release capture regardless (single-pointer model)
+	        pointerCapturedWidget = null;
+	        pointerCapturedId = -1;
+
+	        // We still want to call callOnReleased if we had a currently clicked widget
+	        if (mouse_clicked_widget != null) {
+	            mouse_clicked_widget.callOnReleased();
+	            mouse_clicked_widget = null;
+	        }
+
+	        // clear hovering state as you already do
+	        if (widget_hovering != null) {
+	            widget_hovering.hovering = false;
+	            widget_hovering = null;
+	        }
+	        scrollSelectionOffset = 0;
+	        // release buttons
+	        for (Button b : buttons) {
+	            b.pressing = false;
+	        }
+	        return; // consumed
+	    }
+
+	    // If no pointer-capture, proceed with existing release logic (unchanged)
+	    if (widget_currently_adjusting != null) {
+	        widget_currently_adjusting = null;
+	    }
+	    if (mouse_clicked_widget == null) {
+	        // focus(null);
+	    } else {
+	        if (mouse_clicked_widget instanceof Button) {
+	            Button button_clicked = (Button) mouse_clicked_widget;
+	            if (button_clicked.is_key_down) {
+	                button_clicked.pressing = false;
+	                button_clicked.cancelled = true;
+	            } else {
+	                switch (button_clicked.button_type) {
+	                    case PRESS:
+	                        button_clicked.activate();
+	                        break;
+	                    case RAPIDFIRE:
+	                        buttons_rapidfiring.remove(button_clicked);
+	                        button_clicked.deactivate();
+	                        break;
+	                    case PRESS_AND_RELEASE:
+	                        button_clicked.deactivate();
+	                        break;
+	                    case TOGGLE:
+	                        if (!button_clicked.activated) {
+	                            button_clicked.activate();
+	                        } else {
+	                            button_clicked.deactivate();
+	                        }
+	                        break;
+	                }
+	            }
+	            button_clicked.pressing = false;
+	        }
+	        mouse_clicked_widget.callOnReleased();
+	        mouse_clicked_widget = null;
+	    }
+	    if (widget_hovering != null) {
+	        widget_hovering.hovering = false;
+	        widget_hovering = null;
+	    }
+	    scrollSelectionOffset = 0;
+	    for (Button b : buttons) {
+	        b.pressing = false;
+	    }
 	}
+
 
 	private void AdjustWidgetPosition() {
 		if (widget_currently_adjusting instanceof WindowMoverWidget) {
@@ -433,20 +488,32 @@ public class UIManager implements InputProcessor {
 		 */
 		// return widget;
 	}
-
 	private List<Widget> getAllWidgetsAtLocation(int mouseX, int mouseY) {
-		List<Widget> found_widgets = new ArrayList<Widget>();
-		for (Widget w : widgets) {
-			if (w.isVisible() && w.isTouchable()) {
-				if (w.containsGlobal(mouseX, mouseY)) {
-					found_widgets.add(w);
-				}
-			}
-		}
-		found_widgets.sort(Comparator.comparingInt(Widget::getZIndex));
-		return found_widgets;
-	}
+	    List<Widget> found_widgets = new ArrayList<Widget>();
 
+	    // A reusable rectangle to avoid allocation if you prefer micro-optimization:
+	    // Rectangle hit = new Rectangle(); // optional: can be reused
+
+	    for (Widget w : widgets) {
+	        if (w.isVisible() && w.isTouchable()) {
+	            Rectangle sel = w.getSelectionRegion(); // ask the widget for its selection region
+	            if (sel != null) {
+	                // Note: sel is in global coords per our Widget.getSelectionRegion contract
+	                if (sel.contains(mouseX, mouseY)) {
+	                    found_widgets.add(w);
+	                }
+	            } else {
+	                // If widget returns null for some reason, safe fallback to existing containsGlobal
+	                if (w.containsGlobal(mouseX, mouseY)) {
+	                    found_widgets.add(w);
+	                }
+	            }
+	        }
+	    }
+
+	    found_widgets.sort(Comparator.comparingInt(Widget::getZIndex));
+	    return found_widgets;
+	}
 	/**
 	 * Renders all canvases in the order they were created
 	 * 
@@ -490,10 +557,7 @@ public class UIManager implements InputProcessor {
 			if (edit_mode && widget_hovering.editable) {
 				widget_hovering.drawEditMode(shape_renderer, false);
 			} else if (widget_hovering.isHoverable()) {
-				shape_renderer.set(ShapeType.Line);
-				shape_renderer.setColor(widget_hovering.color_trim_highlight);
-				shape_renderer.rect(widget_hovering.getGlobalX(), widget_hovering.getGlobalY(),
-						widget_hovering.shape.width, widget_hovering.shape.height);
+//				widget_hovering.drawHover(shape_renderer);
 			}
 			shape_renderer.end();
 		}

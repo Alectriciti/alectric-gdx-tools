@@ -500,9 +500,7 @@ public class Widget{
 				if(manager.edit_mode) {
 					drawEditMode(renderer, recursive);
 				}else {
-					renderer.setColor(color);
-					renderer.set(ShapeType.Line);
-					renderer.rect(getGlobalX(), getGlobalY(), shape.width, shape.height);
+					drawHover(renderer);
 				}
 			}
 		}
@@ -510,6 +508,16 @@ public class Widget{
 		if(recursive) {
 			drawShapeChildren(renderer, recursive);
 		}
+	}
+	
+
+
+
+	public void drawHover(ShapeRenderer shape_renderer) {
+		shape_renderer.set(ShapeType.Line);
+		shape_renderer.setColor(color_trim_highlight);
+		shape_renderer.rect(getGlobalX(), getGlobalY(),
+				shape.width, shape.height);
 	}
 	
 	public void drawEditMode(ShapeRenderer renderer, boolean recursive) {
@@ -552,13 +560,21 @@ public class Widget{
 		if(render_text && name_for_display != null) {
 		//print(getGlobalX()+" "+getGlobalY());
 			font.setColor(font_color);
-			font.draw(sprite_batch, name_for_display, getGlobalX()+font_offset.x, getGlobalY()+font.getCapHeight()+font_offset.y);
+			font.draw(sprite_batch, getTextToRender(), getGlobalX()+font_offset.x, getGlobalY()+font.getCapHeight()+font_offset.y);
 		}
 		if(recursive) {
 			drawFontChildren(sprite_batch, font, recursive);
 		}
 		return true;
 	}
+	
+	
+
+	protected String getTextToRender() {
+		// TODO Auto-generated method stub
+		return name_for_display;
+	}
+
 
 	/**
 	 * 
@@ -644,20 +660,26 @@ public class Widget{
 			}
 		}
 	}
-
 	
-
-
-
+	
+	/**
+	 * Calls when this widget is focused
+	 */
 	final void callOnFocus() {
 		OnFocus();
 	}
-
+	
+	/**
+	 * Calls when this widget is clicked on, then dispatches
+	 */
 	final void callOnClicked() {
 		currently_clicked = true;
 		OnMouseClicked();
 	}
-
+	
+	/*
+	 * Calls when this widget is released with mouse, then dispatches
+	 */
 	final void callOnReleased() {
 		currently_clicked = false;
 		OnMouseReleased();
@@ -673,6 +695,24 @@ public class Widget{
 	
 	protected void OnFocus() {
 		// TODO Auto-generated method stub
+	}
+	
+	
+	/**
+	 * Pointer input APIs — default implementations do nothing.
+	 * Return true if the widget handled/consumed the event (capture it), false otherwise.
+	 * UIManager will call these with global mouse coordinates.
+	 */
+	public boolean onPointerDown(int globalX, int globalY, int pointer, int button) {
+	    return false;
+	}
+
+	public boolean onPointerDragged(int globalX, int globalY, int pointer) {
+	    return false;
+	}
+
+	public boolean onPointerUp(int globalX, int globalY, int pointer, int button) {
+	    return false;
 	}
 
 	
@@ -806,6 +846,30 @@ public class Widget{
 	public void scroll(float amountX, float amountY) {
 		// TODO Auto-generated method stub
 		
+	}
+	/**
+	 * Default selection region for a widget.
+	 *
+	 * By default this returns the widget's visible bounds (shape).
+	 * Override this in widgets that need custom hit regions (Slider knob, color pickers, etc).
+	 */
+	public Rectangle getSelectionRegion() {
+	    // If your Widget class already has a Rectangle field called `shape`, prefer that:
+	    try {
+	        if (this.shape != null) {
+	            // shape stores local x,y (maybe) — we want global coordinates
+	            return new Rectangle(getGlobalX(), getGlobalY(), shape.width, shape.height);
+	        }
+	    } catch (Throwable t) {
+	        // ignore if `shape` doesn't exist in your actual Widget class (fallback below)
+	    }
+
+	    // Fallback: use getGlobalX/Y with width/height accessors (modify if your API differs)
+	    float gx = getGlobalX();
+	    float gy = getGlobalY();
+	    float w = getWidth();   // replace with your width accessor if different
+	    float h = getHeight();  // replace with your height accessor if different
+	    return new Rectangle(gx, gy, w, h);
 	}
 	
 	

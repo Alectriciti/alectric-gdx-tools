@@ -27,6 +27,7 @@ import java.util.List;
 import com.alectriciti.gdx.Canvas;
 import com.alectriciti.gdx.Direction;
 import com.alectriciti.gdx.DropdownMenuButton;
+import com.alectriciti.gdx.Slider;
 import com.alectriciti.gdx.Widget;
 import com.alectriciti.gdx.chat.ColoredText;
 import com.alectriciti.gdx.chat.TextWidget;
@@ -141,6 +142,15 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 				ui_manager.loadAllWidgets();
 			}
 		});
+    	
+    	
+
+		Slider slider = new Slider(ui_manager);
+		slider.setBaseSize(100, 12);
+		slider.setKnobSize(32, 32);
+		slider.setRelativePosition(32, 42);
+		slider.setValueRange(0, 100);
+//		slider.setSize(40, 40);
 		//b.setRelativePosition(100, 00);
 
 		ui_manager.automaticallyAssignIDsToWidgets();
@@ -176,7 +186,7 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 			confirm_box.setGlobalPosition(width/2 - 100, height/2 - 50);
 			//Widget img = new Widget("img", confirm_box);
 			
-			Widget hello_widget = new Widget(ui_manager);
+//			Widget hello_widget = new Widget(ui_manager);
 			//hello_widget.render_text
 			//Message hello_world = new Message(new ColoredText());
 			
