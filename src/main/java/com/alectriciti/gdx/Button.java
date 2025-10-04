@@ -80,6 +80,7 @@ public class Button extends Widget implements Activatable{
 	public Button(String name, UIManager widgetManager, int...button_codes) {
 		super(name, widgetManager);
 		this.color = Color.WHITE.cpy();
+		this.render_text = true;
 		registerButton(button_codes);
 		updateGlobalPosition();
 	}

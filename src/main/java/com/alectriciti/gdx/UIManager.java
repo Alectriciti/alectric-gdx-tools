@@ -47,7 +47,8 @@ public class UIManager implements InputProcessor {
 
 	public static final float EDIT_HANDLE_HEIGHT = 8;
 
-	boolean mouse_is_down;
+	boolean mouse_is_pressed;
+	boolean left_is_pressed, right_is_pressed, up_is_pressed, down_is_pressed;
 	boolean debug_mode = true;
 
 	/**
@@ -179,6 +180,14 @@ public class UIManager implements InputProcessor {
 	public void update() {
 		// Mouse handling
 		ui_tick++;
+		
+		
+		//Set Arrow Key data
+
+		left_is_pressed = (Gdx.input.isKeyPressed(Keys.LEFT));
+		right_is_pressed = (Gdx.input.isKeyPressed(Keys.RIGHT));
+		up_is_pressed = (Gdx.input.isKeyPressed(Keys.UP));
+		down_is_pressed = (Gdx.input.isKeyPressed(Keys.DOWN));
 
 		// mouseScrollOffset += (scroll_y/4);s
 
@@ -236,14 +245,16 @@ public class UIManager implements InputProcessor {
 		mouse_x = getMouseX();
 		mouse_y = getMouseY();
 		
-		if (mouse_is_down && pointerCapturedWidget != null) {
+		if (mouse_is_pressed && pointerCapturedWidget != null) {
 		    // For mouse we use pointer id 0
 		    pointerCapturedWidget.onPointerDragged(mouse_x, mouse_y, 0);
 		}
 
+		
+		//Set Mouse Data
 		if (Gdx.input.isButtonPressed(Buttons.LEFT)) {
 			left_click_down();
-		} else if (mouse_is_down) {
+		} else if (mouse_is_pressed) {
 			left_click_release();
 		}
 
@@ -252,7 +263,7 @@ public class UIManager implements InputProcessor {
 	}
 
 	private void left_click_down() {
-	    mouse_is_down = true;
+	    mouse_is_pressed = true;
 
 	    // Update mouse_x/mouse_y earlier in update() already; still get local copy
 	    int mx = mouse_x;
@@ -330,7 +341,7 @@ public class UIManager implements InputProcessor {
 
 
 	private void left_click_release() {
-	    mouse_is_down = false;
+	    mouse_is_pressed = false;
 
 	    int mx = mouse_x;
 	    int my = mouse_y;
@@ -429,7 +440,7 @@ public class UIManager implements InputProcessor {
 	}
 
 	private void HoverMouseLogic() {
-		if (!mouse_is_down) {
+		if (!mouse_is_pressed) {
 
 			// canvas_proposed_to_attach
 
@@ -591,6 +602,7 @@ public class UIManager implements InputProcessor {
 
 	@Override
 	public boolean keyDown(int keycode) {
+		
 
 		if (buttons_by_key.containsKey(keycode)) {
 			Button b = buttons_by_key.get(keycode);

@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.github.alectriciti</groupId>
   <artifactId>alectric-gdx-tools</artifactId>
-  <version>0.0.2</version>
+  <version>0.0.3</version>
   <dependencies>
   <dependency>
     <groupId>com.badlogicgames.gdx</groupId>

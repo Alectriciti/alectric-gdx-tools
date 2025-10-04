@@ -25,14 +25,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.alectriciti.gdx.Canvas;
+import com.alectriciti.gdx.ColoredText;
 import com.alectriciti.gdx.Direction;
 import com.alectriciti.gdx.DropdownMenuButton;
 import com.alectriciti.gdx.Slider;
+import com.alectriciti.gdx.TextInput;
+import com.alectriciti.gdx.TextWidget;
 import com.alectriciti.gdx.Widget;
-import com.alectriciti.gdx.chat.ColoredText;
-import com.alectriciti.gdx.chat.TextWidget;
-import com.alectriciti.gdx.chat.TextInput;
-import com.alectriciti.gdx.chat.TextInput.ReturnKeyMode;
+import com.alectriciti.gdx.TextInput.ReturnKeyMode;
 import com.alectriciti.gdx.Button;
 import com.alectriciti.gdx.UIManager;
 
@@ -148,8 +148,8 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 		Slider slider = new Slider(ui_manager);
 		slider.setBaseSize(100, 12);
 		slider.setKnobSize(32, 32);
-		slider.setRelativePosition(32, 42);
 		slider.setValueRange(0, 100);
+		slider.setRelativePosition(32, 142);
 //		slider.setSize(40, 40);
 		//b.setRelativePosition(100, 00);
 

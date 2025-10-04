@@ -1,4 +1,4 @@
-package com.alectriciti.gdx.chat;
+package com.alectriciti.gdx;
 
 import com.badlogic.gdx.graphics.Color;
 

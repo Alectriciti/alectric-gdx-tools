@@ -43,7 +43,7 @@ public class Widget{
 	}
 
 	public String name_for_display; //The display name
-	public boolean render_text = true;
+	public boolean render_text = false;
 
 	public transient LinkedList<Widget> widgets = new LinkedList<Widget>();
 
@@ -639,6 +639,7 @@ public class Widget{
 	 * @return
 	 */
 	public boolean isTouchable() {
+		if(shape==null)return false;
 		return touchable;
 	}
 	

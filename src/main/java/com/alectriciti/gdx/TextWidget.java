@@ -1,4 +1,4 @@
-package com.alectriciti.gdx.chat;
+package com.alectriciti.gdx;
 
 import static com.alectriciti.gdx.Toolkit.*;
 
@@ -11,9 +11,6 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 import static com.badlogic.gdx.graphics.GL20.*;
 import static com.badlogic.gdx.graphics.GL20.GL_FUNC_ADD;
-
-import com.alectriciti.gdx.UIManager;
-import com.alectriciti.gdx.Widget;
 
 /**
  * A chat message is a divided collection of [ColoredText]s, which allow for multi-colored lines of text
@@ -56,6 +53,7 @@ public class TextWidget extends Widget{
         for(ColoredText t : msgs){
             msg_raw += t.getText();
         }
+        if(layout == null) layout = new GlyphLayout();
     	if(font==null) {
     		font = UIManager.getDefaultFont();
     		if(font==null) {
