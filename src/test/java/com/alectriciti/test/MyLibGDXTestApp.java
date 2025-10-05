@@ -217,7 +217,7 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 			
 			
 			
-			ui_manager.focus(confirm_box);
+			ui_manager.focus(confirm_box, true);
 		}
 	}
 	

@@ -42,6 +42,7 @@ import static com.alectriciti.gdx.Toolkit.*;
 public class UIManager implements InputProcessor {
 
 	public Color COLOR_BUTTON_ACTIVATED = Color.GREEN;
+	public Color COLOR_BUTTON_TEXT_ACTIVATED = new Color(0.1f, 0.1f, 0.1f, 1);
 	public Color COLOR_BUTTON_PRESSING = Color.GRAY;
 	public Color COLOR_BUTTON_DEFAULT = new Color(0.05f, 0.05f, 0.05f, 1);
 
@@ -118,7 +119,7 @@ public class UIManager implements InputProcessor {
 		}
 	}
 
-	public void focus(Widget new_widget) {
+	public void focus(Widget new_widget, boolean move_to_front) {
 		if (new_widget == null) {
 			if(widget_focused!=null) {
 				if(widget_focused instanceof InputProcessor) {
@@ -135,12 +136,14 @@ public class UIManager implements InputProcessor {
 				}
 				widget_focused.focused = false; // unset the previous widget
 			}
-			global_canvas_z++;
-			// TODO Do extra checks such as unclicking buttons etc.
-			// mouse_adjusting_widfget = null;
 			widget_focused = new_widget;
-			widget_focused.pushNewZPosition(true);
-			widget_independants.sort(Comparator.comparingInt(Widget::getZIndex));
+			if(move_to_front) {
+				global_canvas_z++;
+				// TODO Do extra checks such as unclicking buttons etc.
+				// mouse_adjusting_widfget = null;
+				widget_focused.pushNewZPosition(true);
+				widget_independants.sort(Comparator.comparingInt(Widget::getZIndex));
+			}
 			widget_focused.focused = true;
 			if(widget_focused instanceof InputProcessor) {
 				input_multiplexer.addProcessor(0, (InputProcessor) widget_focused);
@@ -309,7 +312,7 @@ public class UIManager implements InputProcessor {
 	        	    }
 
 	        	} else {
-	        	    focus(null);
+	        	    focus(null, false);
 	        	}
 	        }
 	    } else {
@@ -786,8 +789,10 @@ public class UIManager implements InputProcessor {
 				}
 			} else if (file.extension().toLowerCase().equals("png")) {
 				if (button != null) {
-					button.setTexture(file);
-					return true;
+					if(button.can_change_texture) {
+						button.setTexture(file);
+						return true;
+					}
 				}
 			}
 

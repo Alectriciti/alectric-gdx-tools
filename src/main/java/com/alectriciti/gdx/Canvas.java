@@ -89,7 +89,7 @@ public class Canvas extends Widget{
 	@Override
 	protected void OnMouseClicked() {
 		if(!focused) {
-			manager.focus(this);
+			manager.focus(this, true);
 		}
 	}
 	

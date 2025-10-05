@@ -120,7 +120,7 @@ public class TextInput extends TextWidget implements InputProcessor{
 	    // ESCAPE (existing behavior)
 	    if (keycode == Keys.ESCAPE) {
 	        if (escape_clears_focus) {
-	            manager.focus(null);
+	            manager.focus(null, false);
 	            return true;
 	        } else {
 	            return false;

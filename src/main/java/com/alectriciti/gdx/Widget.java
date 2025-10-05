@@ -54,7 +54,7 @@ public class Widget{
 	
 	protected Rectangle shape;
 	protected Rectangle shape_base = new Rectangle(); // for UI offset
-	protected Rectangle shape_global = new Rectangle();
+	protected Rectangle shape_global = new Rectangle();;
 	public Point font_offset = new Point(0, 0);
 	
 	public Direction alignment = Direction.NONE;
@@ -81,6 +81,10 @@ public class Widget{
 		this.texture = new Texture(texture_file);
 	}
 	
+	
+	public void setText(String text_for_display) {
+		this.name_for_display = text_for_display;
+	}
 	
 	/**
 	 * Loading from serialization
@@ -161,6 +165,8 @@ public class Widget{
 		updateGlobalPosition();
 		pushNewZPosition(false);
 	}
+	
+	
 	
 	/**
 	 * A barebones constructor which registers
@@ -649,7 +655,7 @@ public class Widget{
 	}
 	
 	public void focus() {
-		manager.focus(this);
+		manager.focus(this, true);
 	}
 	
 	protected void pushNewZPosition(boolean recursive) {

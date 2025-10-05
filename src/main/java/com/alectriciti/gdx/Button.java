@@ -50,6 +50,7 @@ public class Button extends Widget implements Activatable{
 	public Color color_default = manager.COLOR_BUTTON_DEFAULT;
 	public Color color_pressing = manager.COLOR_BUTTON_PRESSING.cpy();
 	public Color color_activated = manager.COLOR_BUTTON_ACTIVATED.cpy();
+	public Color color_activated_text = manager.COLOR_BUTTON_TEXT_ACTIVATED.cpy();
 	public Color effect_color = new Color(Color.WHITE);
 	
 	public boolean play_effect = true;
@@ -70,15 +71,15 @@ public class Button extends Widget implements Activatable{
 	 */
 	public Button(String button_name, Widget parent, int...button_codes) {
 		super(button_name, parent);
-		//super(wonkaMain, button_name);
-		this.color = Color.WHITE;
-		registerButton(button_codes);
-		updateGlobalPosition();
+		init(button_codes);
 	}
-	
 	
 	public Button(String name, UIManager widgetManager, int...button_codes) {
 		super(name, widgetManager);
+		init(button_codes);
+	}
+	
+	private void init(int...button_codes) {
 		this.color = Color.WHITE.cpy();
 		this.render_text = true;
 		registerButton(button_codes);
@@ -206,6 +207,12 @@ public class Button extends Widget implements Activatable{
 	public boolean is_key_down;
 	public boolean cancelled;
 	
+	/**
+	 * Whether or not the user can drag and drop a png to change the button's texture
+	 */
+	public boolean can_change_texture = true;
+	public boolean texture_stretch = false; 
+	
 	@Override
 	public void drawShape(ShapeRenderer renderer, boolean recursive) {
 		
@@ -254,7 +261,16 @@ public class Button extends Widget implements Activatable{
 				} else {
 					batch.setColor(color_texture_alpha);
 				}
-				batch.draw(texture, getGlobalX(), getGlobalY() + 1, shape.width - 1, shape.height - 1);
+				if(texture_stretch) {
+					batch.draw(texture, getGlobalX(), getGlobalY() + 1, shape.width - 1, shape.height - 1);
+				}else {
+					float texW = texture.getWidth(), texH = texture.getHeight();
+				    float scale = Math.min((shape.width - 1) / texW, (shape.height - 1) / texH);
+				    float w = texW * scale, h = texH * scale;
+//				    float x = getGlobalX() + (shape.width - w) / 2f;
+//				    float y = getGlobalY() + (shape.height - h) / 2f + 1;
+				    batch.draw(texture, getGlobalX(), getGlobalY(), w, h);
+				}
 			}
 		}
 		if(recursive) {
@@ -274,11 +290,13 @@ public class Button extends Widget implements Activatable{
 			if(pressing) {
 				font.setColor(Color.DARK_GRAY);
 			}else if (activated) {
-				font.setColor(Color.BLACK);
+				font.setColor(color_activated_text);
 			}else {
 				font.setColor(color_texture_alpha);
 			}
-			font.draw(batch, name_for_display, getGlobalX()+font_offset.x, getGlobalY()+font.getCapHeight()+font_offset.y);
+			if(render_text && name_for_display!=null) {
+				font.draw(batch, name_for_display, getGlobalX()+font_offset.x, getGlobalY()+font.getCapHeight()+font_offset.y);
+			}
 		}
 		if(recursive) {
 			drawFontChildren(batch, font, recursive);
