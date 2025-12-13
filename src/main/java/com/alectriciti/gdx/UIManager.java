@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWVidMode;
@@ -48,7 +49,8 @@ public class UIManager implements InputProcessor {
 
 	public static final float EDIT_HANDLE_HEIGHT = 8;
 
-	boolean mouse_is_pressed;
+	boolean left_mouse_is_pressed;
+	boolean right_mouse_is_pressed;
 	boolean left_is_pressed, right_is_pressed, up_is_pressed, down_is_pressed;
 	boolean debug_mode = true;
 
@@ -77,6 +79,8 @@ public class UIManager implements InputProcessor {
 	List<Widget> widget_independants = new ArrayList<Widget>();
 	List<Canvas> canvases_active = new ArrayList<Canvas>();
 	Widget widget_focused;
+	Widget context_widget_candidate;
+	Widget context_widget;
 	int global_canvas_z = 0;
 
 	public int ui_tick = 0;
@@ -248,17 +252,23 @@ public class UIManager implements InputProcessor {
 		mouse_x = getMouseX();
 		mouse_y = getMouseY();
 		
-		if (mouse_is_pressed && pointerCapturedWidget != null) {
+		if (left_mouse_is_pressed && pointerCapturedWidget != null) {
 		    // For mouse we use pointer id 0
 		    pointerCapturedWidget.onPointerDragged(mouse_x, mouse_y, 0);
 		}
 
-		
+
 		//Set Mouse Data
 		if (Gdx.input.isButtonPressed(Buttons.LEFT)) {
 			left_click_down();
-		} else if (mouse_is_pressed) {
+		} else if (left_mouse_is_pressed) {
 			left_click_release();
+		}
+		//Set Mouse Data
+		if (Gdx.input.isButtonPressed(Buttons.RIGHT)) {
+			right_click_down();
+		} else if (right_mouse_is_pressed) {
+			right_click_release();
 		}
 
 		HoverMouseLogic();
@@ -266,7 +276,7 @@ public class UIManager implements InputProcessor {
 	}
 
 	private void left_click_down() {
-	    mouse_is_pressed = true;
+	    left_mouse_is_pressed = true;
 
 	    // Update mouse_x/mouse_y earlier in update() already; still get local copy
 	    int mx = mouse_x;
@@ -344,7 +354,7 @@ public class UIManager implements InputProcessor {
 
 
 	private void left_click_release() {
-	    mouse_is_pressed = false;
+	    left_mouse_is_pressed = false;
 
 	    int mx = mouse_x;
 	    int my = mouse_y;
@@ -422,6 +432,27 @@ public class UIManager implements InputProcessor {
 	        b.pressing = false;
 	    }
 	}
+	
+
+
+	private void right_click_down() {
+		right_mouse_is_pressed = true;
+    	if (widget_hovering != null) {
+    		//implement context opening
+        	context_widget_candidate = widget_hovering;
+    	}
+	}
+
+	private void right_click_release() {
+	    right_mouse_is_pressed = false;
+	    
+	    //If the widget the pointer is over is STILL the proposed context_widget, select it.
+	    if(context_widget_candidate != null && widget_hovering == context_widget_candidate) {
+	    	context_widget = context_widget_candidate.displayContextWidget();
+	    	context_widget_candidate = null;
+	    }
+		
+	}
 
 
 	private void AdjustWidgetPosition() {
@@ -442,8 +473,11 @@ public class UIManager implements InputProcessor {
 		}
 	}
 
+	/**
+	 * Runs finally after other mouse click logic
+	 */
 	private void HoverMouseLogic() {
-		if (!mouse_is_pressed) {
+		if (!left_mouse_is_pressed) {
 
 			// canvas_proposed_to_attach
 
@@ -659,7 +693,7 @@ public class UIManager implements InputProcessor {
 		}
 		return false;
 	}
-
+	
 	@Override
 	public boolean keyUp(int keycode) {
 		if (buttons_by_key.containsKey(keycode)) {
@@ -856,6 +890,7 @@ public class UIManager implements InputProcessor {
 			file.mkdirs();
 
 		for (Widget w : widgets) {
+			if(!w.doesSerialize())continue;
 			if (w.getId() != null) {
 				if(isValidFilename(w.getId())) {
 					FileHandle widgetFile = Gdx.files.local(folder_widgets + w.getId() + ".json");

@@ -26,6 +26,7 @@ import java.util.List;
 
 import com.alectriciti.gdx.Canvas;
 import com.alectriciti.gdx.ColoredText;
+import com.alectriciti.gdx.ContextWidget;
 import com.alectriciti.gdx.Direction;
 import com.alectriciti.gdx.DropdownMenuButton;
 import com.alectriciti.gdx.Slider;
@@ -80,7 +81,20 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 		
 		DropdownMenuButton main_menu;
 		
-		Button test_button_a = new Button("Test Button A", ui_manager);
+		Button test_button_a = new Button("Test Button A", ui_manager) {
+			public com.alectriciti.gdx.ContextWidget displayContextWidget() {
+				ContextWidget w = new ContextWidget(this);;
+				new Button("option 1", w);
+				new Button("option 2", w);
+				new Button("exit", w) {
+					@Override
+					protected void onActivate() {
+						((Button)parent).deactivate();
+					}
+				};
+				return w;	
+			}
+		};
 		test_button_a.setGlobalPosition(100, 100);
 		test_button_a.setSize(142, 32);
 		

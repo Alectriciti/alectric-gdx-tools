@@ -26,7 +26,7 @@ import com.badlogic.gdx.utils.JsonValue;
  * Widgets are the building blocks of Alectric UI which can be updated/rendered manually, or using WidgetManager
  * @author alectriciti
  */
-public class Widget{
+public class Widget implements Contextable{
 
 	//Class stuff for Serialization
 	public String type = "widget";
@@ -34,9 +34,11 @@ public class Widget{
 	transient protected UIManager manager;
 	
 	protected transient Widget parent;
+	public boolean follow_parent = true;
 	
 	//for serializations
 	public String id;
+	protected boolean serializable;
 	
 	public String getId() {
 		return id;
@@ -368,7 +370,7 @@ public class Widget{
 	}
 	
 	public void updateGlobalPosition() {
-		if(parent!=null) {
+		if(parent!=null && follow_parent) {
 			shape_global.x = parent.getGlobalX() + shape.x;
 			shape_global.y = parent.getGlobalY() + shape.y;
 		}else {
@@ -452,10 +454,11 @@ public class Widget{
 	    updateGlobalPosition();
 	    
 	}
-
-
-
-
+		
+	protected void setFollowParent(boolean b) {
+		this.follow_parent = b;
+	}
+	
 	public boolean containsGlobal(int mouse_x, int mouse_y) {
 		return shape_global.contains(mouse_x, mouse_y);
 	}
@@ -877,6 +880,21 @@ public class Widget{
 	    float w = getWidth();   // replace with your width accessor if different
 	    float h = getHeight();  // replace with your height accessor if different
 	    return new Rectangle(gx, gy, w, h);
+	}
+
+	
+	/**
+	 * Displays the context Widget associated with this widget
+	 * @return
+	 */
+	public ContextWidget displayContextWidget() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	public boolean doesSerialize() {
+		return serializable;
 	}
 	
 	
