@@ -1,6 +1,7 @@
 package com.alectriciti.gdx;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -80,7 +81,7 @@ public class UIManager implements InputProcessor {
 	List<Canvas> canvases_active = new ArrayList<Canvas>();
 	Widget widget_focused;
 	Widget context_widget_candidate;
-	Widget context_widget;
+	ContextWidget context_widget;
 	int global_canvas_z = 0;
 
 	public int ui_tick = 0;
@@ -98,6 +99,7 @@ public class UIManager implements InputProcessor {
 	public HashSet<Widget> widgets = new HashSet<Widget>();
 	// public HashSet<Widget> widget_orphans = new HashSet<Widget>();
 
+	private List<Widget> widgets_to_add = new ArrayList<Widget>();
 	private List<Widget> widgets_to_destroy = new ArrayList<Widget>();
 
 	public List<Button> buttons = new ArrayList<Button>();
@@ -209,10 +211,22 @@ public class UIManager implements InputProcessor {
 				scrollSelectionOffset = 0;
 			}
 		}
+		if (!widgets_to_add.isEmpty()) {
+			widgets.addAll(widgets_to_add);
+			for (Widget widget : widgets_to_add) {
+				if (widget.getParent() == null) {
+					widget_independants.add(widget);
+				}
+			}
+			List<Widget> widgz = new ArrayList<Widget>(widgets_to_add);
+			for(Widget widget : widgz) {
+				widget.callOnCreate();
+			}
+			widgets_to_add.clear();
+		}
 
 		if (!widgets_to_destroy.isEmpty()) {
 			widgets.removeAll(widgets_to_destroy);
-			// widget_orphans.removeAll(widgets_to_destroy);
 			widget_independants.removeAll(widgets_to_destroy);
 			buttons.removeAll(widgets_to_destroy);
 
@@ -438,7 +452,6 @@ public class UIManager implements InputProcessor {
 	private void right_click_down() {
 		right_mouse_is_pressed = true;
     	if (widget_hovering != null) {
-    		//implement context opening
         	context_widget_candidate = widget_hovering;
     	}
 	}
@@ -446,9 +459,21 @@ public class UIManager implements InputProcessor {
 	private void right_click_release() {
 	    right_mouse_is_pressed = false;
 	    
+	    /**
+	     * Check if a context menu already exists before spawning a new oone
+	     */
+		boolean context_menu_exists = context_widget != null;
+    	if(context_menu_exists) {
+    		context_widget.deactivate(); // Deactives (closes) the existing context widget
+    		if(widget_hovering == context_widget.getParent()) {
+    			context_widget = null; // Prevents re-opening a context window on the same widget
+    			return;
+    		}
+    	}
+	    
 	    //If the widget the pointer is over is STILL the proposed context_widget, select it.
 	    if(context_widget_candidate != null && widget_hovering == context_widget_candidate) {
-	    	context_widget = context_widget_candidate.displayContextWidget();
+	    	context_widget = context_widget_candidate.spawnContextWidget(); //spawn a new widget
 	    	context_widget_candidate = null;
 	    }
 		
@@ -864,12 +889,13 @@ public class UIManager implements InputProcessor {
 	 */
 	void registerWidget(Widget widget) {
 
-		if (widget.getParent() == null) {
-			// widget_orphans.add(widget);
-			widget_independants.add(widget);
-		}
-
-		widgets.add(widget);
+//		if (widget.getParent() == null) {
+//			// widget_orphans.add(widget);
+//			widget_independants.add(widget);
+//		}
+//
+//		widgets.add(widget);
+		widgets_to_add.add(widget);
 	}
 
 	String folder_widgets = "widgets/";

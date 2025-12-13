@@ -3,6 +3,6 @@ package com.alectriciti.gdx;
 public interface Contextable {
 	
 
-	public ContextWidget displayContextWidget();
+	public ContextWidget spawnContextWidget();
 
 }

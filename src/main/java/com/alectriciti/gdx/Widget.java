@@ -694,6 +694,16 @@ public class Widget implements Contextable{
 		currently_clicked = false;
 		OnMouseReleased();
 	}
+	
+	final void callOnCreate() {
+		OnCreate();
+	}
+
+	protected void OnCreate() {
+		// TODO Auto-generated method stub
+		
+	}
+
 
 	protected void OnMouseClicked() {
 		// TODO Auto-generated method stub
@@ -887,7 +897,7 @@ public class Widget implements Contextable{
 	 * Displays the context Widget associated with this widget
 	 * @return
 	 */
-	public ContextWidget displayContextWidget() {
+	public ContextWidget spawnContextWidget() {
 		// TODO Auto-generated method stub
 		return null;
 	}

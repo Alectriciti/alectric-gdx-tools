@@ -69,7 +69,6 @@ public class DropdownMenuButton extends Button{
 //		}
 		super.activate();
 		dropdownOpen();
-		
 	}
 
 	@Override
@@ -132,12 +131,18 @@ public class DropdownMenuButton extends Button{
 					for(Widget w : widgets) {
 						w.setVisible(false, true);
 					}
+					finishedAnimation();
 				}
 			}
 		}
 		
 	}
 	
+	public void finishedAnimation() {
+		// TODO Auto-generated method stub
+		
+	}
+
 	/**
 	 * Sets the new position of the Dropdown's Children based
 	 * on the values previously set in update()

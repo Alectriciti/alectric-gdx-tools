@@ -52,6 +52,8 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 	
 	public int width, height;
 	
+	Widget info;
+	
 	public Runnable run_new_skin = new Runnable() {
 		
 		@Override
@@ -82,7 +84,7 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 		DropdownMenuButton main_menu;
 		
 		Button test_button_a = new Button("Test Button A", ui_manager) {
-			public com.alectriciti.gdx.ContextWidget displayContextWidget() {
+			public ContextWidget spawnContextWidget() {
 				ContextWidget w = new ContextWidget(this);;
 				new Button("option 1", w);
 				new Button("option 2", w);
@@ -98,7 +100,14 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 		test_button_a.setGlobalPosition(100, 100);
 		test_button_a.setSize(142, 32);
 		
-		Button test_button_b = new Button("Test Button B", ui_manager);
+		Button test_button_b = new Button("Test Button B", ui_manager) {
+
+			public ContextWidget spawnContextWidget() {
+				ContextWidget w = new ContextWidget(this);;
+				new Button("ass", w);
+				return w;	
+			}
+		};
 		test_button_b.setGlobalPosition(280, 100);
 		test_button_b.setSize(142, 32);
 
@@ -119,6 +128,11 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 			}
 		});
 		
+		info = new Widget("info", ui_manager);
+		info.render_text = true;
+		info.alignment = Direction.UP;
+		info.setSize(120, 53);
+		info.setRelativePosition(10, 10);
 		
 		
 		//hello_widget.editable = true;
@@ -279,10 +293,14 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 		ui_manager.alignAllWidgets();
 		viewport.update(width, height, true);
 	}
+	
+	public void update() {
+		info.setText("widgets: "+ui_manager.widgets.size());
+	}
 
 	@Override
 	public void render() {
-
+		update();
 		ui_manager.update();
 		camera.zoom = 1f;
 		camera.update();
