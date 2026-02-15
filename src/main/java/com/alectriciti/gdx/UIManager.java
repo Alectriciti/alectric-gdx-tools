@@ -248,10 +248,12 @@ public class UIManager implements InputProcessor {
 		}
 
 		for (Button b : buttons_rapidfiring) {
-			if (ui_tick % b.rapidfire_frequency == 0) {
-				b.activate();
+			if(b.pressed_ticks>=b.rapidfire_start_delay) {
+				if (ui_tick % b.rapidfire_frequency == 0) {
+						b.activate();
+					}
+				}
 			}
-		}
 		for (Widget w : widgets) {
 			w.update();
 		}

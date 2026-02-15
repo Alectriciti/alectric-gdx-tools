@@ -42,7 +42,10 @@ public class Button extends Widget implements Activatable{
 	public boolean pressing = false;
 	public boolean activated = false;
 	
+	public int pressed_ticks = 0;
+	
 	public int rapidfire_frequency = 8;
+	public int rapidfire_start_delay = 8;
 	
 	public float effect_offset_start = 2;
 	public static float effect_move_speed = 0.3333f;
@@ -194,10 +197,14 @@ public class Button extends Widget implements Activatable{
 		// TODO Auto-generated method stub
 			
 			if(pressing) {
+				pressed_ticks++;
 				color = LerpColor(color, color_pressing, 0.5f);
 			}else if(activated) {
 				color = LerpColor(color, color_activated, 0.5f);
 			}else {
+				if(pressed_ticks>0) {
+					pressed_ticks=0;
+				}
 				color = LerpColor(color, color_default, 0.25f);
 				//color.set(color_default.r*d, color_default.g*d, color_default.b*d, color_default.a);
 			}

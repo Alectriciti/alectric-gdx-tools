@@ -27,7 +27,7 @@ import com.badlogic.gdx.utils.JsonValue;
  * @author alectriciti
  */
 public class Widget implements Contextable{
-
+	
 	//Class stuff for Serialization
 	public String type = "widget";
 	
@@ -38,21 +38,19 @@ public class Widget implements Contextable{
 	
 	//for serializations
 	public String id;
-	protected boolean serializable;
+	protected boolean serializable = true;
 	
 	public String getId() {
 		return id;
 	}
-
+	
 	public String name_for_display; //The display name
 	public boolean render_text = false;
-
+	
 	public transient LinkedList<Widget> widgets = new LinkedList<Widget>();
-
 	
 	//A constantly refreshing cache for quickly determining grandchildren
 	transient List<Widget> widgets_heirarchy_cache = new ArrayList<Widget>();
-	
 	
 	protected Rectangle shape;
 	protected Rectangle shape_base = new Rectangle(); // for UI offset
@@ -62,7 +60,6 @@ public class Widget implements Contextable{
 	public Direction alignment = Direction.NONE;
 	
 	public boolean editable = true;
-
 	
 	public transient int z; //for z ordering
 	public int z_layer_offset = 0; //a more static z offset. This gets added to the standard z value when applying new z positions
@@ -71,18 +68,16 @@ public class Widget implements Contextable{
 	transient private boolean currently_clicked = false;
 	
 	transient boolean animating; // this will run on update() if relevant
-
+	
 	transient protected Color color_texture_alpha = new Color(1,1,1,1);
 	
 	transient protected Texture texture;
-	protected FileHandle texture_file;
-	
+	protected FileHandle texture_file;	
 	
 	public void setTexture(FileHandle fileHandle) {
 		this.texture_file = fileHandle;
 		this.texture = new Texture(texture_file);
 	}
-	
 	
 	public void setText(String text_for_display) {
 		this.name_for_display = text_for_display;
@@ -122,7 +117,7 @@ public class Widget implements Contextable{
 	 */
 	public Color color = new Color(0, 0, 0, 1);
 	private float opacity = 1;
-
+	
 	public boolean focused;
 	
 	public boolean isFocused() {
@@ -168,8 +163,6 @@ public class Widget implements Contextable{
 		pushNewZPosition(false);
 	}
 	
-	
-	
 	/**
 	 * A barebones constructor which registers
 	 * @param manager
@@ -185,14 +178,12 @@ public class Widget implements Contextable{
 		return name_for_display;
 	}
 	
-	
 	/*
 	 * 
 	 * Parents and Children 
 	 * 
 	 * 
 	 */
-	
 	public Widget getParent() {
 		return parent;
 	}
@@ -224,7 +215,7 @@ public class Widget implements Contextable{
 			return true;
 		}
 	}
-
+	
 	/**
 	 * Attaches and registers the widget to this widget
 	 * The idea is that this is called at two places:
@@ -239,7 +230,7 @@ public class Widget implements Contextable{
 		}
 		widget_to_attach.parent = this;
 		widgets.add(widget_to_attach);
-
+		
 		refreshHeirarchyUpward();
 	}
 	
@@ -274,19 +265,9 @@ public class Widget implements Contextable{
 		return widgets_heirarchy_cache;
 	}
 	
-	
-	
-	
-	
-	
-	
-	
-	
 	public void setSizeToFont() {
 		
 	}
-	
-	
 	
 	public void setSize(float width, float height) {
 		this.shape.setWidth(width);
@@ -321,10 +302,10 @@ public class Widget implements Contextable{
 	public void updateAlignment() {
 		int width = Gdx.graphics.getWidth();
 		int height = Gdx.graphics.getHeight();
-
+		
 		shape.x = shape_base.x;
 		shape.y = shape_base.y;
-
+		
 		boolean align_top = false,  align_right = false;
 		switch(alignment) {
 		case DOWN_RIGHT:
@@ -353,8 +334,8 @@ public class Widget implements Contextable{
 			shape.x = width + shape_base.x - shape.width;
 		}
 	}
-
-
+	
+	
 	public void setRelativeX(float x) {
 		// TODO Auto-generated method stub
 		this.shape_base.x = x;
@@ -391,8 +372,7 @@ public class Widget implements Contextable{
 	protected void onPositionUpdate() {
 		
 	}
-
-
+	
 	public void setGlobalPosition(float x, float y) {
 		int width = Gdx.graphics.getWidth();
 		int height = Gdx.graphics.getHeight();
@@ -436,13 +416,13 @@ public class Widget implements Contextable{
 	    } else {
 	        shape_base.x = x;
 	        shape_base.y = y;
-
+	        
 	        if(align_top) {
 	            shape_base.y = y - (height - shape.height);
 	        } else {
 	            shape_base.y = y;
 	        }
-
+	        
 	        if(align_right) {
 	            shape_base.x = x - (width - shape.width);
 	        } else {
@@ -479,7 +459,7 @@ public class Widget implements Contextable{
 	public void setColorTrim(Color c) {
 		this.color_trim = new Color(c.r, c.g, c.b, opacity);
 	}
-
+	
 	public void setColor(Color c) {
 		this.color = c;
 		c.a = opacity;
@@ -519,9 +499,6 @@ public class Widget implements Contextable{
 		}
 	}
 	
-
-
-
 	public void drawHover(ShapeRenderer shape_renderer) {
 		shape_renderer.set(ShapeType.Line);
 		shape_renderer.setColor(color_trim_highlight);
@@ -578,13 +555,11 @@ public class Widget implements Contextable{
 	}
 	
 	
-
 	protected String getTextToRender() {
 		// TODO Auto-generated method stub
 		return name_for_display;
 	}
-
-
+	
 	/**
 	 * 
 	 * @param sprite_batch A clean {@link SpriteBatch} which has already started .begin()
@@ -628,7 +603,6 @@ public class Widget implements Contextable{
 			w.drawFont(sprite_batch, font, recursive);
 		}
 	}
-
 	
 	
 	/**
@@ -703,12 +677,11 @@ public class Widget implements Contextable{
 		// TODO Auto-generated method stub
 		
 	}
-
-
+	
 	protected void OnMouseClicked() {
 		// TODO Auto-generated method stub
 	}
-
+	
 	protected void OnMouseReleased() {
 		// TODO Auto-generated method stub
 	}

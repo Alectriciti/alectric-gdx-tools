@@ -137,15 +137,13 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 		
 		//hello_widget.editable = true;
 		//hello_widget.setTouchable(true, true);
-
-    	main_menu = new DropdownMenuButton("Main Menu", ui_manager, Keys.ESCAPE, Keys.B);
+    	main_menu = new DropdownMenuButton("Main Menu", ui_manager, Keys.ESCAPE);
     	main_menu.alignment = Direction.UP;
     	main_menu.setRelativePosition(0, 0);
     	main_menu.setSize(120, 32);
     	Button button_new_skin = new Button("New Menu", main_menu);
     	button_new_skin.addOnActivate(main_menu.getAutocloseRunnable());
     	button_new_skin.addOnActivate(new Runnable() {
-
 			@Override
     		public void run() {
     			confirmDialogueBox(run_new_skin);
