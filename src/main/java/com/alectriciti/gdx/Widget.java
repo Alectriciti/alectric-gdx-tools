@@ -25,6 +25,7 @@ import com.badlogic.gdx.utils.JsonValue;
 /**
  * Widgets are the building blocks of Alectric UI which can be updated/rendered manually, or using WidgetManager
  * @author alectriciti
+ * 
  */
 public class Widget implements Contextable{
 	
@@ -54,7 +55,8 @@ public class Widget implements Contextable{
 	
 	protected Rectangle shape;
 	protected Rectangle shape_base = new Rectangle(); // for UI offset
-	protected Rectangle shape_global = new Rectangle();;
+	protected Rectangle shape_global = new Rectangle();
+	
 	public Point font_offset = new Point(0, 0);
 	
 	public Direction alignment = Direction.NONE;

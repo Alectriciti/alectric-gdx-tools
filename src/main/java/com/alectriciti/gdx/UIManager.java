@@ -107,7 +107,7 @@ public class UIManager implements InputProcessor {
 	public Map<String, Button> buttons_by_name = new HashMap<String, Button>();
 	public Map<Integer, Button> buttons_by_key = new HashMap<Integer, Button>();
 	
-	private InputMultiplexer input_multiplexer;
+	public InputMultiplexer input_multiplexer;
 
 	public UIManager(InputMultiplexer input, BitmapFont font) {
 		input_multiplexer = input;
@@ -124,9 +124,17 @@ public class UIManager implements InputProcessor {
 			w.autoAssignId();
 		}
 	}
-
+	
+	/**
+	 * Internal Note:
+	 * Call this when a widget is to be selected
+	 * @param new_widget
+	 * @param move_to_front
+	 */
 	public void focus(Widget new_widget, boolean move_to_front) {
 		if (new_widget == null) {
+			
+			//If focus exists, then unfocus
 			if(widget_focused!=null) {
 				if(widget_focused instanceof InputProcessor) {
 					input_multiplexer.removeProcessor(((InputProcessor) widget_focused));
@@ -135,10 +143,16 @@ public class UIManager implements InputProcessor {
 				widget_focused = null;
 				print("Unfocused");
 			}
+			
 		} else {
+			// Focusing a new target...
+			
 			if (widget_focused != null) {
 				if (widget_focused == new_widget) {
 					return; // do nothing, focused widget is the same
+				}
+				if(widget_focused instanceof InputProcessor) {
+					input_multiplexer.removeProcessor(((InputProcessor) widget_focused));
 				}
 				widget_focused.focused = false; // unset the previous widget
 			}
@@ -302,8 +316,16 @@ public class UIManager implements InputProcessor {
 	    if (pointerCapturedWidget == null) {
 	        // If a widget_hovering exists, let it handle pointerDown first (gives it priority)
 	        if (Gdx.input.isButtonJustPressed(Buttons.LEFT)) {
+	    		if(context_widget!=null) {
+	    			if(widget_hovering!=null && (widget_hovering.equals(context_widget) || context_widget.equals(widget_hovering.getParent()))) {
+		    			//related action to context window
+	    			} else {
+		    			context_widget.deactivate();
+		    			context_widget = null;
+	    			}
+    	    	}
 	        	if (widget_hovering != null) {
-
+	        		
 	        	    // If we are in edit mode (or widget forces editability), prefer the "move widget" behavior.
 	        	    // This prevents interactive widgets (sliders, color pickers) from capturing pointer while editing.
 	        	    if (edit_mode || widget_hovering.isAlwaysEditable()) {
@@ -666,14 +688,15 @@ public class UIManager implements InputProcessor {
 
 	@Override
 	public boolean keyDown(int keycode) {
-		
+
+	    if (widget_focused instanceof InputProcessor) {
+	    	return true;
+	    }
 
 		if (buttons_by_key.containsKey(keycode)) {
 			Button b = buttons_by_key.get(keycode);
-			// if(!b.visible) {
-			// return false;
-			// }
 
+			//fire based on button type and activate event handler
 			switch (b.button_type) {
 			case RAPIDFIRE:
 				b.is_key_down = true;

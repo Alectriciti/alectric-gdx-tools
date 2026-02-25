@@ -12,9 +12,9 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 
 public class TextInput extends TextWidget implements InputProcessor{
 	
-	TextCursor cursor;
+	public TextCursor cursor;
 	
-	Widget target_widget;
+	public Widget target_widget;
 	
 	public ReturnKeyMode return_mode = ReturnKeyMode.NEW_LINE;
 	
@@ -28,9 +28,9 @@ public class TextInput extends TextWidget implements InputProcessor{
 		ACTIVATE_AND_FOCUS_TARGET, // Combines
 	}
 	
-	boolean escape_clears_focus = true; //if true, when this widget is focused, escape will remove it
+	public boolean escape_clears_focus = true; //if true, when this widget is focused, escape will remove it
 	
-	int tick;
+	public int tick;
 	
 	
 	
