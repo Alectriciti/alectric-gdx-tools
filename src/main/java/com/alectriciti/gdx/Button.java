@@ -223,7 +223,7 @@ public class Button extends Widget implements Activatable{
 	@Override
 	public void drawShape(ShapeRenderer renderer, boolean recursive) {
 		
-		if(visible) {
+		if(isVisible()) {
 	
 			renderer.set(ShapeType.Filled);
 			renderer.setColor(color);
@@ -249,7 +249,7 @@ public class Button extends Widget implements Activatable{
 	
 	protected void spawnButtonEffect(Color c) {
 		
-		if(visible) {
+		if(isVisible()) {
 			effect = new EffectPulse(this, new Rectangle(shape_global), color_activated);
 		}
 		
@@ -262,7 +262,7 @@ public class Button extends Widget implements Activatable{
 	public boolean drawTexture(SpriteBatch batch, boolean recursive) {
 		boolean valid = texture != null;
 		if (valid) {
-			if(visible) {
+			if(isVisible()) {
 				if (pressing) {
 					batch.setColor(Color.GRAY);
 				} else {
@@ -293,7 +293,7 @@ public class Button extends Widget implements Activatable{
 
 	public boolean drawFont(SpriteBatch batch, BitmapFont font, boolean recursive) {
 		// TODO Auto-generated method stub
-		if(visible) {
+		if(isVisible()) {
 			if(pressing) {
 				font.setColor(Color.DARK_GRAY);
 			}else if (activated) {

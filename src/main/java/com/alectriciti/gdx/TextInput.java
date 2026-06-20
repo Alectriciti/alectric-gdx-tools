@@ -16,17 +16,13 @@ public class TextInput extends TextWidget implements InputProcessor{
 	
 	public Widget target_widget;
 	
-	public ReturnKeyMode return_mode = ReturnKeyMode.NEW_LINE;
+	// --- Text Input Behavior Configuration ---
+	public boolean enterActivatesTarget = false;
+	public boolean enterFocusesTarget = false;
+	public boolean allowNewlines = true; 
 	
-	//NOTE: Activation can be itself if we need extra functionality
-	
-	public enum ReturnKeyMode{
-		NEW_LINE, // Always creates a new line
-		ACTIVATE_TARGET, // If there's a target widget, it activates it. Otherwise un-focus.
-		ACTIVATE_TARGET_SHIFT_NEW_LINE, //Holding shift creates a newline, otherwise tries the above method
-		FOCUS_TARGET, // If there's a target widget, it focuses it.
-		ACTIVATE_AND_FOCUS_TARGET, // Combines
-	}
+	// If true, holding Shift acts purely as a text-return, ignoring activation targets.
+	public boolean shiftEnterBypassesActivation = true;
 	
 	public boolean escape_clears_focus = true; //if true, when this widget is focused, escape will remove it
 	
@@ -37,12 +33,14 @@ public class TextInput extends TextWidget implements InputProcessor{
 	public TextInput(UIManager manager, ColoredText...msgs) {
 		super(manager, msgs);
 		cursor = new TextCursor(this);
+		cursor.index = this.length;
 		// TODO Auto-generated constructor stub
 	}
 	
 	public TextInput(Widget parent, ColoredText...msgs) {
 		super(parent, msgs);
 		cursor = new TextCursor(this);
+		cursor.index = this.length;
 		// TODO Auto-generated constructor stub
 	}
 	
@@ -71,9 +69,17 @@ public class TextInput extends TextWidget implements InputProcessor{
 	}
 	
 	
+	@Override
 	protected void reconstruct() {
 		super.reconstruct();
-		if(cursor.index > length ) cursor.index = length;
+		
+		// Null check is required here! During object creation, TextWidget's 
+		// constructor calls this method BEFORE the TextCursor is initialized.
+		if (cursor != null) {
+			if (cursor.index > length) {
+				cursor.index = length;
+			}
+		}
 	}
 	
 	@Override
@@ -81,15 +87,11 @@ public class TextInput extends TextWidget implements InputProcessor{
 		tick++;
 		// TODO Auto-generated method stub
 		if(isFocused()) {
-			if(manager.right_is_pressed) {
-				if(tick%4==0) {
+			if(manager.allowKeyRepeat(tick, manager.right_pressed_ticks)) {
 	                if (msgs != null && msgs.length > 0 && cursor.index < msgs[0].getText().length()) cursor.index++;
-				}
 			}else
-			if(manager.left_is_pressed) {
-				if(tick%4==0) {
+				if(manager.allowKeyRepeat(tick, manager.left_pressed_ticks)) {
 	                if (cursor.index > 0) cursor.index--;
-				}
 			}
 		}
 		super.update();
@@ -225,41 +227,40 @@ public class TextInput extends TextWidget implements InputProcessor{
 
 	    // Handle Enter / Return specially (your existing logic)
 	    if (character == '\n' || character == '\r') {
-	        boolean activate = false;
-	        boolean focus = false;
-	        boolean newline = false;
+	        boolean shiftPressed = Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT);
 
-	        switch (return_mode) {
-	            case ACTIVATE_TARGET:
-	                activate = true;
-	                break;
-	            case ACTIVATE_TARGET_SHIFT_NEW_LINE:
-	                if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT)) {
-	                    newline = true;
-	                } else {
-	                    activate = true;
-	                }
-	                break;
-	            case NEW_LINE:
-	                newline = true;
-	                break;
-	            case FOCUS_TARGET:
-	                focus = true;
-	                break;
-	            case ACTIVATE_AND_FOCUS_TARGET:
-	                activate = true;
-	                focus = true;
-	                break;
+	        boolean willActivate = enterActivatesTarget;
+	        boolean willFocus = enterFocusesTarget;
+	        boolean willNewline = allowNewlines;
+
+	        // Modifier check: Shift overrides UI actions to strictly allow typing a newline
+	        if (shiftPressed && shiftEnterBypassesActivation) {
+	            willActivate = false;
+	            willFocus = false;
+	            willNewline = allowNewlines; 
+	        } else if (willActivate || willFocus) {
+	            // Standard behavior: If Enter is being used as a "Submit" button, consume the newline character.
+	            willNewline = false;
 	        }
 
+	        // 1. Execute UI Actions
 	        if (target_widget != null) {
-	            if (activate && target_widget instanceof Activatable) {
+	            if (willActivate && target_widget instanceof Activatable) {
 	                ((Activatable) target_widget).activate();
 	            }
-	            if (focus) target_widget.focus();
+	            if (willFocus) target_widget.focus();
+	        } else if (willActivate) {
+	            // Fallback: If it's an activating input but has no target, clear focus (Standard UI behavior)
+	            manager.focus(null, false);
 	        }
-	        // if not newline, consume and don't insert a newline
-	        return !newline;
+
+	        // 2. Execute Text Insertion
+	        if (!willNewline) {
+	            return true; // Consume the event, preventing the newline from being typed
+	        } 
+	        
+	        // If willNewline IS true, we simply let the code fall through!
+	        // The block at the bottom of keyTyped() will naturally insert the '\n' into the string.
 	    }
 
 	    // For regular characters, insert at cursor position (don't just append)

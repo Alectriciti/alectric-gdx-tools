@@ -139,7 +139,7 @@ public class Slider extends Widget {
      * globalX/globalY = coordinates in same space as getGlobalX()/getGlobalY()
      */
     public boolean pointerDown(float globalX, float globalY) {
-        if (!visible) return false;
+        if (!isVisible()) return false;
 
         // If pointer is over knob, begin dragging
         if (isPointerOverKnob(globalX, globalY)) {
@@ -169,7 +169,7 @@ public class Slider extends Widget {
      * Call when pointer is dragged/moved while pressed.
      */
     public boolean pointerDragged(float globalX, float globalY) {
-        if (!visible || !dragging) return false;
+        if (!isVisible() || !dragging) return false;
 
         // compute desired knobLeft such that pointer position corresponds with saved drag offset
         float desiredKnobLeft = globalX - dragOffsetX;
@@ -184,7 +184,7 @@ public class Slider extends Widget {
      * Call when pointer is released.
      */
     public boolean pointerUp(float globalX, float globalY) {
-        if (!visible) return false;
+        if (!isVisible()) return false;
         if (dragging) {
             dragging = false;
             return true;
@@ -199,7 +199,7 @@ public class Slider extends Widget {
      */
     @Override
     public void drawShape(ShapeRenderer renderer, boolean recursive) {
-        if (!visible) return;
+        if (!isVisible()) return;
 
         // We draw the base (track) first, then the knob on top.
         float gx = getGlobalX();

@@ -97,8 +97,8 @@ public class TextCursor extends Widget {
         shape.width = thickness;
         shape.height = caretHeight;
 
-        smoothed_shape.x = lerp(smoothed_shape.x, shape.x, 0.2f);
-        smoothed_shape.y = lerp(smoothed_shape.y, shape.y, 0.2f);
+        smoothed_shape.x = lerp(smoothed_shape.x, shape.x, 0.25f);
+        smoothed_shape.y = lerp(smoothed_shape.y, shape.y, 0.25f);
         
     }
     

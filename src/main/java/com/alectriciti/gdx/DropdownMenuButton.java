@@ -84,8 +84,8 @@ public class DropdownMenuButton extends Button{
 		animating = true;
 		updatePositionForChildren();
 		for(Widget w : widgets) {
-			w.setVisible(true, false);
-			w.setTouchable(true, false);
+			w.setVisible(true, InheritanceRule.LOYAL);
+			w.setTouchable(true);
 		}
 		
 		
@@ -99,7 +99,7 @@ public class DropdownMenuButton extends Button{
 				DropdownMenuButton db = (DropdownMenuButton) w;
 				db.deactivate();
 			}
-			w.setTouchable(false, true);
+//			w.setTouchable(false);
 		}
 		// TODO Auto-generated method stub
 		
@@ -111,6 +111,7 @@ public class DropdownMenuButton extends Button{
 		super.update();
 
 		if(animating) {
+			//animation is moving
 			expand_amount = lerp(expand_amount, expand_amount_target, expand_speed);
 			if(Math.abs(expand_amount_target - expand_amount) > 0.02) {
 				updatePositionForChildren();
@@ -124,12 +125,13 @@ public class DropdownMenuButton extends Button{
 					}
 				}
 			}else {
+				//animation has stopped
 				animating = false;
 				if(activated) {
 					
 				}else {
 					for(Widget w : widgets) {
-						w.setVisible(false, true);
+						w.setVisible(false, InheritanceRule.STANDARD);
 					}
 					finishedAnimation();
 				}
@@ -196,7 +198,7 @@ public class DropdownMenuButton extends Button{
 	protected void attachChildWidget(Widget widget_to_attach) {
 		super.attachChildWidget(widget_to_attach);
 		widget_to_attach.editable = false;
-		widget_to_attach.setVisible(false, true);
+		widget_to_attach.setVisible(false);
 		print(widget_to_attach.name_for_display+" : "+widget_to_attach.isVisible());
 	}
 

@@ -13,7 +13,7 @@ public class ContextWidget extends DropdownMenuButton{
 		super(creator.id+"_context", creator);
 		serializable = false;
 		setGlobalPosition(getMouseX(), getMouseY());
-		visible = false;
+		setVisible(false);
 	}
 	
 	@Override

@@ -30,12 +30,14 @@ import com.alectriciti.gdx.ContextWidget;
 import com.alectriciti.gdx.Direction;
 import com.alectriciti.gdx.DropdownMenuButton;
 import com.alectriciti.gdx.Slider;
+import com.alectriciti.gdx.TextDialog;
 import com.alectriciti.gdx.TextInput;
-import com.alectriciti.gdx.TextWidget;
+import com.alectriciti.gdx.Toolkit;
 import com.alectriciti.gdx.Widget;
-import com.alectriciti.gdx.TextInput.ReturnKeyMode;
+import com.alectriciti.gdx.Button.ButtonType;
 import com.alectriciti.gdx.Button;
 import com.alectriciti.gdx.UIManager;
+import com.alectriciti.gdx.InheritanceRule;
 
 public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListener {
 	
@@ -50,7 +52,7 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 	OrthographicCamera camera;
 	Viewport viewport;
 	
-	public int width, height;
+	public int width, height;	
 	
 	Widget info;
 	
@@ -73,9 +75,7 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 	@Override
 	public void create() {
 		
-		
 		Gdx.input.setInputProcessor(input);
-
 		FileHandle font_handle = Gdx.files.internal("lucida_console16.fnt");
 		
 		font = new BitmapFont(font_handle);
@@ -169,8 +169,24 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 			}
 		});
     	
+    	Button button_hideui = new Button("Hide UI (F11)", main_menu, Keys.F11) {
+    		
+    		@Override
+    		protected void onActivate() {
+    			for(Widget w : ui_manager.widgets) {
+    				w.setVisible(false, InheritanceRule.RECURSIVE);
+    			}
+    		}
+    		
+    		@Override
+    		protected void onDeactivate() {
+    			for(Widget w : ui_manager.widgets) {
+    				w.setVisible(true, InheritanceRule.RECURSIVE);
+    			}
+    		}
+    	};
+    	button_hideui.setType(ButtonType.TOGGLE);
     	
-
 		Slider slider = new Slider(ui_manager);
 		slider.setBaseSize(100, 12);
 		slider.setKnobSize(32, 32);
@@ -178,14 +194,11 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 		slider.setRelativePosition(32, 142);
 //		slider.setSize(40, 40);
 		//b.setRelativePosition(100, 00);
-
-		ui_manager.automaticallyAssignIDsToWidgets();
 		
+		ui_manager.automaticallyAssignIDsToWidgets();
 		
 		width = Gdx.graphics.getWidth();
 		height = Gdx.graphics.getHeight();
-		
-		
 		
 		shape_renderer = new ShapeRenderer();
 		shape_renderer.setAutoShapeType(true);
@@ -203,7 +216,7 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 		ui_manager.alignAllWidgets();
 		
 	}
-
+	
 	Canvas confirm_box;
 	
 	private void confirmDialogueBox(Runnable run_new_skin) {
@@ -224,6 +237,7 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 					confirm_box = null;
 				}
 			};
+			
 			yes.font_offset = new Point(4, 4);
 			yes.setRelativePosition(32, 30);
 			yes.setSize(42, 32);
@@ -236,12 +250,10 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 					confirm_box = null;
 				}
 			};
+			
 			no.setRelativePosition(104, 30);
 			no.font_offset = new Point(4, 4);
 			no.setSize(42, 32);
-			
-			
-			
 			
 			ui_manager.focus(confirm_box, true);
 		}
@@ -269,19 +281,21 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 		for(Button b: buttons) {
 			b.attachToWidget(parent);
 		}
-		
 		return buttons;
 	}
 	
 	public void testA() {
 //		TextInput widget = new TextInput(ui_manager);
 		TextInput m = new TextInput(ui_manager, new ColoredText("Type Here!", Color.GRAY));
-		m.return_mode = ReturnKeyMode.ACTIVATE_TARGET_SHIFT_NEW_LINE;
+		m.enterActivatesTarget = true;
 		m.setRelativePosition(50, 50);
 	}
 	
 	public void testB() {
-		ui_manager.setfullscreenMode(true, false);
+		new TextDialog("TestDialog", ui_manager, "Type Here!", (newText) -> {
+			// This block executes when the user hits 'confirm' in the TextDialog.
+			Toolkit.print("User entered: " + newText);
+		});
 	}
 	
 	@Override

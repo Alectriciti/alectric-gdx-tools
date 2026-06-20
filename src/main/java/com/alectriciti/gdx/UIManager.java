@@ -38,8 +38,7 @@ import com.badlogic.gdx.utils.JsonValue;
 import static com.alectriciti.gdx.Toolkit.*;
 
 /**
- * A widget manager can be instantiated to automatically run logic and or render
- * it
+ * A UI Manager can be instantiated to automatically run logic and or render
  */
 public class UIManager implements InputProcessor {
 
@@ -52,8 +51,57 @@ public class UIManager implements InputProcessor {
 
 	boolean left_mouse_is_pressed;
 	boolean right_mouse_is_pressed;
-	boolean left_is_pressed, right_is_pressed, up_is_pressed, down_is_pressed;
+	int key_repeat_delay_normal = 8; // ticks before key repeat starts
+	int key_repeat_delay_fast = 60; // ticks before key repeat starts
 	boolean debug_mode = true;
+	
+
+	int left_pressed_ticks, right_pressed_ticks, up_pressed_ticks, down_pressed_ticks;
+
+	int repeat_start_ticks = 8;        // when repeating begins
+	int repeat_full_speed_ticks = 60;  // when it becomes true every frame
+
+	int repeat_max_interval = 8;       // slowest repeat rate while ramping
+	int repeat_min_interval = 1;       // fastest repeat rate (1 = every frame)
+
+	private int clampInt(int value, int min, int max) {
+	    if (value < min) return min;
+	    if (value > max) return max;
+	    return value;
+	}
+
+	public boolean allowKeyRepeat(int base_tick, int key_pressed_ticks) {
+	    if (key_pressed_ticks <= 0) {
+	        return false;
+	    }
+
+	    // first press always counts
+	    if (key_pressed_ticks == 1) {
+	        return true;
+	    }
+
+	    // no repeat yet
+	    if (key_pressed_ticks < repeat_start_ticks) {
+	        return false;
+	    }
+
+	    // once fully held, return true every frame
+	    if (key_pressed_ticks >= repeat_full_speed_ticks) {
+	        return true;
+	    }
+
+	    // 0.0 -> 1.0 progress through the ramp
+	    int ramp_ticks = repeat_full_speed_ticks - repeat_start_ticks;
+	    int elapsed = key_pressed_ticks - repeat_start_ticks;
+
+	    // gradually shrink the interval from repeat_max_interval to repeat_min_interval
+	    int interval = repeat_max_interval
+	            - ((repeat_max_interval - repeat_min_interval) * elapsed / ramp_ticks);
+
+	    interval = clampInt(interval, repeat_min_interval, repeat_max_interval);
+
+	    return (base_tick % interval == 0);
+	}
 
 	/**
 	 * This is the widget that is currently being adjusted and dragged around (the
@@ -206,11 +254,32 @@ public class UIManager implements InputProcessor {
 		
 		
 		//Set Arrow Key data
+		
+		if(Gdx.input.isKeyPressed(Keys.LEFT)) {
+			left_pressed_ticks++;
+		}else {
+			left_pressed_ticks = 0;
+		}
+		if(Gdx.input.isKeyPressed(Keys.RIGHT)) {
+			right_pressed_ticks++;
+		}else {
+			right_pressed_ticks = 0;
+		}
+		if(Gdx.input.isKeyPressed(Keys.UP)) {
+			up_pressed_ticks++;
+		}else {
+			up_pressed_ticks = 0;
+		}
+		if(Gdx.input.isKeyPressed(Keys.DOWN)) {
+			down_pressed_ticks++;
+		}else {
+			down_pressed_ticks = 0;
+		}
 
-		left_is_pressed = (Gdx.input.isKeyPressed(Keys.LEFT));
-		right_is_pressed = (Gdx.input.isKeyPressed(Keys.RIGHT));
-		up_is_pressed = (Gdx.input.isKeyPressed(Keys.UP));
-		down_is_pressed = (Gdx.input.isKeyPressed(Keys.DOWN));
+//		left_is_pressed = (Gdx.input.isKeyPressed(Keys.LEFT));
+//		right_is_pressed = (Gdx.input.isKeyPressed(Keys.RIGHT));
+//		up_is_pressed = (Gdx.input.isKeyPressed(Keys.UP));
+//		down_is_pressed = (Gdx.input.isKeyPressed(Keys.DOWN));
 
 		// mouseScrollOffset += (scroll_y/4);s
 
@@ -637,7 +706,7 @@ public class UIManager implements InputProcessor {
 		 */
 		// if(font!=null) {
 		for (Widget widget : widget_independants) {
-			if (widget.visible) {
+			if (widget.isVisible()) {
 				shape_renderer.begin();
 				widget.drawShape(shape_renderer, true);
 				shape_renderer.end();

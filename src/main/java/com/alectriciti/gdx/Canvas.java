@@ -13,7 +13,7 @@ import com.badlogic.gdx.math.Rectangle;
 
 
 /**
- * A container widget which can be 
+ * A container widget which is designed to hold other widgets. It can be used to group related widgets together, and can also be used to create a background for a set of widgets.
  */
 public class Canvas extends Widget{
 	
@@ -39,7 +39,7 @@ public class Canvas extends Widget{
 	
 	@Override
 	public void drawShape(ShapeRenderer renderer, boolean recursive) {
-		if(!visible){
+		if(!isVisible()){
 			return;
 		}
 		

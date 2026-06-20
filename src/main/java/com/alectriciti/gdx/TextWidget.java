@@ -49,25 +49,19 @@ public class TextWidget extends Widget{
      */
     public void construct(ColoredText...msgs){
         this.msgs = msgs;
-        msg_raw = "";
-        for(ColoredText t : msgs){
-            msg_raw += t.getText();
-        }
         if(layout == null) layout = new GlyphLayout();
-    	if(font==null) {
-    		font = UIManager.getDefaultFont();
-    		if(font==null) {
-    			printWarning("no font supplied for Message:"+this.id+"!");
-    			return;
-    		}
-//    		return;
-    	}
+        if(font == null) {
+            font = UIManager.getDefaultFont();
+            if(font == null) {
+                System.out.println("Warning: no font supplied for Message:" + this.id + "!");
+                return;
+            }
+        }
         font_cache = new BitmapFontCache(font);
         font_cache.setUseIntegerPositions(true);
-        //manager.registerMsg(this);
-        font_cache.setText(msg_raw, getGlobalX(), getGlobalY());
 
-        updateColors();
+        // Let reconstruct() handle the string assembly, cap height positioning, and color updates uniformly.
+        reconstruct(); 
     }
     
     /**
@@ -129,7 +123,7 @@ public class TextWidget extends Widget{
 	
 	public boolean drawFont(SpriteBatch sprite_batch, BitmapFont font, boolean recursive) {
 		
-		if(!visible){
+		if(!isVisible()){
 			return false;
 		}
 		

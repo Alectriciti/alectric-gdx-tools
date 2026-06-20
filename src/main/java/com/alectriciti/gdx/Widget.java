@@ -5,9 +5,11 @@ import static com.alectriciti.gdx.UIManager.*;
 
 import java.awt.Point;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import com.badlogic.gdx.Gdx;
@@ -96,9 +98,23 @@ public class Widget implements Contextable{
 	}
 	
 	/**
-	 * With WidgetManager, Widgets are required to be visible in order to render or be interacted with
+	 * 
 	 */
+	
+	/**
+	 * With WidgetManager, Widgets are required to be visible in order to render or be interacted with
 	public boolean visible = true;
+	
+	we're going to change that
+	 *
+	 *
+	 */
+	
+	/**
+	 * Holds
+	 */
+	EnumMap<Parameter, Value> parameters;
+	public InheritanceRule visibility_inheritance;
 	
 	
 	/*
@@ -131,6 +147,7 @@ public class Widget implements Contextable{
 	 */
 	protected Widget() {
 		//Must create some kind of registry!
+		initializeParameters();
 		}
 	
 	/**
@@ -139,6 +156,7 @@ public class Widget implements Contextable{
 	 * @param canvas name of the container to apply it to
 	 */
 	public Widget(String id, Widget parent) {
+		initializeParameters();
 		this.id = id;
 		this.name_for_display = id;
 		this.shape = new Rectangle();
@@ -155,6 +173,7 @@ public class Widget implements Contextable{
 	}
 	
 	public Widget(String id, UIManager manager) {
+		initializeParameters();
 		this.id = id;
 		this.name_for_display = id;
 		this.manager = manager;
@@ -170,12 +189,21 @@ public class Widget implements Contextable{
 	 * @param manager
 	 */
 	public Widget(UIManager manager) {
+		initializeParameters();
 		this.manager = manager;
 		this.manager.registerWidget(this);
 		this.shape = new Rectangle();
 		//pushNewZPosition(false);
 	}
 	
+	private void initializeParameters() {
+		// TODO Auto-generated method stub
+		parameters = new EnumMap<>(Parameter.class);
+		for(Parameter p : Parameter.values()) {
+			parameters.put(p, Value.UNASSIGNED);
+		}
+	}
+
 	public String getName() {
 		return name_for_display;
 	}
@@ -486,7 +514,7 @@ public class Widget implements Contextable{
 	 * @param recursive 
 	 */
 	public void drawShape(ShapeRenderer renderer, boolean recursive) {
-		if(visible) {
+		if(isVisible()) {
 			if(hovering) {
 				if(manager.edit_mode) {
 					drawEditMode(renderer, recursive);
@@ -541,7 +569,7 @@ public class Widget implements Contextable{
 	
 	public boolean drawFont(SpriteBatch sprite_batch, BitmapFont font, boolean recursive) {
 		
-		if(!visible){
+		if(!isVisible()){
 			return false;
 		}
 		
@@ -570,7 +598,7 @@ public class Widget implements Contextable{
 	 */
 	public boolean drawTexture(SpriteBatch sprite_batch, boolean recursive) {
 		boolean valid = texture!=null;
-		if(visible) {
+		if(isVisible()) {
 			if(valid) {
 				sprite_batch.setColor(color_texture_alpha);
 				sprite_batch.draw(texture, getGlobalX(), getGlobalY(), shape.width-1, shape.height-1);
@@ -616,7 +644,7 @@ public class Widget implements Contextable{
 	}
 	
 	public boolean isVisible() {
-		return visible;
+		return getValue(Parameter.VISIBLE).get();
 	}
 	
 	/**
@@ -692,6 +720,14 @@ public class Widget implements Contextable{
 		// TODO Auto-generated method stub
 	}
 	
+	public boolean hasParent() {
+		return parent!=null;
+	}
+	
+	public boolean isParent() {
+		return !widgets.isEmpty();
+	}
+	
 	
 	/**
 	 * Pointer input APIs — default implementations do nothing.
@@ -728,23 +764,88 @@ public class Widget implements Contextable{
 			texture.dispose();
 		}
 	}
-
-	public void setVisible(boolean b, boolean recursive) {
-		visible = b;
-		if(recursive) {
+	
+	public void setVisible(boolean new_visible) {
+		setValue(Parameter.VISIBLE, new_visible, InheritanceRule.STANDARD);
+	}
+	
+	public void setVisible(boolean new_visible, InheritanceRule rule_override) {
+		setValue(Parameter.VISIBLE, new_visible, rule_override);
+	}
+	
+	public void setTouchable(boolean new_touchable) {
+		setValue(Parameter.TOUCHABLE, new_touchable, InheritanceRule.STANDARD);
+	}
+	
+	/**
+	 * Sets a parameterized value for this widget.
+	 * 
+	 * All widgets values are "UNASSIGNED" by default unless otherwise specified. This effectively makes them capable of working with the widget inheritance system
+	 * 
+	 * This can be stated with:
+	 * @param rule_override which mode to apply this change to this widget.
+	 * @param parameter the parameter which we will change
+	 * @param value the value to set it to 
+	 */
+	public void setValue(Parameter parameter, Value value, InheritanceRule rule_override) {
+		switch(rule_override) {
+		case RECURSIVE:
+			// 📝 Applies the Value to itself (1/2) ✏️
+			applyValue(parameter, value);
 			for(Widget w : widgets) {
-				w.setVisible(b, recursive);
+				// 📝 Applies the Value to it's child (2/2) ✏️
+				w.setValue(parameter, value, rule_override);
 			}
+			break;
+		case LOYAL: // this will only set the value IF the parent also has it's value set.
+			if(parent!=null) {
+				Value parents_value = parent.getValue(parameter);
+				if(parents_value!=Value.UNASSIGNED) {
+					// 📝 Applies the Value to itself (1/1) ✏️
+					applyValue(parameter, parents_value);
+				}
+			} else {
+//			visible = new_visible;
+			}
+//			break;
+		case STANDARD:
+			// 📝 Applies the Value to itself (1/1) ✏️
+			applyValue(parameter, value);
+			break;
+		default:
+			break;
+		
 		}
 	}
+	
+	/**
+	 * Variation methods...
+	 */
+	
+	public void setValue(Parameter parameter, boolean value, InheritanceRule rule_override) {
+		this.setValue(parameter, Value.of(value), rule_override);
+	}
 
-	public void setTouchable(boolean b, boolean recursive) {
-		touchable = b;
-		if(recursive) {
-			for(Widget w : widgets) {
-				w.setTouchable(b, recursive);
-			}
-		}
+	public void setValue(Parameter parameter, boolean value) {
+		this.setValue(parameter, Value.of(value), InheritanceRule.STANDARD);
+	}
+
+	public void setValue(Parameter parameter, Value value) {
+		this.setValue(parameter, value, InheritanceRule.STANDARD);
+	}
+	
+	
+	/**
+	 * Actually applies the value for a parameter. Internal use only (see setValue)
+	 */
+	private void applyValue(Parameter parameter, Value value) {
+		parameters.put(parameter, value);
+	}
+	
+	
+	
+	public Value getValue(Parameter parameter) {
+		return parameters.get(parameter);
 	}
 
 	public boolean isEditable() {
