@@ -49,12 +49,7 @@ public class Button extends Widget implements Activatable{
 	
 	public float effect_offset_start = 2;
 	public static float effect_move_speed = 0.3333f;
-
-	public Color color_default = manager.COLOR_BUTTON_DEFAULT;
-	public Color color_pressing = manager.COLOR_BUTTON_PRESSING.cpy();
-	public Color color_activated = manager.COLOR_BUTTON_ACTIVATED.cpy();
-	public Color color_activated_text = manager.COLOR_BUTTON_TEXT_ACTIVATED.cpy();
-	public Color effect_color = new Color(Color.WHITE);
+	
 	
 	public boolean play_effect = true;
 	
@@ -198,14 +193,14 @@ public class Button extends Widget implements Activatable{
 			
 			if(pressing) {
 				pressed_ticks++;
-				color = LerpColor(color, color_pressing, 0.5f);
+				color = LerpColor(color, style.color_press, 0.5f);
 			}else if(activated) {
-				color = LerpColor(color, color_activated, 0.5f);
+				color = LerpColor(color, style.color_activated, 0.5f);
 			}else {
 				if(pressed_ticks>0) {
 					pressed_ticks=0;
 				}
-				color = LerpColor(color, color_default, 0.25f);
+				color = LerpColor(color, style.color_base, 0.25f);
 				//color.set(color_default.r*d, color_default.g*d, color_default.b*d, color_default.a);
 			}
 		super.update();
@@ -223,17 +218,25 @@ public class Button extends Widget implements Activatable{
 	@Override
 	public void drawShape(ShapeRenderer renderer, boolean recursive) {
 		
+		super.drawShape(renderer, false);
 		if(isVisible()) {
 	
 			renderer.set(ShapeType.Filled);
 			renderer.setColor(color);
-			renderer.rect(getGlobalX(), getGlobalY(), shape.width, shape.height);
+			if(style.corner_radius<=0) {
+				renderer.rect(getGlobalX(), getGlobalY(), shape.width, shape.height);
+			}else {
+				drawRoundedRectFilled(renderer, getGlobalX(), getGlobalY(), shape.width, shape.height, style.corner_radius);
+			}
 			
-	
 			if(!hovering) {
 				renderer.set(ShapeType.Line);
-				renderer.setColor(color_trim);
-				renderer.rect(getGlobalX(), getGlobalY(), shape.width, shape.height);
+				renderer.setColor(style.color_outline);
+				if(style.corner_radius<=0) {
+					renderer.rect(getGlobalX(), getGlobalY(), shape.width, shape.height);
+				}else {
+					drawRoundedRectLine(renderer, getGlobalX(), getGlobalY(), shape.width, shape.height, style.corner_radius);
+				}
 			}
 			
 		}
@@ -250,7 +253,7 @@ public class Button extends Widget implements Activatable{
 	protected void spawnButtonEffect(Color c) {
 		
 		if(isVisible()) {
-			effect = new EffectPulse(this, new Rectangle(shape_global), color_activated);
+			new EffectPulse(this, new Rectangle(shape_global), style.color_hover);
 		}
 		
 		//effect_rect = new Rectangle(shape_global);
@@ -295,9 +298,9 @@ public class Button extends Widget implements Activatable{
 		// TODO Auto-generated method stub
 		if(isVisible()) {
 			if(pressing) {
-				font.setColor(Color.DARK_GRAY);
+				font.setColor(style.color_text_pressed);
 			}else if (activated) {
-				font.setColor(color_activated_text);
+				font.setColor(style.color_text_activated);
 			}else {
 				font.setColor(color_texture_alpha);
 			}

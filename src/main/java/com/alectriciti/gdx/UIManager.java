@@ -45,7 +45,8 @@ public class UIManager implements InputProcessor {
 	public Color COLOR_BUTTON_ACTIVATED = Color.GREEN;
 	public Color COLOR_BUTTON_TEXT_ACTIVATED = new Color(0.1f, 0.1f, 0.1f, 1);
 	public Color COLOR_BUTTON_PRESSING = Color.GRAY;
-	public Color COLOR_BUTTON_DEFAULT = new Color(0.05f, 0.05f, 0.05f, 1);
+	public Color COLOR_BUTTON_DEFAULT = new Color(0.1f, 0.1f, 0.1f, 1);
+	
 
 	public static final float EDIT_HANDLE_HEIGHT = 8;
 
@@ -717,7 +718,18 @@ public class UIManager implements InputProcessor {
 				Gdx.gl.glEnable(GL20.GL_BLEND);
 			}
 		}
-
+		
+		if(widget_hovering!=null) {
+			shape_renderer.begin();
+			if (edit_mode && widget_hovering.editable) {
+				widget_hovering.drawEditMode(shape_renderer, false);
+			} else if (widget_hovering.isHoverable()) {
+				widget_hovering.drawHover(shape_renderer);
+			
+		}
+			shape_renderer.end();
+		}
+		
 		if (widget_hovering != null) {
 			shape_renderer.begin();
 			if (edit_mode && widget_hovering.editable) {
@@ -993,6 +1005,7 @@ public class UIManager implements InputProcessor {
 	}
 
 	String folder_widgets = "widgets/";
+	private static Style default_style;
 
 	/**
 	 * Should be run on resize
@@ -1137,6 +1150,13 @@ public class UIManager implements InputProcessor {
 
 	public static BitmapFont getDefaultFont() {
 		return primary_font;
+	}
+
+	public static Style getDefaultStyle() {
+		if(default_style==null) {
+			default_style = new Style();
+		}
+		return default_style;
 	}
 
 }

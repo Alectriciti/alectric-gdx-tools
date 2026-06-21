@@ -39,7 +39,7 @@ public class TextDialog extends Canvas {
             }
         };
         
-        confirm.color_default = new Color(0, 0.3f, 0, 1.0f);
+//        confirm.color_default = new Color(0, 0.3f, 0, 1.0f);
         cancel = new Button("cancel", this);
         
         confirm.addOnActivate(run_destroy);

@@ -190,8 +190,15 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 		Slider slider = new Slider(ui_manager);
 		slider.setBaseSize(100, 12);
 		slider.setKnobSize(32, 32);
-		slider.setValueRange(0, 100);
+		slider.setValueRange(0, 16);
 		slider.setRelativePosition(32, 142);
+		slider.addChangeListener(new Runnable() {
+			
+			@Override
+			public void run() {
+				UIManager.getDefaultStyle().corner_radius = slider.getValue();
+			}
+		});
 //		slider.setSize(40, 40);
 		//b.setRelativePosition(100, 00);
 		

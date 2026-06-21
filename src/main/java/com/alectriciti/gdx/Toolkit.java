@@ -16,6 +16,8 @@ import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Graphics;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Window;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Graphics.Lwjgl3Monitor;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.MathUtils;
 
 public class Toolkit {
 	
@@ -187,6 +189,34 @@ public class Toolkit {
             cleaned = cleaned.substring(0, 255);
         }
         return cleaned;
+    }
+    
+    /**
+     * Draws just the outer curve of an arc without the connecting center lines.
+     * Must be called between renderer.begin(ShapeType.Line) and renderer.end().
+     */
+    public static void drawArcCurve(ShapeRenderer renderer, float x, float y, float radius, float startAngle, float degrees, int segments) {
+        float angleStep = degrees / segments;
+        float currentAngle = startAngle;
+
+        // Calculate the starting point
+        float startX = x + radius * MathUtils.cosDeg(currentAngle);
+        float startY = y + radius * MathUtils.sinDeg(currentAngle);
+
+        for (int i = 0; i < segments; i++) {
+            currentAngle += angleStep;
+            
+            // Calculate the next point
+            float nextX = x + radius * MathUtils.cosDeg(currentAngle);
+            float nextY = y + radius * MathUtils.sinDeg(currentAngle);
+
+            // Draw the line segment
+            renderer.line(startX, startY, nextX, nextY);
+
+            // Advance the starting point for the next loop
+            startX = nextX;
+            startY = nextY;
+        }
     }
 
 }

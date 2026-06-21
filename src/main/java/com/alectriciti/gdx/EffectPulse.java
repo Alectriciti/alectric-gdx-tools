@@ -16,6 +16,13 @@ public class EffectPulse extends Widget{
 		this.render_text = false;
 		this.shape = new Rectangle(r);
 		this.color = c.cpy();
+		this.editable = false;
+	}
+	
+	@Override
+	public boolean isHoverable() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 	
 	public float effect_offset_start = 2;
@@ -47,7 +54,7 @@ public class EffectPulse extends Widget{
 	public void drawShape(ShapeRenderer renderer, boolean recursive) {
 		// TODO Auto-generated method stub
 		drawButtonEffect(renderer);
-		super.drawShape(renderer, recursive);
+//		super.drawShape(renderer, recursive);
 	}
 
 	

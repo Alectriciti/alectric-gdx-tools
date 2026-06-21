@@ -6,6 +6,4 @@ public interface Activatable {
 	
 	public void deactivate();
 
-	public void addOnActivate(Runnable run_autoclose);
-
 }

@@ -54,7 +54,7 @@ public class Canvas extends Widget{
 			}
 		}else {
 			renderer.set(ShapeType.Line);
-			renderer.setColor(color_trim);
+			renderer.setColor(style.color_outline);
 			renderer.rect(getGlobalX(), getGlobalY(), shape.width, shape.height);
 			if(recursive) {
 				drawShapeChildren(renderer, recursive);
