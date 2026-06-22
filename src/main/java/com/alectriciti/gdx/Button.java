@@ -7,11 +7,9 @@ import java.awt.Point;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
@@ -146,6 +144,8 @@ public class Button extends Widget implements Activatable{
 		if(doesPlayEffectOnClick()) {
 			spawnButtonEffect(Color.GREEN);
 		}
+		
+		focus();
 		
 		onActivate();
 		
