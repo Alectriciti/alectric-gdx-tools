@@ -120,8 +120,9 @@ public class TextWidget extends Widget{
 		}
     }
 
-	
-	public boolean drawFont(SpriteBatch sprite_batch, BitmapFont font, boolean recursive) {
+
+	@Override
+	public boolean drawFont(SpriteBatch sprite_batch, boolean recursive) {
 		
 		if(!isVisible()){
 			return false;
@@ -135,7 +136,7 @@ public class TextWidget extends Widget{
 //			font.draw(sprite_batch, name_for_display, getGlobalX()+font_offset.x, getGlobalY()+font.getCapHeight()+font_offset.y);
 		}
 		if(recursive) {
-			drawFontChildren(sprite_batch, font, recursive);
+			drawFontChildren(sprite_batch, recursive);
 		}
 		return true;
 	}

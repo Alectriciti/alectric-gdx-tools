@@ -30,6 +30,7 @@ import com.alectriciti.gdx.ContextWidget;
 import com.alectriciti.gdx.Direction;
 import com.alectriciti.gdx.DropdownMenuButton;
 import com.alectriciti.gdx.Slider;
+import com.alectriciti.gdx.Style;
 import com.alectriciti.gdx.TextDialog;
 import com.alectriciti.gdx.TextInput;
 import com.alectriciti.gdx.Toolkit;
@@ -86,7 +87,7 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 		Button test_button_a = new Button("Test Button A", ui_manager) {
 			public ContextWidget spawnContextWidget() {
 				ContextWidget w = new ContextWidget(this);;
-				new Button("option 1", w);
+				new Button("option 1", w).setSizeToFont();
 				new Button("option 2", w);
 				new Button("exit", w) {
 					@Override
@@ -187,16 +188,22 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
     	};
     	button_hideui.setType(ButtonType.TOGGLE);
     	
+    	
+    	Style cool_style = new Style();
+    	cool_style.color_outline = new Color(0.2f, 0.2f, 1, 1);
+    	test_button_a.style = cool_style;
+    	test_button_b.style = cool_style;
+    	
 		Slider slider = new Slider(ui_manager);
 		slider.setBaseSize(100, 12);
 		slider.setKnobSize(32, 32);
-		slider.setValueRange(0, 16);
+		slider.setValueRange(1,12);
 		slider.setRelativePosition(32, 142);
 		slider.addChangeListener(new Runnable() {
 			
 			@Override
 			public void run() {
-				UIManager.getDefaultStyle().corner_radius = slider.getValue();
+				cool_style.corner_radius = slider.getValue();
 			}
 		});
 //		slider.setSize(40, 40);

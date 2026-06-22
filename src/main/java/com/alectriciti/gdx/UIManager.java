@@ -567,6 +567,7 @@ public class UIManager implements InputProcessor {
 	    
 	    //If the widget the pointer is over is STILL the proposed context_widget, select it.
 	    if(context_widget_candidate != null && widget_hovering == context_widget_candidate) {
+	    	context_widget_candidate.focus(); //focus the widget candidate
 	    	context_widget = context_widget_candidate.spawnContextWidget(); //spawn a new widget
 	    	context_widget_candidate = null;
 	    }
@@ -688,8 +689,6 @@ public class UIManager implements InputProcessor {
 	 */
 	public void renderAll(ShapeRenderer shape_renderer, SpriteBatch sprite_batch) {
 
-		boolean font_valid = primary_font != null;
-
 		Gdx.gl.glEnable(GL20.GL_BLEND);
 
 		Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
@@ -713,7 +712,15 @@ public class UIManager implements InputProcessor {
 				shape_renderer.end();
 				sprite_batch.begin();
 				widget.drawTexture(sprite_batch, true);
-				widget.drawFont(sprite_batch, primary_font, true);
+				widget.drawFont(sprite_batch, true);
+				sprite_batch.end();
+				
+				shape_renderer.begin();
+				widget.drawShapeChildren(shape_renderer, true);
+				shape_renderer.end();
+				sprite_batch.begin();
+				widget.drawTextureChildren(sprite_batch, true);
+				widget.drawFontChildren(sprite_batch, true);
 				sprite_batch.end();
 				Gdx.gl.glEnable(GL20.GL_BLEND);
 			}
@@ -724,7 +731,7 @@ public class UIManager implements InputProcessor {
 			if (edit_mode && widget_hovering.editable) {
 				widget_hovering.drawEditMode(shape_renderer, false);
 			} else if (widget_hovering.isHoverable()) {
-				widget_hovering.drawHover(shape_renderer);
+				widget_hovering.drawBorder(shape_renderer);
 			
 		}
 			shape_renderer.end();
@@ -1154,7 +1161,7 @@ public class UIManager implements InputProcessor {
 
 	public static Style getDefaultStyle() {
 		if(default_style==null) {
-			default_style = new Style();
+			default_style = new Style(primary_font);
 		}
 		return default_style;
 	}

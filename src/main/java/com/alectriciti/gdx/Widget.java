@@ -480,10 +480,6 @@ public class Widget implements Contextable{
 		return shape_global.y;
 	}
 	
-	public void setColorTrim(Color c) {
-		this.color_outline = new Color(c.r, c.g, c.b, opacity);
-	}
-	
 	public void setColor(Color c) {
 		this.color = c;
 		c.a = opacity;
@@ -501,43 +497,7 @@ public class Widget implements Contextable{
 		}
 	}
 	
-
 	
-	
-	/**
-	 * Call this when using ShapeType.Filled
-	 * (Safely uses standard arcs, since the center lines are hidden by the fill)
-	 */
-	protected void drawRoundedRectFilled(ShapeRenderer renderer, float x, float y, float width, float height, float radius) {
-	    // 3 overlapping rectangles to create the solid cross shape
-	    renderer.rect(x + radius, y, width - 2 * radius, height);
-	    renderer.rect(x, y + radius, radius, height - 2 * radius);
-	    renderer.rect(x + width - radius, y + radius, radius, height - 2 * radius);
-	    
-	    // 4 standard filled pie-slices to round out the corners
-	    renderer.arc(x + radius, y + radius, radius, 180f, 90f, 16);
-	    renderer.arc(x + width - radius, y + radius, radius, 270f, 90f, 16);
-	    renderer.arc(x + width - radius, y + height - radius, radius, 0f, 90f, 16);
-	    renderer.arc(x + radius, y + height - radius, radius, 90f, 90f, 16);
-	}
-
-	/**
-	 * Call this when using ShapeType.Line
-	 * (Uses your new primitive to draw a clean, continuous perimeter)
-	 */
-	protected void drawRoundedRectLine(ShapeRenderer renderer, float x, float y, float width, float height, float radius) {
-	    // 4 straight perimeter lines
-	    renderer.line(x + radius, y, x + width - radius, y); // Bottom
-	    renderer.line(x + radius, y + height, x + width - radius, y + height); // Top
-	    renderer.line(x, y + radius, x, y + height - radius); // Left
-	    renderer.line(x + width, y + radius, x + width, y + height - radius); // Right
-
-	    // 4 clean corner curves
-	    Toolkit.drawArcCurve(renderer, x + radius, y + radius, radius, 180f, 90f, 16); // Bottom-left
-	    Toolkit.drawArcCurve(renderer, x + width - radius, y + radius, radius, 270f, 90f, 16); // Bottom-right
-	    Toolkit.drawArcCurve(renderer, x + width - radius, y + height - radius, radius, 0f, 90f, 16); // Top-right
-	    Toolkit.drawArcCurve(renderer, x + radius, y + height - radius, radius, 90f, 90f, 16); // Top-left
-	}
 	
 	
 	/**
@@ -547,24 +507,37 @@ public class Widget implements Contextable{
 	 */
 	public void drawShape(ShapeRenderer renderer, boolean recursive) {
 		if(isVisible()) {
-			if(hovering) {	
+			if(hovering) {
+				color_outline = LerpColor(color_outline, style.color_hover, style.color_fade_in);
 //				if(manager.edit_mode) {
 ////					drawEditMode(renderer, recursive);
 //				}else {
 //					drawHover(renderer);
 //				}
+			}else {
+//				if(hover_latch) {
+//					color_hover = style.color_outline.cpy();
+//					color_outline = style.color_hover.cpy();
+//					hover_latch = false;
+//				}else {
+					color_outline = LerpColor(color_outline, style.color_outline, style.color_fade_out);
+//				}
 			}
 		}
-		if(recursive) {
-			drawShapeChildren(renderer, recursive);
-		}
+		
 	}
 	
-	public void drawHover(ShapeRenderer shape_renderer) {
+	public void drawBorder(ShapeRenderer shape_renderer) {
 		shape_renderer.set(ShapeType.Line);
-		shape_renderer.setColor(style.color_hover);
-		shape_renderer.rect(getGlobalX(), getGlobalY()-1,
-				shape.width+1, shape.height+2);
+		shape_renderer.setColor(color_outline);
+
+		if(style.corner_radius<=0) {
+			shape_renderer.rect(getGlobalX(), getGlobalY(), shape.width, shape.height);
+		}else {
+			drawRoundedRectLine(shape_renderer, getGlobalX(), getGlobalY(), shape.width, shape.height, style.corner_radius);
+		}
+//		shape_renderer.rect(getGlobalX(), getGlobalY()-1,
+//				shape.width+1, shape.height+1);
 	}
 	
 	public void drawEditMode(ShapeRenderer renderer, boolean recursive) {
@@ -598,7 +571,7 @@ public class Widget implements Contextable{
 	}
 	
 	
-	public boolean drawFont(SpriteBatch sprite_batch, BitmapFont font, boolean recursive) {
+	public boolean drawFont(SpriteBatch sprite_batch, boolean recursive) {
 		
 		if(!isVisible()){
 			return false;
@@ -606,11 +579,11 @@ public class Widget implements Contextable{
 		
 		if(render_text && name_for_display != null) {
 		//print(getGlobalX()+" "+getGlobalY());
-			font.setColor(font_color);
-			font.draw(sprite_batch, getTextToRender(), getGlobalX()+font_offset.x, getGlobalY()+font.getCapHeight()+font_offset.y);
+			style.font.setColor(font_color);
+			style.font.draw(sprite_batch, getTextToRender(), getGlobalX()+font_offset.x, getGlobalY()+style.font.getCapHeight()+font_offset.y);
 		}
 		if(recursive) {
-			drawFontChildren(sprite_batch, font, recursive);
+			drawFontChildren(sprite_batch, recursive);
 		}
 		return true;
 	}
@@ -659,9 +632,9 @@ public class Widget implements Contextable{
 		}
 	}
 	
-	protected void drawFontChildren(SpriteBatch sprite_batch, BitmapFont font, boolean recursive) {
+	protected void drawFontChildren(SpriteBatch sprite_batch, boolean recursive) {
 		for(Widget w : widgets) {
-			w.drawFont(sprite_batch, font, recursive);
+			w.drawFont(sprite_batch, recursive);
 		}
 	}
 	

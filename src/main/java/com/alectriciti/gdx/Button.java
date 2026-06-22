@@ -230,19 +230,25 @@ public class Button extends Widget implements Activatable{
 			}
 			
 			if(!hovering) {
-				renderer.set(ShapeType.Line);
-				renderer.setColor(style.color_outline);
-				if(style.corner_radius<=0) {
-					renderer.rect(getGlobalX(), getGlobalY(), shape.width, shape.height);
-				}else {
-					drawRoundedRectLine(renderer, getGlobalX(), getGlobalY(), shape.width, shape.height, style.corner_radius);
-				}
+				drawBorder(renderer);
 			}
 			
 		}
 		
 		drawShapeChildren(renderer, recursive);
 	}
+	
+//	@Override
+//	public void drawBorder(ShapeRenderer shape_renderer) {
+//		// TODO Auto-generated method stub
+//		shape_renderer.set(ShapeType.Line);
+//		shape_renderer.setColor(color_outline);
+//		if(style.corner_radius<=0) {
+//			shape_renderer.rect(getGlobalX(), getGlobalY(), shape.width, shape.height);
+//		}else {
+//			drawRoundedRectLine(shape_renderer, getGlobalX(), getGlobalY(), shape.width, shape.height, style.corner_radius);
+//		}
+//	}
 
 	
 	protected boolean doesPlayEffectOnClick() {
@@ -262,6 +268,7 @@ public class Button extends Widget implements Activatable{
 		//effect_delta = 0;
 	}
 
+	@Override
 	public boolean drawTexture(SpriteBatch batch, boolean recursive) {
 		boolean valid = texture != null;
 		if (valid) {
@@ -294,22 +301,23 @@ public class Button extends Widget implements Activatable{
 		return true;
 	}
 
-	public boolean drawFont(SpriteBatch batch, BitmapFont font, boolean recursive) {
+	@Override
+	public boolean drawFont(SpriteBatch batch, boolean recursive) {
 		// TODO Auto-generated method stub
 		if(isVisible()) {
 			if(pressing) {
-				font.setColor(style.color_text_pressed);
+				style.font.setColor(style.color_text_pressed);
 			}else if (activated) {
-				font.setColor(style.color_text_activated);
+				style.font.setColor(style.color_text_activated);
 			}else {
-				font.setColor(color_texture_alpha);
+				style.font.setColor(color_texture_alpha);
 			}
 			if(render_text && name_for_display!=null) {
-				font.draw(batch, name_for_display, getGlobalX()+font_offset.x, getGlobalY()+font.getCapHeight()+font_offset.y);
+				style.font.draw(batch, name_for_display, getGlobalX()+font_offset.x, getGlobalY()+style.font.getCapHeight()+font_offset.y);
 			}
 		}
 		if(recursive) {
-			drawFontChildren(batch, font, recursive);
+			drawFontChildren(batch, recursive);
 		}
 		return true;
 	}
