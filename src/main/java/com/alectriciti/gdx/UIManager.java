@@ -185,12 +185,8 @@ public class UIManager implements InputProcessor {
 			
 			//If focus exists, then unfocus
 			if(widget_focused!=null) {
-				if(widget_focused instanceof InputProcessor) {
-					input_multiplexer.removeProcessor(((InputProcessor) widget_focused));
-				}
-				widget_focused.focused = false;
+				widget_focused.unfocus(null); // Unfocus the existing focus widget
 				widget_focused = null;
-				print("Unfocused");
 			}
 			
 		} else {
@@ -200,10 +196,7 @@ public class UIManager implements InputProcessor {
 				if (widget_focused == new_widget) {
 					return; // do nothing, focused widget is the same
 				}
-				if(widget_focused instanceof InputProcessor) {
-					input_multiplexer.removeProcessor(((InputProcessor) widget_focused));
-				}
-				widget_focused.focused = false; // unset the previous widget
+				widget_focused.unfocus(new_widget); //Unfocus the existing focus widget and pass the new candidate for context
 			}
 			widget_focused = new_widget;
 			if(move_to_front) {
@@ -218,8 +211,16 @@ public class UIManager implements InputProcessor {
 				input_multiplexer.addProcessor(0, (InputProcessor) widget_focused);
 			}
 			widget_focused.callOnFocus();
-			print("Widget focused: " + new_widget.name_for_display);
+			print(ANSI_BLUE+"Widget Focused: " +ANSI_RESET+ new_widget.name_for_display);
 		}
+	}
+	
+	public void unfocus(Widget unfocus) {
+		if(unfocus instanceof InputProcessor) {
+			input_multiplexer.removeProcessor(((InputProcessor) widget_focused));
+		}
+		unfocus.focused = false;
+		print(ANSI_BLUE+"Widget Unfocused: " +ANSI_RESET+unfocus.id);
 	}
 
 	boolean edit_mode;
@@ -464,12 +465,12 @@ public class UIManager implements InputProcessor {
 	private void left_click_release() {
 	    left_mouse_is_pressed = false;
 
-	    int mx = mouse_x;
-	    int my = mouse_y;
+//	    int mx = mouse_x;
+//	    int my = mouse_y;
 
 	    // If a widget captured the pointer, give it a chance to handle pointerUp
 	    if (pointerCapturedWidget != null) {
-	        boolean consumed = pointerCapturedWidget.onPointerUp(mx, my, pointerCapturedId, Buttons.LEFT);
+//	        boolean consumed = pointerCapturedWidget.onPointerUp(mx, my, pointerCapturedId, Buttons.LEFT);
 	        // release capture regardless (single-pointer model)
 	        pointerCapturedWidget = null;
 	        pointerCapturedId = -1;

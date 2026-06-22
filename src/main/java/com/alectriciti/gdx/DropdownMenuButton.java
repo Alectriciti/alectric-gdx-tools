@@ -140,6 +140,15 @@ public class DropdownMenuButton extends Button{
 		
 	}
 	
+	@Override
+	public void unfocus(Widget new_focus) {
+		super.unfocus(new_focus);
+		//If the new widget isn't related, then deactivate this dropdown
+		if(!isRelated(new_focus)) {
+			deactivate();
+		}
+	}
+	
 	public void finishedAnimation() {
 		// TODO Auto-generated method stub
 		

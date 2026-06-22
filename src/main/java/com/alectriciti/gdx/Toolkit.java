@@ -1,5 +1,7 @@
 package com.alectriciti.gdx;
 
+import static com.alectriciti.gdx.Toolkit.ANSI_RESET;
+
 import java.awt.MouseInfo;
 import java.awt.Point;
 import java.util.Arrays;
@@ -22,12 +24,18 @@ import com.badlogic.gdx.math.MathUtils;
 public class Toolkit {
 	
 	
+	// Define the ANSI escape codes for colors
+    public static final String ANSI_RESET = "\u001B[0m";
+    public static final String ANSI_RED = "\u001B[31m";
+    public static final String ANSI_GREEN = "\u001B[32m";
+    public static final String ANSI_BLUE = "\u001B[34m";
+	
 	/**
 	 * A handy little print function
 	 * @param msg the message to display
 	 */
 	public static void print(String msg) {
-		System.out.println(msg);
+		System.out.println(ANSI_RESET+msg);
 	}
 
 	/**

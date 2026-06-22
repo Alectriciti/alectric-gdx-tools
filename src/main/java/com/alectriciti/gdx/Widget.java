@@ -669,6 +669,25 @@ public class Widget implements Contextable{
 		manager.focus(this, true);
 	}
 	
+	public void unfocus(Widget new_focus) {
+		manager.unfocus(this);
+	}
+	
+	public boolean isRelated(Widget relative) {
+		if(relative == null) return false;
+		if(relative == this) return true;
+		if(this.getParent() == relative) {
+			print("parent of "+id+" is "+relative.id);
+			return true;
+		}
+		if(relative.getParent() == this) {
+			print("parent of "+relative.id+" is "+id);
+			return true;
+		}
+		return false;
+		
+	}
+	
 	protected void pushNewZPosition(boolean recursive) {
 		z = manager.global_canvas_z;
 		manager.global_canvas_z++;
