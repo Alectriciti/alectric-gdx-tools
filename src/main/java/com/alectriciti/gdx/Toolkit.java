@@ -243,36 +243,38 @@ public class Toolkit {
     public static void drawRect(ShapeRenderer shape_renderer, float x, float y, float width, float height) {
         
         ImmediateModeRenderer renderer = shape_renderer.getRenderer();
-        
-//        renderer.check(ShapeType.Line, ShapeType.Filled, 8);
         Color color = shape_renderer.getColor();
 		float colorBits = color.toFloatBits();
+        
+//        renderer.check(ShapeType.Line, ShapeType.Filled, 8);
 		if (shape_renderer.getCurrentType() == ShapeType.Line) {
 			
 			//bottom
 			renderer.color(colorBits);
 			renderer.vertex(x, y, 0);
 			renderer.color(colorBits);
-			renderer.vertex(x + width-1, y, 0);
+			renderer.vertex(x + width, y, 0);
+			
+			//top
+			renderer.color(colorBits);
+			renderer.vertex(x-1, y + height, 0);
+			renderer.color(colorBits);
+			renderer.vertex(x + width -1, y + height, 0);
+
+			//left
+			renderer.color(colorBits);
+			renderer.vertex(x, y-1, 0);
+			renderer.color(colorBits);
+			renderer.vertex(x, y + height-1, 0);
 			
 			//right
 			renderer.color(colorBits);
 			renderer.vertex(x + width, y, 0);
 			renderer.color(colorBits);
 			renderer.vertex(x + width, y + height, 0);
-			
-			//top
-			renderer.color(colorBits);
-			renderer.vertex(x + width, y + height, 0);
-			renderer.color(colorBits);
-			renderer.vertex(x-1, y + height, 0);
-
-			renderer.color(colorBits);
-			renderer.vertex(x, y + height, 0);
-			renderer.color(colorBits);
-			renderer.vertex(x, y, 0);
 		} else {
 			x--;
+			y--;
 			width++;
 			height++;
 			renderer.color(colorBits);
@@ -306,8 +308,12 @@ public class Toolkit {
      * Draws just the outer curve of an arc without the connecting center lines.
      * Must be called between renderer.begin(ShapeType.Line) and renderer.end().
      */
-    public static void drawArcCurve(ShapeRenderer renderer, float x, float y, float radius, float startAngle, float degrees, int segments) {
+    public static void drawArcCurve(ShapeRenderer shape_renderer, float x, float y, float radius, float startAngle, float degrees, int segments) {
         if (radius <= 0) return;
+
+        ImmediateModeRenderer renderer = shape_renderer.getRenderer();
+        Color color = shape_renderer.getColor();
+		float colorBits = color.toFloatBits();
         
         // Fix: Never drop below 12 segments to ensure tiny curves are perfectly round on the pixel grid.
         int actualSegments = Math.max(12, segments);
@@ -316,80 +322,92 @@ public class Toolkit {
         float startX = x + radius * MathUtils.cosDeg(startAngle);
         float startY = y + radius * MathUtils.sinDeg(startAngle);
 
-        for (int i = 1; i <= actualSegments; i++) {
-            // Multiply step instead of adding to avoid floating-point drift over the loop
-            float currentAngle = startAngle + (i * angleStep); 
-            
-            float nextX = x + radius * MathUtils.cosDeg(currentAngle);
-            float nextY = y + radius * MathUtils.sinDeg(currentAngle);
-
-            renderer.line(startX, startY, nextX, nextY);
-
-            startX = nextX;
-            startY = nextY;
-        }
-    }
-    
-    /**
-     * Draws a solid pie-slice using the exact same vertex math as the hollow arc curve.
-     * Must be called between renderer.begin(ShapeType.Filled) and renderer.end().
-     */
-    public static void drawFilledArcCurve(ShapeRenderer renderer, float cx, float cy, float radius, float startAngle, float degrees, int segments) {
-        if (radius <= 0) return;
-
-        // Keep this identical to the Line version
-        int actualSegments = Math.max(12, segments);
-        float angleStep = degrees / actualSegments;
-
-        float startX = cx + radius * MathUtils.cosDeg(startAngle);
-        float startY = cy + radius * MathUtils.sinDeg(startAngle);
-
-        for (int i = 1; i <= actualSegments; i++) {
-            float currentAngle = startAngle + (i * angleStep);
-
-            float nextX = cx + radius * MathUtils.cosDeg(currentAngle);
-            float nextY = cy + radius * MathUtils.sinDeg(currentAngle);
-
-            // Draw a solid triangle connecting the center to the two edge points
-            renderer.triangle(cx, cy, startX, startY, nextX, nextY);
-
-            // Advance the outer edge
-            startX = nextX;
-            startY = nextY;
+        if(shape_renderer.getCurrentType()==ShapeType.Line) {
+	        for (int i = 1; i <= actualSegments; i++) {
+	            // Multiply step instead of adding to avoid floating-point drift over the loop
+	            float currentAngle = startAngle + (i * angleStep); 
+	            
+	            float nextX = x + radius * MathUtils.cosDeg(currentAngle);
+	            float nextY = y + radius * MathUtils.sinDeg(currentAngle);
+	
+				renderer.color(colorBits);
+				renderer.vertex(startX, startY, 0);
+				renderer.color(colorBits);
+				renderer.vertex(nextX, nextY, 0);
+	
+	            startX = nextX;
+	            startY = nextY;
+	        }
+        }else {
+        	y--;
+        	startY--;
+        	for (int i = 1; i <= actualSegments; i++) {
+              float currentAngle = startAngle + (i * angleStep);
+  
+              float nextX = x + radius * MathUtils.cosDeg(currentAngle);
+              float nextY = y + radius * MathUtils.sinDeg(currentAngle);
+  
+              // Draw a solid triangle connecting the center to the two edge points
+              shape_renderer.triangle(x, y, startX, startY, nextX, nextY);
+  
+              // Advance the outer edge
+              startX = nextX;
+              startY = nextY;
+          }
         }
     }
     
     
-    
-    public static void drawRectRound(ShapeRenderer renderer, float x, float y, float width, float height, float radius) {
+    public static void drawRectRound(ShapeRenderer shape_renderer, float x, float y, float width, float height, float radius) {
         if (radius < 1f) {
-            drawRect(renderer, x, y, width, height);
+            drawRect(shape_renderer, x, y, width, height);
             return;
         }
         float maxRadius = Math.min(width, height) / 2f;
         if (radius > maxRadius) radius = maxRadius;
 
+        ImmediateModeRenderer renderer = shape_renderer.getRenderer();
+        Color color = shape_renderer.getColor();
+		float colorBits = color.toFloatBits();
         // Fix: OpenGL Line mode thickness adjustment.
         // Subtracting 1 ensures the right/top lines are drawn ON the final pixel, not past it.
         float rightEdge = x + width;
         float topEdge = y + height;
-    	if(renderer.getCurrentType()==ShapeType.Line) {
+    	if(shape_renderer.getCurrentType()==ShapeType.Line) {
 
 
             // Clamp radius so it never exceeds half of the widget's dimensions
+			//top
+			renderer.color(colorBits);
+			renderer.vertex(x + radius, topEdge, 0);
+			renderer.color(colorBits);
+			renderer.vertex(rightEdge - radius-1, topEdge, 0);
+//			
+//			//bottom
+			renderer.color(colorBits);
+			renderer.vertex(x + radius, y, 0);
+			renderer.color(colorBits);
+			renderer.vertex(rightEdge - radius-1, y, 0);
+//			
+//			//right
+			renderer.color(colorBits);
+			renderer.vertex(rightEdge, y + radius, 0);
+			renderer.color(colorBits);
+			renderer.vertex(rightEdge, topEdge - radius-1, 0);
+//			
+//			//right
+			renderer.color(colorBits);
+			renderer.vertex(x, y + radius, 0);
+			renderer.color(colorBits);
+			renderer.vertex(x, topEdge - radius-1, 0);
     		
-            // 4 Perimeter lines
-            renderer.line(x + radius, y, rightEdge - radius-1, y);                  // Bottom
-            renderer.line(x + radius, topEdge, rightEdge - radius-1, topEdge);      // Top
-            renderer.line(x, y + radius+1, x, topEdge - radius);                    // Left
-            renderer.line(rightEdge, y + radius+1, rightEdge, topEdge - radius);    // Right
             
 //            renderer.setColor(0, 1, 0, 0.5f);
             // 4 Balanced corner curves
-            drawArcCurve(renderer, x + radius, topEdge - radius, radius, 90f, 90f, 16);        // Top-left
-            drawArcCurve(renderer, x + radius, y + radius+1, radius, 180f, 90f, 16);             // Bottom-left
-            drawArcCurve(renderer, rightEdge - radius-1, topEdge - radius, radius, 0f, 90f, 16); // Top-right
-            drawArcCurve(renderer, rightEdge - radius-1, y + radius+1, radius, 270f, 90f, 16);     // Bottom-right
+            drawArcCurve(shape_renderer, x + radius, topEdge - radius-1, radius, 90f, 90f, 16);        // Top-left
+            drawArcCurve(shape_renderer, x + radius, y + radius, radius, 180f, 90f, 16);             // Bottom-left
+            drawArcCurve(shape_renderer, rightEdge - radius-1, topEdge - radius-1, radius, 0f, 90f, 16); // Top-right
+            drawArcCurve(shape_renderer, rightEdge - radius-1, y + radius, radius, 270f, 90f, 16);     // Bottom-right
     	}else {
 
             // 1. Exact same centers used in the manual Line adjustments
@@ -400,116 +418,29 @@ public class Toolkit {
 
             // 2. Central Vertical Column
             // Spans the full height, bounded horizontally between the left and right curves
-            renderer.rect(cLeft, y, cRight - cLeft, height+1);
-            
-            
-
-            // 3. Left Middle Block
-            // Touches the left edge, bounded vertically between the top and bottom curves
-            renderer.rect(x-1, cBottom, cLeft - x+1, cTop - cBottom);
-
-            // 4. Right Middle Block
-            // Touches the right edge, bounded vertically between the top and bottom curves
-            renderer.rect(cRight, cBottom, rightEdge - cRight, cTop - cBottom);
+            shape_renderer.rect(cLeft, y-1, cRight - cLeft, height+1);
+//            
+//            
+//
+//            // 3. Left Middle Block
+//            // Touches the left edge, bounded vertically between the top and bottom curves
+            shape_renderer.rect(x-1, cBottom-1, cLeft - x+1, cTop - cBottom);
+//
+//            // 4. Right Middle Block
+//            // Touches the right edge, bounded vertically between the top and bottom curves
+            shape_renderer.rect(cRight, cBottom-1, rightEdge - cRight, cTop - cBottom);
 
             //TEMP
             // 5. Custom Filled Corner Curves
             // Because these use drawFilledArcCurve, they bridge the exact pixels the rectangles left behind
-            drawFilledArcCurve(renderer, cLeft, cTop, radius, 90f, 90f, 16);        // Top-left
-            drawFilledArcCurve(renderer, cLeft, cBottom, radius, 180f, 90f, 16);    // Bottom-left
-            drawFilledArcCurve(renderer, cRight, cTop, radius, 0f, 90f, 16);        // Top-right
-            drawFilledArcCurve(renderer, cRight, cBottom, radius, 270f, 90f, 16);   // Bottom-right
+            drawArcCurve(shape_renderer, cLeft, cTop, radius, 90f, 90f, 16);        // Top-left
+            drawArcCurve(shape_renderer, cLeft, cBottom, radius, 180f, 90f, 16);    // Bottom-left
+            drawArcCurve(shape_renderer, cRight, cTop, radius, 0f, 90f, 16);        // Top-right
+            drawArcCurve(shape_renderer, cRight, cBottom, radius, 270f, 90f, 16);   // Bottom-right
     	}
     }
     		
     		
     
-    /**
-     * Draws a perfectly aligned hollow rounded border using Line mode.
-     */
-//    public static void drawRoundedRectLine(ShapeRenderer renderer, float x, float y, float width, float height, float radius) {
-//        if (radius < 1f) {
-//            drawRect(renderer, x, y, width, height);
-//            return;
-//        }
-//
-//        // Clamp radius so it never exceeds half of the widget's dimensions
-//        float maxRadius = Math.min(width, height) / 2f;
-//        if (radius > maxRadius) radius = maxRadius;
-//
-//        // Fix: OpenGL Line mode thickness adjustment.
-//        // Subtracting 1 ensures the right/top lines are drawn ON the final pixel, not past it.
-//        float rightEdge = x + width;
-//        float topEdge = y + height;
-//
-//        
-//        //TEMP
-////        renderer.setColor(0.78f, 0.5f, 0.5f, 0.25f);
-//        
-////        renderer.setColor(0, 0, 1, 0.5f);
-////        renderer.rect(x, y, width, height);
-//
-////        renderer.setColor(1, 0, 0, 0.5f);
-//        // 4 Perimeter lines
-//        renderer.line(x + radius, y, rightEdge - radius-1, y);                  // Bottom
-//        renderer.line(x + radius, topEdge, rightEdge - radius-1, topEdge);      // Top
-//        renderer.line(x, y + radius+1, x, topEdge - radius);                    // Left
-//        renderer.line(rightEdge, y + radius+1, rightEdge, topEdge - radius);    // Right
-//        
-////        renderer.setColor(0, 1, 0, 0.5f);
-//        // 4 Balanced corner curves
-//        drawArcCurve(renderer, x + radius, topEdge - radius, radius, 90f, 90f, 16);        // Top-left
-//        drawArcCurve(renderer, x + radius, y + radius+1, radius, 180f, 90f, 16);             // Bottom-left
-//        drawArcCurve(renderer, rightEdge - radius-1, topEdge - radius, radius, 0f, 90f, 16); // Top-right
-//        drawArcCurve(renderer, rightEdge - radius-1, y + radius+1, radius, 270f, 90f, 16);     // Bottom-right
-//    }
-//    
-//    
-//    /**
-//     * Draws a perfectly distributed, solid rounded background using Filled mode.
-//     * The underlying rectangles and custom arcs mathematically sum up to match the Line bounds flawlessly.
-//     */
-//    public static void drawRoundedRectFilled(ShapeRenderer renderer, float x, float y, float width, float height, float radius) {
-//        if (radius < 1f) {
-//            renderer.rect(x, y, width, height);
-//            return;
-//        }
-//
-//        float maxRadius = Math.min(width, height) / 2f;
-//        if (radius > maxRadius) radius = maxRadius;
-//
-//        float rightEdge = x + width;
-//        float topEdge = y + height;
-//
-//        // 1. Exact same centers used in the manual Line adjustments
-//        float cLeft = x + radius;
-//        float cRight = rightEdge - radius - 1f;
-//        float cBottom = y + radius + 1f;
-//        float cTop = topEdge - radius;
-//
-//        //TEMP
-//        renderer.setColor(0.1f, 0.85f, 0.2f, 0.25f);
-//        // 2. Central Vertical Column
-//        // Spans the full height, bounded horizontally between the left and right curves
-////        renderer.rect(cLeft, y, cRight - cLeft, height);
-//
-//        // 3. Left Middle Block
-//        // Touches the left edge, bounded vertically between the top and bottom curves
-//        renderer.rect(x, cBottom, cLeft - x, cTop - cBottom);
-//
-//        // 4. Right Middle Block
-//        // Touches the right edge, bounded vertically between the top and bottom curves
-//        renderer.rect(cRight, cBottom, rightEdge - cRight, cTop - cBottom);
-//
-//        //TEMP
-//        renderer.setColor(0.1f, 0.2f, 0.9f, 0.25f);
-//        // 5. Custom Filled Corner Curves
-//        // Because these use drawFilledArcCurve, they bridge the exact pixels the rectangles left behind
-//        drawFilledArcCurve(renderer, cLeft, cTop, radius, 90f, 90f, 16);        // Top-left
-//        drawFilledArcCurve(renderer, cLeft, cBottom, radius, 180f, 90f, 16);    // Bottom-left
-//        drawFilledArcCurve(renderer, cRight, cTop, radius, 0f, 90f, 16);        // Top-right
-//        drawFilledArcCurve(renderer, cRight, cBottom, radius, 270f, 90f, 16);   // Bottom-right
-//    }
-//    
     
 }

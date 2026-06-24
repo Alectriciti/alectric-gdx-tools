@@ -2,6 +2,7 @@ package com.alectriciti.test;
 
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Window;
@@ -56,8 +57,12 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 	public int width, height;	
 	
 	Widget info;
+
+	Style oldschool_style;
 	
-	
+	Style cool_style;
+
+	Button button_mode_1, button_mode_2, button_mode_3, button_mode_4;
 	
 	@Override
 	public void create() {
@@ -69,6 +74,35 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 		ui_manager = new UIManager(input, font);
 		
 		DropdownMenuButton main_menu;
+		
+		width = Gdx.graphics.getWidth();
+		height = Gdx.graphics.getHeight();
+		
+		cool_style = new Style();
+		oldschool_style = new StyleOldschool();
+		
+
+		button_mode_1 = new Button("1", ui_manager, Input.Keys.NUM_1);
+		button_mode_2 = new Button("2", ui_manager, Input.Keys.NUM_2);
+		button_mode_3 = new Button("3", ui_manager, Input.Keys.NUM_3);
+		button_mode_4 = new Button("4", ui_manager, Input.Keys.NUM_4);
+		button_mode_1.setType(ButtonType.TOGGLE);
+		button_mode_2.setType(ButtonType.TOGGLE);
+		button_mode_3.setType(ButtonType.TOGGLE);
+		button_mode_4.setType(ButtonType.TOGGLE);
+		button_mode_1.alignment = Direction.UP_LEFT;
+		button_mode_2.alignment = Direction.UP_LEFT;
+		button_mode_3.alignment = Direction.UP_LEFT;
+		button_mode_4.alignment = Direction.UP_LEFT;
+		button_mode_1.setGlobalPosition(40, height-120);
+		button_mode_2.setGlobalPosition(80, height-120);
+		button_mode_3.setGlobalPosition(120, height-120);
+		button_mode_4.setGlobalPosition(160, height-120);
+
+//		button_mode_1.addOnActivate(()->{mode=0;});
+//		button_mode_2.addOnActivate(()->{mode=1;});
+//		button_mode_3.addOnActivate(()->{mode=2;});
+//		button_mode_4.addOnActivate(()->{mode=3;});
 		
 		
 		Button test_button_a = new Button("Test Button A", ui_manager) {
@@ -172,8 +206,6 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 
 		SneakyButton sneaky_button = new SneakyButton("sneaker", ui_manager);
 		
-		Style oldschool_style = new StyleOldschool();
-		
 		Button a, b, c;
 
 		a = new Button("default", ui_manager);
@@ -185,17 +217,15 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 
 		b.style = oldschool_style;
 		
-		
-    	Style cool_style = new Style();
     	cool_style.color_outline = new Color(0.2f, 0.2f, 1, 1);
     	test_button_a.style = cool_style;
     	test_button_b.style = cool_style;
     	
 		Slider slider = new Slider(ui_manager);
-		slider.setBaseSize(100, 12);
+		slider.setBaseSize(280, 12);
 		slider.setKnobSize(32, 32);
 		slider.setValueRange(0,12);
-		slider.setRelativePosition(32, 142);
+		slider.setRelativePosition(400, 220);
 		slider.addChangeListener(new Runnable() {
 			
 			@Override
@@ -209,9 +239,6 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 		//b.setRelativePosition(100, 00);
 		
 		ui_manager.automaticallyAssignIDsToWidgets();
-		
-		width = Gdx.graphics.getWidth();
-		height = Gdx.graphics.getHeight();
 		
 		shape_renderer = new ShapeRenderer();
 		shape_renderer.setAutoShapeType(true);
@@ -231,46 +258,6 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 	}
 	
 	Canvas confirm_box;
-	
-	private void confirmDialogueBox(Runnable run_new_skin) {
-		if(confirm_box == null) {
-			confirm_box = new Canvas("Start a New Skin?", ui_manager, new Rectangle(100, 100, 200, 100));
-			confirm_box.setGlobalPosition(width/2 - 100, height/2 - 50);
-			//Widget img = new Widget("img", confirm_box);
-			
-//			Widget hello_widget = new Widget(ui_manager);
-			//hello_widget.render_text
-			//Message hello_world = new Message(new ColoredText());
-			
-			Button yes = new Button("Yes", confirm_box, Keys.Y) {
-				@Override
-				protected void onActivate() {
-					run_new_skin.run();
-					confirm_box.destroy();
-					confirm_box = null;
-				}
-			};
-			
-			yes.font_offset = new Point(4, 4);
-			yes.setRelativePosition(32, 30);
-			yes.setSize(42, 32);
-			Button no = new Button("No", confirm_box, Keys.N) {
-				@Override
-				protected void onActivate() {
-					// TODO Auto-generated method stub
-					super.onActivate();
-					confirm_box.destroy();
-					confirm_box = null;
-				}
-			};
-			
-			no.setRelativePosition(104, 30);
-			no.font_offset = new Point(4, 4);
-			no.setSize(42, 32);
-			
-			ui_manager.focus(confirm_box, true);
-		}
-	}
 	
 	int global_test_button_index;
 	
@@ -346,22 +333,45 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 	}
 
 	private void debugDraw(ShapeRenderer shape_renderer) {
-		int x = 200, y = 200, w = 32, h = 32;
+		int x = 500, y = 300, w = 64, h = 64;
 		
 		shape_renderer.begin();
-//		shape_renderer.set(ShapeType.Line);
-//		shape_renderer.setColor(0, 0, 1, 0.45f);
-//		shape_renderer.rect(x, y, w, h);
 		
-		shape_renderer.setColor(1, 0, 0, 0.45f);
+		shape_renderer.set(ShapeType.Point);
+		shape_renderer.setColor(1, 1, 1, 0.5f);
 
-		shape_renderer.rect(x+100, y, w, h);
-		drawRect(shape_renderer, x, y, w, h);
-		shape_renderer.set(ShapeType.Line);
-		shape_renderer.setColor(0, 1, 0, 0.45f);
-		shape_renderer.set(ShapeType.Filled);
-		shape_renderer.rect(x+100, y, w, h);
-		drawRect(shape_renderer, x, y, w, h);
+		shape_renderer.point(x, y, 0);
+		shape_renderer.point(x+w, y, 0);
+		shape_renderer.point(x+w, y+h, 0);
+		shape_renderer.point(x, y+h, 0);
+		
+		
+		if(button_mode_1.activated) {
+			shape_renderer.set(ShapeType.Line);
+			shape_renderer.setColor(1, 0, 0, 0.5f);
+			drawRect(shape_renderer, x, y, w, h);
+		}
+		if(button_mode_2.activated) {
+			shape_renderer.set(ShapeType.Filled);
+			shape_renderer.setColor(1, 1, 0, 0.5f);
+//			shape_renderer.rect(x, y, w, h);
+			drawRect(shape_renderer, x, y, w, h);
+		}
+		if(button_mode_3.activated) {
+			shape_renderer.set(ShapeType.Line);
+			shape_renderer.setColor(1, 0, 0, 0.25f);
+			drawRectRound(shape_renderer, x, y, w, h, cool_style.corner_radius);
+		}
+		if(button_mode_4.activated) {
+			shape_renderer.set(ShapeType.Filled);
+			shape_renderer.setColor(0, 1, 0, 0.25f);
+			drawRectRound(shape_renderer, x, y, w, h, cool_style.corner_radius);
+//			drawRect(shape_renderer, x, y, w, h);
+		}
+
+//		drawRect(shape_renderer, x, y, w, h);
+//		shape_renderer.setColor(0, 1, 0, 0.45f);
+//		shape_renderer.rect(x+100, y, w, h);
 		shape_renderer.end();
 	}
 	
