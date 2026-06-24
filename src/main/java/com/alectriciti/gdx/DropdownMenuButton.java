@@ -19,6 +19,8 @@ public class DropdownMenuButton extends Button{
 	float expand_amount_target = 0;
 	float expand_speed = 0.3f;
 	
+	public boolean auto_close = true;
+	
 	Direction direction = Direction.DOWN;
 	
 	public void setDirection(Direction d) {
@@ -68,6 +70,7 @@ public class DropdownMenuButton extends Button{
 //			autoclose_settings_initialized = true;
 //		}
 		super.activate();
+		manager.transient_widgets.add(this);
 		dropdownOpen();
 	}
 
@@ -145,7 +148,7 @@ public class DropdownMenuButton extends Button{
 		super.unfocus(new_focus);
 		//If the new widget isn't related, then deactivate this dropdown
 		if(!isRelated(new_focus)) {
-			deactivate();
+//			deactivate();
 		}
 	}
 	
@@ -162,7 +165,7 @@ public class DropdownMenuButton extends Button{
 		float offset = 0;
 		//Adjust the actual widgets
 		for(Widget w : widgets) {
-			offset += w.getHeight()*expand_amount;
+			offset += (w.getHeight()+1)*expand_amount;
 			w.setRelativePosition(direction.x*offset, direction.y*offset);
 			w.setOpacity(Math.max(0, (expand_amount*2)-1));
 		}
@@ -189,8 +192,8 @@ public class DropdownMenuButton extends Button{
 		//renderer.set(ShapeType.Line);
 		//renderer.setColor(Color.BLUE);
 		//renderer.rect(dropdown_region.x-2, dropdown_region.y-2, dropdown_region.width+2, dropdown_region.height+2);
-		if(activated)
-			drawShapeChildren(renderer, true);
+//		if(activated)
+//			drawShapeChildren(renderer, true);
 	}
 	
 	@Override

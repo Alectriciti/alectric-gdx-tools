@@ -13,6 +13,7 @@ Steps to apply this to your LibGDX Project:
 1. Create a new LibGDX Project using gdx-liftoff
 2. Add this line to the dependencies in the lwjgl3 build.gradle: ```implementation 'com.github.alectriciti:alectric-gdx-tools:0.0.1'```
 
+3. Ensure you use `configuration.setOpenGLEmulation(Lwjgl3ApplicationConfiguration.GLEmulation.ANGLE_GLES20, 0, 0);` in your launcher to properly display widgets
 
 # Toolkit.class
 This class is intended to be imported statically to access to various useful common functions such as lerp, mapRange, etc.

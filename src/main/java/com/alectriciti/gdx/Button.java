@@ -170,6 +170,12 @@ public class Button extends Widget implements Activatable{
 			r.run();
 		}
 	}
+	
+	@Override
+	public boolean isActivated() {
+		// TODO Auto-generated method stub
+		return activated;
+	}
 
 	/**
 	 * The overrideable click event
@@ -225,7 +231,7 @@ public class Button extends Widget implements Activatable{
 				drawBorder(renderer);
 			}
 		}
-//		drawShapeChildren(renderer);
+		drawShapeChildren(renderer, true);
 	}
 	
 //	@Override

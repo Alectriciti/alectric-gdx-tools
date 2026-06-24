@@ -212,6 +212,8 @@ public class Slider extends Widget {
 		renderer.set(ShapeType.Filled);
         renderer.setColor(baseColor);
         
+        style.drawRect(renderer, gx, gy + (knobHeight - baseHeight) * 0.5f, baseWidth, baseHeight);
+        
         drawRectRound(renderer, gx, gy + (knobHeight - baseHeight) * 0.5f, baseWidth, baseHeight, style.corner_radius);
 //        renderer.end();
 

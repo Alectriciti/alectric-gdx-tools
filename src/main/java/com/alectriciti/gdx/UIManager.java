@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWVidMode;
@@ -34,6 +35,8 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
+import com.badlogic.gdx.utils.ObjectMap;
+import com.badlogic.gdx.utils.ObjectSet;
 
 import static com.alectriciti.gdx.Toolkit.*;
 
@@ -145,16 +148,18 @@ public class UIManager implements InputProcessor {
 	/**
 	 * These references exist globally to allow for extra functionality
 	 */
-	public HashSet<Widget> widgets = new HashSet<Widget>();
+	public ObjectSet<Widget> widgets = new ObjectSet<Widget>();
 	// public HashSet<Widget> widget_orphans = new HashSet<Widget>();
 
-	private List<Widget> widgets_to_add = new ArrayList<Widget>();
-	private List<Widget> widgets_to_destroy = new ArrayList<Widget>();
+	private ObjectSet<Widget> widgets_to_add = new ObjectSet<Widget>();
+	private ObjectSet<Widget> widgets_to_destroy = new ObjectSet<Widget>();
+	
+	Set<Widget> transient_widgets = new HashSet<Widget>(); // Widgets which close automatically, relating to focus 
 
 	public List<Button> buttons = new ArrayList<Button>();
 	public List<Button> buttons_rapidfiring = new ArrayList<Button>();
-	public Map<String, Button> buttons_by_name = new HashMap<String, Button>();
-	public Map<Integer, Button> buttons_by_key = new HashMap<Integer, Button>();
+	public ObjectMap<String, Button> buttons_by_name = new ObjectMap<String, Button>();
+	public ObjectMap<Integer, Button> buttons_by_key = new ObjectMap<Integer, Button>();
 	
 	public InputMultiplexer input_multiplexer;
 
@@ -211,8 +216,30 @@ public class UIManager implements InputProcessor {
 				input_multiplexer.addProcessor(0, (InputProcessor) widget_focused);
 			}
 			widget_focused.callOnFocus();
-			print(ANSI_BLUE+"Widget Focused: " +ANSI_RESET+ new_widget.name_for_display);
+//			print(ANSI_BLUE+"Widget Focused: " +ANSI_RESET+ new_widget.name_for_display);
 		}
+
+
+		for(Widget w : transient_widgets) {
+			if(w instanceof Activatable) {
+				if(new_widget == null) {
+					((Activatable)w).deactivate();
+					continue;
+				}
+				if(new_widget.isDescendantOf(w) || new_widget.isInSameGroup(w)) {
+					continue;
+				}
+				((Activatable)w).deactivate();
+			}
+		}
+//		transient_widgets.clear();
+		//Regardless, we need to check that existing temporary widgets are deactivated
+//		for(Widget w : transient_widgets) {
+//			if(!new_widget.isRelated(w)) {
+//				
+//			}
+//		}
+		
 	}
 	
 	public void unfocus(Widget unfocus) {
@@ -220,7 +247,7 @@ public class UIManager implements InputProcessor {
 			input_multiplexer.removeProcessor(((InputProcessor) widget_focused));
 		}
 		unfocus.focused = false;
-		print(ANSI_BLUE+"Widget Unfocused: " +ANSI_RESET+unfocus.id);
+//		print(ANSI_BLUE+"Widget Unfocused: " +ANSI_RESET+unfocus.id);
 	}
 
 	boolean edit_mode;
@@ -303,7 +330,7 @@ public class UIManager implements InputProcessor {
 					widget_independants.add(widget);
 				}
 			}
-			List<Widget> widgz = new ArrayList<Widget>(widgets_to_add);
+			ObjectSet<Widget> widgz = new ObjectSet<Widget>(widgets_to_add);
 			for(Widget widget : widgz) {
 				widget.callOnCreate();
 			}
@@ -311,9 +338,14 @@ public class UIManager implements InputProcessor {
 		}
 
 		if (!widgets_to_destroy.isEmpty()) {
-			widgets.removeAll(widgets_to_destroy);
-			widget_independants.removeAll(widgets_to_destroy);
-			buttons.removeAll(widgets_to_destroy);
+			for(Widget wd : widgets_to_destroy) {
+				widgets.remove(wd);
+				widget_independants.remove(wd);
+				buttons.remove(wd);
+			}
+//			widgets.removeAll(widgets_to_destroy);
+//			widget_independants.removeAll(widgets_to_destroy);
+//			buttons.removeAll(widgets_to_destroy);
 
 			for (Widget wtd : widgets_to_destroy) {
 				if (wtd instanceof Button) {
@@ -326,7 +358,9 @@ public class UIManager implements InputProcessor {
 				}
 			}
 			for (Widget w : widgets) {
-				w.widgets.removeAll(widgets_to_destroy);
+				for(Widget wd : widgets_to_destroy) {
+					w.widgets.remove(wd);
+				}
 			}
 
 			widgets_to_destroy.clear();
@@ -378,7 +412,9 @@ public class UIManager implements InputProcessor {
 
 	private void left_click_down() {
 	    left_mouse_is_pressed = true;
-
+	    
+	    
+	    
 	    // Update mouse_x/mouse_y earlier in update() already; still get local copy
 	    int mx = mouse_x;
 	    int my = mouse_y;
@@ -421,13 +457,13 @@ public class UIManager implements InputProcessor {
 	        	            // also set as clicked widget for legacy logic
 	        	            mouse_clicked_widget = widget_hovering;
 	        	            widget_hovering.callOnClicked();
-	        	            return; // captured — consume event
 	        	        }
 
 	        	        // If not captured, fall back to default focus/click behavior (buttons, etc.)
 	        	        widget_hovering.focus();
 	        	        mouse_clicked_widget = widget_hovering;
 	        	        widget_hovering.callOnClicked(); // existing API call
+        	            return; // captured — consume event
 	        	    }
 
 	        	} else {
@@ -461,6 +497,10 @@ public class UIManager implements InputProcessor {
 	    }
 	}
 
+	public void debug(String msg) {
+		if(debug_mode)
+		System.out.println(ANSI_BLUE+"[DEBUG] "+ANSI_RESET+msg);
+	}
 
 	private void left_click_release() {
 	    left_mouse_is_pressed = false;

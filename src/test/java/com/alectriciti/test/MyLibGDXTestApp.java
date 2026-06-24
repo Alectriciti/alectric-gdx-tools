@@ -73,7 +73,7 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 		font = new BitmapFont(font_handle);
 		ui_manager = new UIManager(input, font);
 		
-		DropdownMenuButton main_menu;
+		DropdownMenuButton main_menu, other_menu;
 		
 		width = Gdx.graphics.getWidth();
 		height = Gdx.graphics.getHeight();
@@ -157,12 +157,29 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 		info.setRelativePosition(10, 10);
 		
 		
-		//hello_widget.editable = true;
-		//hello_widget.setTouchable(true, true);
+		//Stress Test
+//		for(int x = 0; x<1200;x++) {
+//			Button button = new Button("x_"+x, ui_manager);
+//			button.setGlobalPosition((x%30)*32, ((int)(x/30))*32);
+//		}
+		
+
+		
+		/**
+		 * Dropdown Menus
+		 */
     	main_menu = new DropdownMenuButton("Main Menu", ui_manager, Keys.ESCAPE);
     	main_menu.alignment = Direction.UP;
     	main_menu.setRelativePosition(0, 0);
     	main_menu.setSize(120, 32);
+    	other_menu = new DropdownMenuButton("Other Menu", ui_manager, Keys.F1);
+    	other_menu.alignment = Direction.UP;
+    	other_menu.setRelativePosition(120, 0);
+    	other_menu.setSize(120, 32);
+    	
+    	
+    	
+    	
     	Button button_new_skin = new Button("New Menu", main_menu);
     	button_new_skin.addOnActivate(main_menu.getAutocloseRunnable());
     	
@@ -203,6 +220,15 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
     	};
     	button_hideui.setType(ButtonType.TOGGLE);
     	
+    	
+
+    	new Button("blah", other_menu);
+    	DropdownMenuButton dropdownMenuButton = new DropdownMenuButton("super blarg extreme", other_menu);
+    	dropdownMenuButton.setDirection(Direction.RIGHT);
+
+    	new Button("aaah", dropdownMenuButton);
+    	new Button("aaah2", dropdownMenuButton);
+    	new Button("aaah3", dropdownMenuButton);
 
 		SneakyButton sneaky_button = new SneakyButton("sneaker", ui_manager);
 		
@@ -307,7 +333,9 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 	}
 	
 	public void update() {
-		info.setText("widgets: "+ui_manager.widgets.size());
+		int fps = Gdx.graphics.getFramesPerSecond();
+		Gdx.graphics.setTitle("fps: "+fps);
+		info.setText("widgets: "+ui_manager.widgets.size);
 	}
 
 	@Override

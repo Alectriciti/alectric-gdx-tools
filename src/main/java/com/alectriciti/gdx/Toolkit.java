@@ -33,6 +33,7 @@ public class Toolkit {
 	public static void print(String msg) {
 		System.out.println(ANSI_RESET+msg);
 	}
+	
 
 	/**
 	 * A handy little print function, but in red
@@ -363,6 +364,9 @@ public class Toolkit {
             drawRect(shape_renderer, x, y, width, height);
             return;
         }
+        x = (int)x;
+        y = (int)y;
+        
         float maxRadius = Math.min(width, height) / 2f;
         if (radius > maxRadius) radius = maxRadius;
 

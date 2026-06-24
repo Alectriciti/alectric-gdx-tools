@@ -41,6 +41,7 @@ public class Widget implements Contextable, Drawable{
 	
 	//for serializations
 	public String id;
+	public String group;
 	protected boolean serializable = true;
 	
 	public Style style = UIManager.getDefaultStyle();
@@ -51,7 +52,7 @@ public class Widget implements Contextable, Drawable{
 	
 	public String name_for_display; //The display name
 	public boolean render_text = false;
-	
+
 	public transient LinkedList<Widget> widgets = new LinkedList<Widget>();
 	
 	//A constantly refreshing cache for quickly determining grandchildren
@@ -654,15 +655,25 @@ public class Widget implements Contextable, Drawable{
 		if(relative == null) return false;
 		if(relative == this) return true;
 		if(this.getParent() == relative) {
-			print("parent of "+id+" is "+relative.id);
 			return true;
 		}
 		if(relative.getParent() == this) {
-			print("parent of "+relative.id+" is "+id);
 			return true;
 		}
 		return false;
-		
+	}
+	
+	public boolean isDescendantOf(Widget ancestor) {
+//		if(ancestor==null)return false;
+//		if(getParent()==null)return false;
+		Widget w = this;
+		while(w != null) {
+			if(w.getParent()==ancestor) {
+				return true;
+			}
+			w = w.getParent();
+		}
+		return false;
 	}
 	
 	protected void pushNewZPosition(boolean recursive) {
@@ -991,6 +1002,17 @@ public class Widget implements Contextable, Drawable{
 	@Override
 	public boolean isPressed() {
 		return pressing;
+	}
+
+	public boolean isInSameGroup(Widget w) {
+		if(w == null) return false;
+		if(group==null || w.group==null) {
+			print("f yeah b");
+			return false;
+		}
+		if(group.equals(w.group)) return true;
+		return false;
+		
 	}
 	
 	

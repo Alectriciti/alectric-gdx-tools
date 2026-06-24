@@ -55,6 +55,15 @@ public class Style {
 	public void drawBorder(Drawable drawable, ShapeRenderer renderer) {
 		drawable.drawBorder(renderer);
 	}
+
+	
+	/**
+	 * Draws a rectangle based on the existing setup
+	 */
+	public void drawRect(ShapeRenderer renderer, float gx, float f, float baseWidth, float baseHeight) {
+		// TODO Auto-generated method stub
+		
+	}
     
     
 }
