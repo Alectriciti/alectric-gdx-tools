@@ -2,26 +2,31 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.github.alectriciti</groupId>
   <artifactId>alectric-gdx-tools</artifactId>
-  <version>0.0.3</version>
+  <version>0.0.4</version>
   <dependencies>
   <dependency>
     <groupId>com.badlogicgames.gdx</groupId>
     <artifactId>gdx</artifactId>
-    <version>1.12.1</version>
+    <version>1.14.0</version>
   </dependency>
   <!-- Desktop backend -->
     <dependency>
       <groupId>com.badlogicgames.gdx</groupId>
       <artifactId>gdx-backend-lwjgl3</artifactId>
-      <version>1.12.0</version>
+      <version>1.14.0</version>
     </dependency>
 
     <!-- Native desktop dependencies -->
     <dependency>
       <groupId>com.badlogicgames.gdx</groupId>
       <artifactId>gdx-platform</artifactId>
-      <version>1.12.0</version>
+      <version>1.14.0</version>
       <classifier>natives-desktop</classifier>
+    </dependency>
+    <dependency>
+      <groupId>com.badlogicgames.gdx</groupId>
+      <artifactId>gdx-lwjgl3-angle</artifactId>
+      <version>1.14.0</version>
     </dependency>
   <dependency>
     <groupId>org.junit.jupiter</groupId>
