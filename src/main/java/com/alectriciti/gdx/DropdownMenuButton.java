@@ -182,15 +182,15 @@ public class DropdownMenuButton extends Button{
 	}
 	
 	@Override
-	public void drawShape(ShapeRenderer renderer, boolean recursive) {
+	public void drawShape(ShapeRenderer renderer) {
 		// TODO Auto-generated method stub
-		super.drawShape(renderer, false);
+		super.drawShape(renderer);
 		
 		//renderer.set(ShapeType.Line);
 		//renderer.setColor(Color.BLUE);
 		//renderer.rect(dropdown_region.x-2, dropdown_region.y-2, dropdown_region.width+2, dropdown_region.height+2);
 		if(activated)
-			drawShapeChildren(renderer, recursive);
+			drawShapeChildren(renderer, true);
 	}
 	
 	@Override

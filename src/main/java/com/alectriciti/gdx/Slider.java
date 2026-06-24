@@ -198,7 +198,7 @@ public class Slider extends Widget {
      * You probably call this from your widget render loop (drawShape or similar).
      */
     @Override
-    public void drawShape(ShapeRenderer renderer, boolean recursive) {
+    public void drawShape(ShapeRenderer renderer) {
         if (!isVisible()) return;
 
         // We draw the base (track) first, then the knob on top.
@@ -227,10 +227,8 @@ public class Slider extends Widget {
         renderer.rect(knobLeft, knobBottom, knobWidth, knobHeight);
 //        renderer.end();
 
-        if (recursive) {
             // If Widget has children drawing responsibilities, call super to draw them.
-            super.drawShape(renderer, recursive);
-        }
+//        super.drawShape(renderer);
     }
 
     // ---------- Internal helpers ----------

@@ -38,7 +38,7 @@ public class Canvas extends Widget{
 	}
 	
 	@Override
-	public void drawShape(ShapeRenderer renderer, boolean recursive) {
+	public void drawShape(ShapeRenderer renderer) {
 		if(!isVisible()){
 			return;
 		}
@@ -48,17 +48,13 @@ public class Canvas extends Widget{
 		renderer.rect(getGlobalX(), getGlobalY(), shape.width, shape.height);
 
 		if(hovering && manager.edit_mode) {
-			drawEditMode(renderer, recursive);
-			if(recursive) {
-				drawEditModeChildren(renderer, recursive);
-			}
+			drawEditMode(renderer, true);
+			drawEditModeChildren(renderer, true);
 		}else {
 			renderer.set(ShapeType.Line);
 			renderer.setColor(style.color_outline);
 			renderer.rect(getGlobalX(), getGlobalY(), shape.width, shape.height);
-			if(recursive) {
-				drawShapeChildren(renderer, recursive);
-			}
+			drawShapeChildren(renderer, true);
 		}
 	}
 	

@@ -51,7 +51,7 @@ public class EffectPulse extends Widget{
 	
 	
 	@Override
-	public void drawShape(ShapeRenderer renderer, boolean recursive) {
+	public void drawShape(ShapeRenderer renderer) {
 		// TODO Auto-generated method stub
 		drawButtonEffect(renderer);
 //		super.drawShape(renderer, recursive);

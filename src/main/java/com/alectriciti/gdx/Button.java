@@ -37,7 +37,6 @@ public class Button extends Widget implements Activatable{
 	public transient Runnable hyperlink = null;
 	public FileHandle hyperlink_file = null;
 	
-	public boolean pressing = false;
 	public boolean activated = false;
 	
 	public int pressed_ticks = 0;
@@ -207,8 +206,6 @@ public class Button extends Widget implements Activatable{
 	}
 	
 	public boolean is_key_down;
-	public boolean cancelled;
-	
 	/**
 	 * Whether or not the user can drag and drop a png to change the button's texture
 	 */
@@ -216,26 +213,19 @@ public class Button extends Widget implements Activatable{
 	public boolean texture_stretch = false; 
 	
 	@Override
-	public void drawShape(ShapeRenderer renderer, boolean recursive) {
+	public void drawShape(ShapeRenderer renderer) {
 		
-		super.drawShape(renderer, false);
+		super.drawShape(renderer);
 		if(isVisible()) {
-	
 			renderer.set(ShapeType.Filled);
 			renderer.setColor(color);
-			if(style.corner_radius<=0) {
-				renderer.rect(getGlobalX(), getGlobalY(), shape.width, shape.height);
-			}else {
-				drawRoundedRectFilled(renderer, getGlobalX(), getGlobalY(), shape.width, shape.height, style.corner_radius);
-			}
+			drawRoundedRect(renderer, getGlobalX(), getGlobalY(), shape.width, shape.height, style.corner_radius);
 			
 			if(!hovering) {
 				drawBorder(renderer);
 			}
-			
 		}
-		
-		drawShapeChildren(renderer, recursive);
+//		drawShapeChildren(renderer);
 	}
 	
 //	@Override
@@ -296,6 +286,8 @@ public class Button extends Widget implements Activatable{
 		return valid;
 	}
 	
+	public boolean cancelled;
+
 	@Override
 	public boolean isHoverable() {
 		return true;

@@ -1,7 +1,10 @@
 package com.alectriciti.gdx;
 
+import static com.alectriciti.gdx.Toolkit.LerpColor;
+
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
 /**
  * A a simple class that holds style information for widgets. This allows for easy theming and customization of the appearance of widgets. You can create multiple Style instances with different values to create different themes for your UI.
@@ -13,8 +16,8 @@ public class Style {
     public float border_thickness = 2f;
     
     // --- Timing ---
-    public float color_fade_in = 0.1f;
-    public float color_fade_out = 0.05f;
+    public float color_fade_in = 0.25f;
+    public float color_fade_out = 0.5f;
     
     // --- Colors ---
     public Color color_base = new Color(0.15f, 0.15f, 0.15f, 1f);
@@ -43,19 +46,15 @@ public class Style {
     public Style(BitmapFont font) {
     	this.font = font;
     }
+    
 
-
-
-//	public Style(Color color) {
-//    	//dynamically generate hover/press colors based on the base color
-//    	this.color_base = color.cpy();
-//    	this.color_hover = color.cpy().mul(1.2f, 1.2f, 1.2f, 1f);
-//    	this.color_press = color.cpy().mul(0.8f, 0.8f, 0.8f, 1f);
-//    	//trim colors can be a desaturated version of the base color
-////    	this.color_trim = color.cpy().mul(0.5f, 0.5f, 0.5f, 1f);
-////    	this.color_trim_hover = color.cpy().mul(0.7f, 0.7f, 0.7f, 1f);
-//    }
-
+	public void drawShape(Drawable drawable, ShapeRenderer renderer) {
+		drawable.drawShape(renderer);
+	}
+	
+	public void drawBorder(Drawable drawable, ShapeRenderer renderer) {
+		drawable.drawBorder(renderer);
+	}
     
     
 }

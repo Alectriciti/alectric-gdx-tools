@@ -13,6 +13,7 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
@@ -35,6 +36,7 @@ import com.alectriciti.gdx.TextDialog;
 import com.alectriciti.gdx.TextInput;
 import com.alectriciti.gdx.Toolkit;
 import com.alectriciti.gdx.Widget;
+import com.alectriciti.gdx.styles.StyleOldschool;
 import com.alectriciti.gdx.Button.ButtonType;
 import com.alectriciti.gdx.Button;
 import com.alectriciti.gdx.UIManager;
@@ -188,7 +190,23 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
     	};
     	button_hideui.setType(ButtonType.TOGGLE);
     	
-    	
+
+		
+		
+		Style oldschool_style = new StyleOldschool();
+		
+		Button a, b, c;
+
+		a = new Button("default", ui_manager);
+		b = new Button("styled", ui_manager);
+		a.setSize(100, 32);
+		b.setSize(100, 32);
+		a.setGlobalPosition(100, 280);
+		b.setGlobalPosition(100, 240);
+
+		b.style = oldschool_style;
+		
+		
     	Style cool_style = new Style();
     	cool_style.color_outline = new Color(0.2f, 0.2f, 1, 1);
     	test_button_a.style = cool_style;
@@ -197,15 +215,17 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 		Slider slider = new Slider(ui_manager);
 		slider.setBaseSize(100, 12);
 		slider.setKnobSize(32, 32);
-		slider.setValueRange(1,12);
+		slider.setValueRange(0,12);
 		slider.setRelativePosition(32, 142);
 		slider.addChangeListener(new Runnable() {
 			
 			@Override
 			public void run() {
 				cool_style.corner_radius = slider.getValue();
+				oldschool_style.corner_radius = slider.getValue();
 			}
 		});
+		
 //		slider.setSize(40, 40);
 		//b.setRelativePosition(100, 00);
 		
@@ -343,6 +363,27 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 		
 		//Gdx.gl.glDisable(GL20.GL_BLEND);
 		ui_manager.renderAll(shape_renderer, sprite_batch);
+		debugDraw(shape_renderer);
+	}
+
+	private void debugDraw(ShapeRenderer shape_renderer) {
+		int x = 200, y = 200, w = 32, h = 32;
+		
+		shape_renderer.begin();
+//		shape_renderer.set(ShapeType.Line);
+//		shape_renderer.setColor(0, 0, 1, 0.45f);
+//		shape_renderer.rect(x, y, w, h);
+		
+		shape_renderer.setColor(1, 0, 0, 0.45f);
+
+//		shape_renderer.rect(x, y, w, h);
+		drawRect(shape_renderer, x, y, w, h);
+		shape_renderer.set(ShapeType.Line);
+		shape_renderer.setColor(0, 1, 0, 0.45f);
+		shape_renderer.set(ShapeType.Filled);
+//		shape_renderer.rect(x, y, w, h);
+		drawRect(shape_renderer, x, y, w, h);
+		shape_renderer.end();
 		
 	}
 

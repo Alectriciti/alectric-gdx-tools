@@ -99,13 +99,13 @@ public class TextInput extends TextWidget implements InputProcessor{
 	
 	
 	@Override
-	public void drawShape(ShapeRenderer renderer, boolean recursive) {
+	public void drawShape(ShapeRenderer renderer) {
 		
 		if(isFocused()) {
 			cursor.draw(renderer, this);
 		}
 		// TODO Auto-generated method stub
-		super.drawShape(renderer, recursive);
+		super.drawShape(renderer);
 	}
 	
 	@Override

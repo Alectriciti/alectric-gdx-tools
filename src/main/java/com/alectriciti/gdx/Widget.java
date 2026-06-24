@@ -29,7 +29,7 @@ import com.badlogic.gdx.utils.JsonValue;
  * @author alectriciti
  * 
  */
-public class Widget implements Contextable{
+public class Widget implements Contextable, Drawable{
 	
 	//Class stuff for Serialization
 	public String type = "widget";
@@ -70,7 +70,9 @@ public class Widget implements Contextable{
 	public transient int z; //for z ordering
 	public int z_layer_offset = 0; //a more static z offset. This gets added to the standard z value when applying new z positions
 	
-	transient boolean hovering = false;
+	public transient boolean hovering = false;
+	public transient boolean pressing = false;
+	
 	transient private boolean currently_clicked = false;
 	
 	transient boolean animating; // this will run on update() if relevant
@@ -498,48 +500,6 @@ public class Widget implements Contextable{
 	}
 	
 	
-	
-	
-	/**
-	 * This
-	 * @param renderer The ShapeRenderer which has already utilized .begin()
-	 * @param recursive 
-	 */
-	public void drawShape(ShapeRenderer renderer, boolean recursive) {
-		if(isVisible()) {
-			if(hovering) {
-				color_outline = LerpColor(color_outline, style.color_hover, style.color_fade_in);
-//				if(manager.edit_mode) {
-////					drawEditMode(renderer, recursive);
-//				}else {
-//					drawHover(renderer);
-//				}
-			}else {
-//				if(hover_latch) {
-//					color_hover = style.color_outline.cpy();
-//					color_outline = style.color_hover.cpy();
-//					hover_latch = false;
-//				}else {
-					color_outline = LerpColor(color_outline, style.color_outline, style.color_fade_out);
-//				}
-			}
-		}
-		
-	}
-	
-	public void drawBorder(ShapeRenderer shape_renderer) {
-		shape_renderer.set(ShapeType.Line);
-		shape_renderer.setColor(color_outline);
-
-		if(style.corner_radius<=0) {
-			shape_renderer.rect(getGlobalX(), getGlobalY(), shape.width, shape.height);
-		}else {
-			drawRoundedRectLine(shape_renderer, getGlobalX(), getGlobalY(), shape.width, shape.height, style.corner_radius);
-		}
-//		shape_renderer.rect(getGlobalX(), getGlobalY()-1,
-//				shape.width+1, shape.height+1);
-	}
-	
 	public void drawEditMode(ShapeRenderer renderer, boolean recursive) {
 		if(editable) {
 			renderer.setColor(style.color_edit);
@@ -619,10 +579,27 @@ public class Widget implements Contextable{
 			w.drawEditMode(renderer, recursive);
 		}
 	}
+
+	public void drawBorder(ShapeRenderer shape_renderer) {
+		shape_renderer.set(ShapeType.Line);
+		shape_renderer.setColor(color_outline);
+		drawRoundedRect(shape_renderer, getGlobalX(), getGlobalY(), shape.width, shape.height, style.corner_radius);
+	}
+
+	@Override
+	public void drawShape(ShapeRenderer renderer) {
+		if(isVisible()) {
+			if(hovering) {
+				color_outline = LerpColor(color_outline, style.color_hover, style.color_fade_in);
+			}else {
+				color_outline = LerpColor(color_outline, style.color_outline, style.color_fade_out);
+			}
+		}
+	}
 	
 	protected void drawShapeChildren(ShapeRenderer renderer, boolean recursive) {
 		for(Widget w : widgets) {
-			w.drawShape(renderer, recursive);
+			w.drawShape(renderer);
 		}
 	}
 	
@@ -1004,6 +981,16 @@ public class Widget implements Contextable{
 
 	public boolean doesSerialize() {
 		return serializable;
+	}
+
+	@Override
+	public boolean isHovered() {
+		return hovering;
+	}
+
+	@Override
+	public boolean isPressed() {
+		return pressing;
 	}
 	
 	

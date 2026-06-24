@@ -40,9 +40,9 @@ public class ContextWidget extends DropdownMenuButton{
 	}
 	
 	@Override
-	public void drawShape(ShapeRenderer renderer, boolean recursive) {
+	public void drawShape(ShapeRenderer renderer) {
 		// TODO Auto-generated method stub
-		super.drawShape(renderer, recursive);
+		super.drawShape(renderer);
 //		renderer.set(ShapeType.Line);
 //		renderer.setColor(Color.GRAY);
 //		renderer.rect(getGlobalX(), getGlobalY(), shape.width, shape.height);

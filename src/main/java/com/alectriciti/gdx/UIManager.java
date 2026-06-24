@@ -447,10 +447,10 @@ public class UIManager implements InputProcessor {
 
 	    // Existing behavior if a button is already selected:
 	    if (mouse_clicked_widget != null) {
-	        if (mouse_clicked_widget instanceof Button) {
-	            Button button_clicked = (Button) mouse_clicked_widget;
-	            if (!button_clicked.containsGlobal(mx, my)) {
-	                button_clicked.pressing = false;
+            if (!mouse_clicked_widget.containsGlobal(mx, my)) {
+            	mouse_clicked_widget.pressing = false;
+    	        if (mouse_clicked_widget instanceof Button) {
+    	            Button button_clicked = (Button) mouse_clicked_widget;
 	                if (button_clicked.button_type == ButtonType.RAPIDFIRE) {
 	                    buttons_rapidfiring.remove(button_clicked);
 	                    button_clicked.deactivate();
@@ -709,7 +709,7 @@ public class UIManager implements InputProcessor {
 		for (Widget widget : widget_independants) {
 			if (widget.isVisible()) {
 				shape_renderer.begin();
-				widget.drawShape(shape_renderer, true);
+				widget.style.drawShape(widget, shape_renderer);
 				shape_renderer.end();
 				sprite_batch.begin();
 				widget.drawTexture(sprite_batch, true);
@@ -732,7 +732,7 @@ public class UIManager implements InputProcessor {
 			if (edit_mode && widget_hovering.editable) {
 				widget_hovering.drawEditMode(shape_renderer, false);
 			} else if (widget_hovering.isHoverable()) {
-				widget_hovering.drawBorder(shape_renderer);
+				widget_hovering.style.drawBorder(widget_hovering, shape_renderer);
 			
 		}
 			shape_renderer.end();
