@@ -1,6 +1,7 @@
 package com.alectriciti.gdx;
 
 import static com.alectriciti.gdx.UIManager.*;
+import static com.alectriciti.gdx.Toolkit.*;
 
 import java.awt.Point;
 
@@ -45,17 +46,20 @@ public class Canvas extends Widget{
 		
 		renderer.setColor(color);
 		renderer.set(ShapeType.Filled);
-		renderer.rect(getGlobalX(), getGlobalY(), shape.width, shape.height);
+		drawRectRound(renderer, getGlobalX(), getGlobalY(), shape.width, shape.height, style.corner_radius);
 
 		if(hovering && manager.edit_mode) {
 			drawEditMode(renderer, true);
 			drawEditModeChildren(renderer, true);
 		}else {
-			renderer.set(ShapeType.Line);
-			renderer.setColor(style.color_outline);
-			renderer.rect(getGlobalX(), getGlobalY(), shape.width, shape.height);
-			drawShapeChildren(renderer, true);
+			drawBorder(renderer);
 		}
+	}
+	
+	@Override
+	public void drawBorder(ShapeRenderer shape_renderer) {
+		// TODO Auto-generated method stub
+		super.drawBorder(shape_renderer);
 	}
 	
 	@Override

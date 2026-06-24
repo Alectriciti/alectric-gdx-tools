@@ -1,5 +1,7 @@
 package com.alectriciti.gdx;
 
+import static com.alectriciti.gdx.Toolkit.*;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -209,7 +211,8 @@ public class Slider extends Widget {
 //        renderer.begin(ShapeType.Filled);
 		renderer.set(ShapeType.Filled);
         renderer.setColor(baseColor);
-        renderer.rect(gx, gy + (knobHeight - baseHeight) * 0.5f, baseWidth, baseHeight);
+        
+        drawRectRound(renderer, gx, gy + (knobHeight - baseHeight) * 0.5f, baseWidth, baseHeight, style.corner_radius);
 //        renderer.end();
 
         // Knob
@@ -217,14 +220,14 @@ public class Slider extends Widget {
         float knobBottom = gy; // align bottom of knob with widget Y; you can adjust as desired
 //        renderer.begin(ShapeType.Filled);
         renderer.setColor(knobColor);
-        renderer.rect(knobLeft, knobBottom, knobWidth, knobHeight);
+        drawRectRound(renderer, knobLeft, knobBottom, knobWidth, knobHeight, style.corner_radius);
 //        renderer.end();
 
         // Knob border
 //        renderer.begin(ShapeType.Line);
 		renderer.set(ShapeType.Line);
         renderer.setColor(knobBorderColor);
-        renderer.rect(knobLeft, knobBottom, knobWidth, knobHeight);
+        drawRectRound(renderer, knobLeft, knobBottom, knobWidth, knobHeight, style.corner_radius);
 //        renderer.end();
 
             // If Widget has children drawing responsibilities, call super to draw them.

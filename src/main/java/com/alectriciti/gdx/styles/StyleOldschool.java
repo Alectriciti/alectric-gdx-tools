@@ -48,7 +48,7 @@ public class StyleOldschool extends Style {
 		shape_renderer.set(ShapeType.Line);
 		shape_renderer.setColor(color_outline);
 		
-		drawRoundedRect(shape_renderer, x+1, y+1, w-2, h-2, corner_radius);
+		drawRectRound(shape_renderer, x+1, y+1, w-2, h-2, corner_radius);
 
     }
 }

@@ -44,8 +44,6 @@ import com.alectriciti.gdx.InheritanceRule;
 
 public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListener {
 	
-	
-	
 	InputMultiplexer input = new InputMultiplexer();
 	UIManager ui_manager;
 	ShapeRenderer shape_renderer;
@@ -59,21 +57,7 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 	
 	Widget info;
 	
-	public Runnable run_new_skin = new Runnable() {
-		
-		@Override
-		public void run() {
-			print("making nu skin");
-		}
-	};
 	
-	public Runnable run_poop = new Runnable() {
-		
-		@Override
-		public void run() {
-			print("making nu poop poooo");
-		}
-	};
 	
 	@Override
 	public void create() {
@@ -85,6 +69,7 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 		ui_manager = new UIManager(input, font);
 		
 		DropdownMenuButton main_menu;
+		
 		
 		Button test_button_a = new Button("Test Button A", ui_manager) {
 			public ContextWidget spawnContextWidget() {
@@ -146,12 +131,6 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
     	main_menu.setSize(120, 32);
     	Button button_new_skin = new Button("New Menu", main_menu);
     	button_new_skin.addOnActivate(main_menu.getAutocloseRunnable());
-    	button_new_skin.addOnActivate(new Runnable() {
-			@Override
-    		public void run() {
-    			confirmDialogueBox(run_new_skin);
-    		}
-		});
     	
     	DropdownMenuButton save_confirm_dropdown = new DropdownMenuButton("Save UI", main_menu);
     	save_confirm_dropdown.setDirection(Direction.RIGHT);
@@ -191,7 +170,7 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
     	button_hideui.setType(ButtonType.TOGGLE);
     	
 
-		
+		SneakyButton sneaky_button = new SneakyButton("sneaker", ui_manager);
 		
 		Style oldschool_style = new StyleOldschool();
 		
@@ -376,17 +355,18 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 		
 		shape_renderer.setColor(1, 0, 0, 0.45f);
 
-//		shape_renderer.rect(x, y, w, h);
+		shape_renderer.rect(x+100, y, w, h);
 		drawRect(shape_renderer, x, y, w, h);
 		shape_renderer.set(ShapeType.Line);
 		shape_renderer.setColor(0, 1, 0, 0.45f);
 		shape_renderer.set(ShapeType.Filled);
-//		shape_renderer.rect(x, y, w, h);
+		shape_renderer.rect(x+100, y, w, h);
 		drawRect(shape_renderer, x, y, w, h);
 		shape_renderer.end();
-		
 	}
-
+	
+	
+	
 	@Override
 	public void pause() {
 		// TODO Auto-generated method stub

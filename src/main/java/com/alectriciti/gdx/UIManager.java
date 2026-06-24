@@ -679,7 +679,6 @@ public class UIManager implements InputProcessor {
 	            }
 	        }
 	    }
-
 	    found_widgets.sort(Comparator.comparingInt(Widget::getZIndex));
 	    return found_widgets;
 	}

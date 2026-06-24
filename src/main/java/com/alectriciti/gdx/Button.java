@@ -219,7 +219,7 @@ public class Button extends Widget implements Activatable{
 		if(isVisible()) {
 			renderer.set(ShapeType.Filled);
 			renderer.setColor(color);
-			drawRoundedRect(renderer, getGlobalX(), getGlobalY(), shape.width, shape.height, style.corner_radius);
+			drawRectRound(renderer, getGlobalX(), getGlobalY(), shape.width, shape.height, style.corner_radius);
 			
 			if(!hovering) {
 				drawBorder(renderer);
@@ -239,7 +239,6 @@ public class Button extends Widget implements Activatable{
 //			drawRoundedRectLine(shape_renderer, getGlobalX(), getGlobalY(), shape.width, shape.height, style.corner_radius);
 //		}
 //	}
-
 	
 	protected boolean doesPlayEffectOnClick() {
 		return play_effect;

@@ -13,6 +13,7 @@ public class TestDesktopLauncher {
         config.setDecorated(true);
         MyLibGDXTestApp gdx_app = new MyLibGDXTestApp();
         config.setWindowListener(gdx_app);
+        config.setOpenGLEmulation(Lwjgl3ApplicationConfiguration.GLEmulation.ANGLE_GLES20, 0, 0);
         Lwjgl3Application app = new Lwjgl3Application(gdx_app, config);
     }
 }

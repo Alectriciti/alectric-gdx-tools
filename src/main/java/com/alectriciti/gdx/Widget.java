@@ -583,7 +583,7 @@ public class Widget implements Contextable, Drawable{
 	public void drawBorder(ShapeRenderer shape_renderer) {
 		shape_renderer.set(ShapeType.Line);
 		shape_renderer.setColor(color_outline);
-		drawRoundedRect(shape_renderer, getGlobalX(), getGlobalY(), shape.width, shape.height, style.corner_radius);
+		drawRectRound(shape_renderer, getGlobalX(), getGlobalY(), shape.width, shape.height, style.corner_radius);
 	}
 
 	@Override

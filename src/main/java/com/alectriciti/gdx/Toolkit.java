@@ -361,7 +361,7 @@ public class Toolkit {
     
     
     
-    public static void drawRoundedRect(ShapeRenderer renderer, float x, float y, float width, float height, float radius) {
+    public static void drawRectRound(ShapeRenderer renderer, float x, float y, float width, float height, float radius) {
         if (radius < 1f) {
             drawRect(renderer, x, y, width, height);
             return;
@@ -377,15 +377,7 @@ public class Toolkit {
 
 
             // Clamp radius so it never exceeds half of the widget's dimensions
-
-            
-            //TEMP
-//            renderer.setColor(0.78f, 0.5f, 0.5f, 0.25f);
-            
-//            renderer.setColor(0, 0, 1, 0.5f);
-//            renderer.rect(x, y, width, height);
-
-//            renderer.setColor(1, 0, 0, 0.5f);
+    		
             // 4 Perimeter lines
             renderer.line(x + radius, y, rightEdge - radius-1, y);                  // Bottom
             renderer.line(x + radius, topEdge, rightEdge - radius-1, topEdge);      // Top
@@ -406,22 +398,21 @@ public class Toolkit {
             float cBottom = y + radius + 1f;
             float cTop = topEdge - radius;
 
-            //TEMP
-            renderer.setColor(0.1f, 0.85f, 0.2f, 0.25f);
             // 2. Central Vertical Column
             // Spans the full height, bounded horizontally between the left and right curves
-//            renderer.rect(cLeft, y, cRight - cLeft, height);
+            renderer.rect(cLeft, y, cRight - cLeft, height+1);
+            
+            
 
             // 3. Left Middle Block
             // Touches the left edge, bounded vertically between the top and bottom curves
-            renderer.rect(x, cBottom, cLeft - x, cTop - cBottom);
+            renderer.rect(x-1, cBottom, cLeft - x+1, cTop - cBottom);
 
             // 4. Right Middle Block
             // Touches the right edge, bounded vertically between the top and bottom curves
             renderer.rect(cRight, cBottom, rightEdge - cRight, cTop - cBottom);
 
             //TEMP
-            renderer.setColor(0.1f, 0.2f, 0.9f, 0.25f);
             // 5. Custom Filled Corner Curves
             // Because these use drawFilledArcCurve, they bridge the exact pixels the rectangles left behind
             drawFilledArcCurve(renderer, cLeft, cTop, radius, 90f, 90f, 16);        // Top-left
