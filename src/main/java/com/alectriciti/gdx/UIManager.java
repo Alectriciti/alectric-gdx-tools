@@ -119,11 +119,15 @@ public class UIManager implements InputProcessor {
 	 */
 	Widget mouse_clicked_widget = null;
 
-	private float mouse_config_offset_x;
-	private float mouse_config_offset_y;
+	
+	/**
+	 * These are used as ways to get the mouse offset when a widget is clicked
+	 */
+	float mouse_click_offset_x;
+	float mouse_click_offset_y;
 	
 	private Widget pointerCapturedWidget = null; // widget that captured pointer (for drag)
-	private int pointerCapturedId = -1; // pointer id (if you support multi-touch) - we use 0 for mouse
+//	private int pointerCapturedId = -1; // pointer id (if you support multi-touch) - we use 0 for mouse
 
 	static BitmapFont primary_font;
 	boolean font_activated = false;
@@ -384,12 +388,16 @@ public class UIManager implements InputProcessor {
 		 * return; } }
 		 */
 
+//		int prev_x = mouse_x;
+//		int prev_y = mouse_y;
+
 		mouse_x = getMouseX();
 		mouse_y = getMouseY();
 		
 		if (left_mouse_is_pressed && pointerCapturedWidget != null) {
 		    // For mouse we use pointer id 0
-		    pointerCapturedWidget.onPointerDragged(mouse_x, mouse_y, 0);
+//			if(prev_x!=mouse_x && prev_y!=mouse_y)
+		    pointerCapturedWidget.onPointerDragged(mouse_x, mouse_y);
 		}
 
 
@@ -439,8 +447,8 @@ public class UIManager implements InputProcessor {
 	        	        if (widget_hovering.isEditable()) {
 	        	            // Start moving/adjusting the widget (existing behavior)
 	        	            widget_currently_adjusting = widget_hovering;
-	        	            mouse_config_offset_x = widget_hovering.getGlobalX() - mx;
-	        	            mouse_config_offset_y = widget_hovering.getGlobalY() - my;
+	        	            mouse_click_offset_x = widget_hovering.getGlobalX() - mx;
+	        	            mouse_click_offset_y = widget_hovering.getGlobalY() - my;
 	        	            // Note: we DO NOT call onPointerDown in edit mode; movement has priority.
 	        	        } else {
 	        	            // Not editable: fall back to focusing / clicking behavior
@@ -450,13 +458,16 @@ public class UIManager implements InputProcessor {
 	        	        }
 	        	    } else {
 	        	        // Normal (non-edit) mode: give the widget a chance to capture pointer (e.g. Slider).
-	        	        boolean captured = widget_hovering.onPointerDown(mx, my, 0, Buttons.LEFT);
+        	            mouse_click_offset_x = widget_hovering.getGlobalX() - mx;
+        	            mouse_click_offset_y = widget_hovering.getGlobalY() - my;
+	        	        boolean captured = widget_hovering.onPointerDown(mx, my, Buttons.LEFT);
 	        	        if (captured) {
 	        	            pointerCapturedWidget = widget_hovering;
-	        	            pointerCapturedId = 0;
+	        	            pointerCapturedWidget.pressing = true;
+//	        	            pointerCapturedId = 0;
 	        	            // also set as clicked widget for legacy logic
 	        	            mouse_clicked_widget = widget_hovering;
-	        	            widget_hovering.callOnClicked();
+//	        	            widget_hovering.callOnClicked();
 	        	        }
 
 	        	        // If not captured, fall back to default focus/click behavior (buttons, etc.)
@@ -484,6 +495,7 @@ public class UIManager implements InputProcessor {
 	    // Existing behavior if a button is already selected:
 	    if (mouse_clicked_widget != null) {
             if (!mouse_clicked_widget.containsGlobal(mx, my)) {
+            	if(mouse_clicked_widget == pointerCapturedWidget) return;
             	mouse_clicked_widget.pressing = false;
     	        if (mouse_clicked_widget instanceof Button) {
     	            Button button_clicked = (Button) mouse_clicked_widget;
@@ -513,11 +525,12 @@ public class UIManager implements InputProcessor {
 //	        boolean consumed = pointerCapturedWidget.onPointerUp(mx, my, pointerCapturedId, Buttons.LEFT);
 	        // release capture regardless (single-pointer model)
 	        pointerCapturedWidget = null;
-	        pointerCapturedId = -1;
+//	        pointerCapturedId = -1;
 
 	        // We still want to call callOnReleased if we had a currently clicked widget
 	        if (mouse_clicked_widget != null) {
 	            mouse_clicked_widget.callOnReleased();
+	            mouse_clicked_widget.pressing = false;
 	            mouse_clicked_widget = null;
 	        }
 
@@ -620,16 +633,16 @@ public class UIManager implements InputProcessor {
 		if (widget_currently_adjusting instanceof WindowMoverWidget) {
 			// move window logic
 			WindowMoverWidget window = (WindowMoverWidget) widget_currently_adjusting;
-			window.moveWindow((int) mouse_config_offset_x, (int) mouse_config_offset_y);
+			window.moveWindow((int) mouse_click_offset_x, (int) mouse_click_offset_y);
 
 		} else {
 			if (constraint_mode) {
 				widget_currently_adjusting.setGlobalPosition(
-						((mouse_x + (int) (mouse_config_offset_x)) / constraint_amount) * constraint_amount,
-						((mouse_y + (int) (mouse_config_offset_y)) / constraint_amount) * constraint_amount);
+						((mouse_x + (int) (mouse_click_offset_x)) / constraint_amount) * constraint_amount,
+						((mouse_y + (int) (mouse_click_offset_y)) / constraint_amount) * constraint_amount);
 			} else {
-				widget_currently_adjusting.setGlobalPosition((int) (mouse_x + mouse_config_offset_x),
-						(int) (mouse_y + mouse_config_offset_y));
+				widget_currently_adjusting.setGlobalPosition((int) (mouse_x + mouse_click_offset_x),
+						(int) (mouse_y + mouse_click_offset_y));
 			}
 		}
 	}
@@ -768,21 +781,20 @@ public class UIManager implements InputProcessor {
 		
 		if(widget_hovering!=null) {
 			shape_renderer.begin();
-			if (edit_mode && widget_hovering.editable) {
+			if (edit_mode && widget_hovering.isEditable()) {
 				widget_hovering.drawEditMode(shape_renderer, false);
 			} else if (widget_hovering.isHoverable()) {
 				widget_hovering.style.drawBorder(widget_hovering, shape_renderer);
-			
-		}
+			}
 			shape_renderer.end();
 		}
 		
 		if (widget_hovering != null) {
 			shape_renderer.begin();
-			if (edit_mode && widget_hovering.editable) {
-				widget_hovering.drawEditMode(shape_renderer, false);
-			} else if (widget_hovering.isHoverable()) {
-//				widget_hovering.drawHover(shape_renderer);
+			if (edit_mode) {
+				if(widget_hovering.isEditable()) {
+					widget_hovering.drawEditMode(shape_renderer, false);
+				}
 			}
 			shape_renderer.end();
 		}

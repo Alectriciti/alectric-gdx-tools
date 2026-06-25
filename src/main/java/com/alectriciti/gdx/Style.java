@@ -1,6 +1,7 @@
 package com.alectriciti.gdx;
 
 import static com.alectriciti.gdx.Toolkit.LerpColor;
+import static com.alectriciti.gdx.Toolkit.drawRectRound;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -60,9 +61,8 @@ public class Style {
 	/**
 	 * Draws a rectangle based on the existing setup
 	 */
-	public void drawRect(ShapeRenderer renderer, float gx, float f, float baseWidth, float baseHeight) {
-		// TODO Auto-generated method stub
-		
+	public void drawRect(ShapeRenderer renderer, float x, float y, float w, float h) {
+		drawRectRound(renderer, x, y, w, h, corner_radius);
 	}
     
     

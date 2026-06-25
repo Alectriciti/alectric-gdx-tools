@@ -584,7 +584,8 @@ public class Widget implements Contextable, Drawable{
 	public void drawBorder(ShapeRenderer shape_renderer) {
 		shape_renderer.set(ShapeType.Line);
 		shape_renderer.setColor(color_outline);
-		drawRectRound(shape_renderer, getGlobalX(), getGlobalY(), shape.width, shape.height, style.corner_radius);
+		style.drawRect(shape_renderer, getGlobalX(), getGlobalY(), shape.width, shape.height);
+//		drawRectRound(shape_renderer, getGlobalX(), getGlobalY(), shape.width, shape.height, style.corner_radius);
 	}
 
 	@Override
@@ -745,15 +746,15 @@ public class Widget implements Contextable, Drawable{
 	 * Return true if the widget handled/consumed the event (capture it), false otherwise.
 	 * UIManager will call these with global mouse coordinates.
 	 */
-	public boolean onPointerDown(int globalX, int globalY, int pointer, int button) {
+	public boolean onPointerDown(int globalX, int globalY, int button) {
 	    return false;
 	}
 
-	public boolean onPointerDragged(int globalX, int globalY, int pointer) {
+	public boolean onPointerDragged(int globalX, int globalY) {
 	    return false;
 	}
 
-	public boolean onPointerUp(int globalX, int globalY, int pointer, int button) {
+	public boolean onPointerUp(int globalX, int globalY, int button) {
 	    return false;
 	}
 
@@ -931,8 +932,9 @@ public class Widget implements Contextable, Drawable{
 	        this.shape.height = shapeObj.getFloat("height", shape.height);
 	    }
 	}
-
-
+	/**
+	 * This will keep this widget perpetually in edit mode
+	 */
 	public boolean isAlwaysEditable() {
 		// TODO Auto-generated method stub
 		return false;
