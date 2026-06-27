@@ -5,10 +5,12 @@ import static com.alectriciti.gdx.Toolkit.*;
 import com.alectriciti.gdx.Button.ButtonType;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
+import com.badlogic.gdx.Input.Orientation;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
 
 /**
  * A simple UI Slider widget.
@@ -32,6 +34,8 @@ public class Slider extends Widget {
 	
     String value_name;
     TextWidget value_display;
+    
+    boolean horizontal = true;
 
     // Current numeric value (derived from normalized)
     private float value = 0f;
@@ -49,12 +53,19 @@ public class Slider extends Widget {
     public float quantize_amount = 0.5f;
     public float quantize_amount_ctrl = 0.125f;
     
-    public GrabStyle grab_style;
+    public GrabStyle grab_style = GrabStyle.LAZY;
 
 
     public Slider(UIManager manager) {
         super("slider", manager);
-        initialize(false, 0.0f);
+        initialize(false, 0.0f, DEFAULT_SLIDER_SIZE);
+    }
+
+
+    public Slider(UIManager manager, boolean horizontal) {
+        super("slider", manager);
+        this.horizontal = horizontal;
+        initialize(false, 0.0f, DEFAULT_SLIDER_SIZE);
     }
     
     public Slider(String value_name, Widget parent) {
@@ -64,35 +75,38 @@ public class Slider extends Widget {
     public Slider(String value_name, Widget parent, float default_value) {
         super(value_name, parent);
         this.value_name = value_name;
-        initialize(value_name!=null, default_value);
+        initialize(value_name!=null, default_value, DEFAULT_SLIDER_SIZE);
+    }
+    
+    public Slider(String value_name, Widget parent, float default_value, float min, float max) {
+    	this(value_name, parent, default_value, min, max, true);
     }
 
-    public Slider(String value_name, Widget parent, float default_value, float min, float max) {
+    public Slider(String value_name, Widget parent, float default_value, float min, float max, boolean horizontal) {
         super(value_name, parent);
         this.value_name = value_name;
         this.minValue = min;
         this.maxValue = max;
-        initialize(value_name!=null, default_value);
+        this.horizontal = horizontal;
+        initialize(value_name!=null, default_value, DEFAULT_SLIDER_SIZE);
     }
 
     public Slider(Widget parent, float default_value) {
         super(parent.id+"-slider", parent);
-        initialize(false, default_value);
+        initialize(false, default_value, DEFAULT_SLIDER_SIZE);
     }
 
-    private void initialize(boolean render_text, float default_value) {
+    private void initialize(boolean render_text, float default_value, int slider_size) {
         // sensible defaults already set above; ensure value consistent
     	knob = new Knob(id+"_knob", this);
-    	setSize(DEFAULT_SLIDER_SIZE, DEFAULT_WIDGET_SIZE);
+    	if(horizontal) {
+    		setSize(slider_size, DEFAULT_WIDGET_SIZE);
+    	}else {
+    		setSize(DEFAULT_WIDGET_SIZE, slider_size);
+    	}
     	setDefaultValue(default_value);
     	value_display = new TextWidget(this, (value_name!=null?value_name+": ":"")+value);
     	value_display.setVisible(render_text);
-    }
-    
-    public Slider setDefaultValue(float value) {
-    	this.value_default = value;
-    	setValue(value);
-    	return this;
     }
     
     
@@ -109,6 +123,28 @@ public class Slider extends Widget {
         // keep current value in-range
         setValue(value);
     }
+    
+    /**
+     * Sets the physical length of this slider
+     */
+    public Slider setLength(float length) {
+    	if(horizontal) {
+    		setSize(length, getHeight());
+    	}else {
+    		setSize(getWidth(), length);
+    	}
+    	return this;
+    }
+    
+    /**
+     * Starting value and reset value
+     */
+    public Slider setDefaultValue(float value) {
+    	this.value_default = value;
+    	return this;
+    }
+    
+    
     /**
      * Returns the current numeric value (mapped from knob position).
      */
@@ -131,17 +167,47 @@ public class Slider extends Widget {
     public boolean onPointerDown(int mouseX, int mouseY, int button) {
     	manager.mouse_click_offset_x = knob.getGlobalX() + (knob.shape.width/2) - mouseX;
     	manager.mouse_click_offset_y = knob.getGlobalY() + (knob.shape.height/2) - mouseY;
+    	switch(grab_style) {
+		case GRADUAL:
+			//slowly move toward the location clicked
+			break;
+		case INSTANT:
+			//get clicked location and move the slider to it instantly
+			
+			break;
+		case LAZY: //default implementation
+			break;
+		default:
+			break;
+    	}
     	return true;
     }
     
+//    
+//    /**
+//     * Gets the offset relative to the slider's knob
+//     * @return
+//     */
+//    public Vector2 getNewSliderPosition(int mouseX, int mouseY) {
+//    	Vector2 v = Vector2.Zero.cpy();
+//    	
+//		return v;
+//    }
+//    
     @Override
     public boolean onPointerDragged(int mouseX, int mouseY) {
+    	//apply the offset relative to where the mouse clicked on the widget
     	mouseX += manager.mouse_click_offset_x;
     	mouseY += manager.mouse_click_offset_y;
-    	int x = (int)(mouseX - (knob.shape.width/2));
-    	int max = (int) (getGlobalX()+getWidth()-knob.shape.width);
-    	x = (int) Math.max(x, getGlobalX());
-    	x = (int) Math.min(x, max);
+    	
+    	float globalPosition = horizontal?getGlobalX():getGlobalY();
+    	float knob_length = horizontal?knob.shape.width:knob.shape.height;
+    	
+    	
+    	int factor = (int)((horizontal?mouseX:mouseY) - (knob_length/2));
+    	int max = (int) (globalPosition+getLength()-knob_length);
+    	factor = (int) Math.max(factor, globalPosition);
+    	factor = (int) Math.min(factor, max);
 
     	boolean quantized = isShiftPressed();
     	float qa = isControlPressed()?quantize_amount_ctrl:quantize_amount;
@@ -149,11 +215,19 @@ public class Slider extends Widget {
     	
     	// Get a certain kind of quantize amount
     	
-    	knob.setGlobalPosition((quantized?(x/qa)*qa:x), knob.getGlobalY());
+    	if(horizontal) {
+    		knob.setGlobalPosition((quantized?(factor/qa)*qa:factor), knob.getGlobalY());
+    	}else {
+    		knob.setGlobalPosition(knob.getGlobalX(), (quantized?(factor/qa)*qa:factor));
+    	}
     	return true;
     }
     
-    @Override
+    private float getLength() {
+    	return horizontal?getWidth():getHeight();
+}
+
+	@Override
     public boolean onPointerUp(int globalX, int globalY, int button) {
     	// TODO Auto-generated method stub
 //    	triggerValueChange();

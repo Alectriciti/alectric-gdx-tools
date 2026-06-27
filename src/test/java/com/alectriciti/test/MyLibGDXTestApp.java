@@ -248,10 +248,8 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
     	test_button_b.style = cool_style;
     	
     	
-		Slider slider = new Slider(ui_manager);
-		slider.getKnob().setSize(16, 32);
-//		slider.setBaseSize(280, 12);
-//		slider.setKnobSize(32, 32);
+		Slider slider = new Slider(ui_manager, false);
+		slider.setLength(200);
 		slider.setValueRange(4,12);
 		slider.setRelativePosition(400, 220);
 
