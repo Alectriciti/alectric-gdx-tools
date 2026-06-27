@@ -248,25 +248,18 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
     	test_button_b.style = cool_style;
     	
     	
-		Slider slider = new Slider(ui_manager, false);
+		Slider slider = new Slider(ui_manager, true);
+		slider.getKnob().setSize(10, slider.getKnob().getHeight());
 		slider.setLength(200);
 		slider.setValueRange(4,12);
 		slider.setRelativePosition(400, 220);
 
     	a.addOnActivate(()->{slider.setValue(4f);});
     	b.addOnActivate(()->{slider.setValue(12f);});
-//		slider.addChangeListener(new Runnable() {
-//			
-//			@Override
-//			public void run() {
-//				cool_style.corner_radius = slider.getValue();
-//				oldschool_style.corner_radius = slider.getValue();
-//			}
-//		});
-		
-//		slider.setSize(40, 40);
-		//b.setRelativePosition(100, 00);
-		
+    	
+    	
+    	
+    	
 		ui_manager.automaticallyAssignIDsToWidgets();
 		
 		shape_renderer = new ShapeRenderer();

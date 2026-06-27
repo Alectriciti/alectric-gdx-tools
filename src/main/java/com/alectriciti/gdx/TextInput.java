@@ -28,10 +28,9 @@ public class TextInput extends TextWidget implements InputProcessor{
 	
 	public int tick;
 	
-	
-	
 	public TextInput(UIManager manager, ColoredText...msgs) {
 		super(manager, msgs);
+		touchable = true;
 		cursor = new TextCursor(this);
 		cursor.index = this.length;
 		// TODO Auto-generated constructor stub
@@ -39,6 +38,7 @@ public class TextInput extends TextWidget implements InputProcessor{
 	
 	public TextInput(Widget parent, ColoredText...msgs) {
 		super(parent, msgs);
+		touchable = true;
 		cursor = new TextCursor(this);
 		cursor.index = this.length;
 		// TODO Auto-generated constructor stub
@@ -106,6 +106,8 @@ public class TextInput extends TextWidget implements InputProcessor{
 		}
 		// TODO Auto-generated method stub
 		super.drawShape(renderer);
+		if(hovering)
+		drawBorder(renderer);
 	}
 	
 	@Override

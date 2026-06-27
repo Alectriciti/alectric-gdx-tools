@@ -36,20 +36,18 @@ public class TextWidget extends Widget{
     
     public TextWidget(Widget parent, String s){
     	this(parent, new ColoredText(s, Color.WHITE));
+		touchable = false;
     }
 
     public TextWidget(Widget parent, ColoredText...msgs){
     	super(parent.id+"msg", parent);
+		touchable = false;
         construct(msgs);
     }
     public TextWidget(UIManager manager, ColoredText...msgs){
     	super("msg", manager);
+		touchable = false;
         construct(msgs);
-    }
-    
-    @Override
-    public boolean isTouchable() {
-    	return false;
     }
     
     /**

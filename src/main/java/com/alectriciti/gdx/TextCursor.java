@@ -62,6 +62,11 @@ public class TextCursor extends Widget {
     public boolean isEditable() {
         return false;
     }
+    
+    @Override
+    public boolean isTouchable() {
+    	return false;
+    }
 
     @Override
     public void update() {
