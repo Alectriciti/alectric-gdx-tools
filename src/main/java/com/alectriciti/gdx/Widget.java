@@ -30,6 +30,9 @@ import com.badlogic.gdx.utils.JsonValue;
  * 
  */
 public class Widget implements Contextable, Drawable{
+
+	protected static int DEFAULT_WIDGET_SIZE = 32;
+	protected static int DEFAULT_SLIDER_SIZE = 64;
 	
 	//Class stuff for Serialization
 	public String type = "widget";
@@ -51,7 +54,7 @@ public class Widget implements Contextable, Drawable{
 	}
 	
 	public String name_for_display; //The display name
-	public boolean render_text = false;
+	public boolean show_text = false;
 
 	public transient LinkedList<Widget> widgets = new LinkedList<Widget>();
 	
@@ -157,6 +160,7 @@ public class Widget implements Contextable, Drawable{
 	 * @param canvas name of the container to apply it to
 	 */
 	public Widget(String id, Widget parent) {
+		if(parent==null) printError("AHHH!");
 		initializeParameters();
 		this.id = id;
 		this.name_for_display = id;
@@ -168,7 +172,7 @@ public class Widget implements Contextable, Drawable{
 		}else {
 			printError("Error instantiating "+id+" ... Canvas is NULL. Register with a WidgetManager instead");
 		}
-		setSize(32, 32);
+		setSize(DEFAULT_WIDGET_SIZE, DEFAULT_WIDGET_SIZE);
 		updateGlobalPosition();
 		pushNewZPosition(false);
 	}
@@ -180,7 +184,7 @@ public class Widget implements Contextable, Drawable{
 		this.manager = manager;
 		this.manager.registerWidget(this);
 		this.shape = new Rectangle();
-		setSize(32, 32);
+		setSize(DEFAULT_WIDGET_SIZE, DEFAULT_WIDGET_SIZE);
 		updateGlobalPosition();
 		pushNewZPosition(false);
 	}
@@ -538,7 +542,7 @@ public class Widget implements Contextable, Drawable{
 			return false;
 		}
 		
-		if(render_text && name_for_display != null) {
+		if(show_text && name_for_display != null) {
 		//print(getGlobalX()+" "+getGlobalY());
 			style.font.setColor(font_color);
 			style.font.draw(sprite_batch, getTextToRender(), getGlobalX()+font_offset.x, getGlobalY()+style.font.getCapHeight()+font_offset.y);
@@ -1009,7 +1013,6 @@ public class Widget implements Contextable, Drawable{
 	public boolean isInSameGroup(Widget w) {
 		if(w == null) return false;
 		if(group==null || w.group==null) {
-			print("f yeah b");
 			return false;
 		}
 		if(group.equals(w.group)) return true;

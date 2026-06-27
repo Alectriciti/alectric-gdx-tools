@@ -30,8 +30,6 @@ public class ContextWidget extends DropdownMenuButton{
 	protected void OnCreate() {
 		// TODO Auto-generated method stub
 		activate();
-//		print("asdfascf");
-//		dropdownOpen();
 	}
 	
 	@Override

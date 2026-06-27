@@ -23,6 +23,9 @@ public class DropdownMenuButton extends Button{
 	
 	Direction direction = Direction.DOWN;
 	
+	int default_button_width = DEFAULT_WIDGET_SIZE;
+	int default_button_height = DEFAULT_WIDGET_SIZE;
+	
 	public void setDirection(Direction d) {
 		this.direction = d;
 	}

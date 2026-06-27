@@ -151,7 +151,7 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 		});
 		
 		info = new Widget("info", ui_manager);
-		info.render_text = true;
+		info.show_text = true;
 		info.alignment = Direction.UP;
 		info.setSize(120, 53);
 		info.setRelativePosition(10, 10);
@@ -249,7 +249,7 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
     	
     	
 		Slider slider = new Slider(ui_manager);
-		slider.getKnob().setSize(32, 32);
+		slider.getKnob().setSize(16, 32);
 //		slider.setBaseSize(280, 12);
 //		slider.setKnobSize(32, 32);
 		slider.setValueRange(4,12);

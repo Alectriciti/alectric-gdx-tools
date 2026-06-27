@@ -33,14 +33,23 @@ public class TextWidget extends Widget{
 //    public Message(BitmapFont font, ColoredText...msgs){
 //        construct(last_used_font, msgs);
 //    }
+    
+    public TextWidget(Widget parent, String s){
+    	this(parent, new ColoredText(s, Color.WHITE));
+    }
 
     public TextWidget(Widget parent, ColoredText...msgs){
-    	super("msg", parent);
+    	super(parent.id+"msg", parent);
         construct(msgs);
     }
     public TextWidget(UIManager manager, ColoredText...msgs){
     	super("msg", manager);
         construct(msgs);
+    }
+    
+    @Override
+    public boolean isTouchable() {
+    	return false;
     }
     
     /**
@@ -100,6 +109,13 @@ public class TextWidget extends Widget{
         updateColors();
     }
 
+
+    
+    
+    public void setText(String text) {
+    	msgs[0].updateText(text);
+    	reconstruct();
+    }
     
     
     public void setText(int line, String text) {
@@ -130,7 +146,7 @@ public class TextWidget extends Widget{
 		
 		font_cache.draw(sprite_batch);
 		
-		if(render_text && name_for_display != null) {
+		if(show_text && name_for_display != null) {
 		//print(getGlobalX()+" "+getGlobalY());
 //			font.setColor(font_color);
 //			font.draw(sprite_batch, name_for_display, getGlobalX()+font_offset.x, getGlobalY()+font.getCapHeight()+font_offset.y);

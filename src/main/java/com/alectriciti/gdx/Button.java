@@ -76,7 +76,7 @@ public class Button extends Widget implements Activatable{
 	
 	private void init(int...button_codes) {
 		this.color = Color.WHITE.cpy();
-		this.render_text = true;
+		this.show_text = true;
 		registerButton(button_codes);
 		updateGlobalPosition();
 	}
@@ -309,7 +309,7 @@ public class Button extends Widget implements Activatable{
 			}else {
 				style.font.setColor(color_texture_alpha);
 			}
-			if(render_text && name_for_display!=null) {
+			if(show_text && name_for_display!=null) {
 				style.font.draw(batch, name_for_display, getGlobalX()+font_offset.x, getGlobalY()+style.font.getCapHeight()+font_offset.y);
 			}
 		}

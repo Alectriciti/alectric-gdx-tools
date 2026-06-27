@@ -2,14 +2,9 @@ package com.alectriciti.gdx;
 
 import static com.alectriciti.gdx.Toolkit.*;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import com.alectriciti.gdx.Button.ButtonType;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.MathUtils;
@@ -27,39 +22,77 @@ import com.badlogic.gdx.math.Rectangle;
  * The Slider stores its own value and updates its knob accordingly.
  */
 public class Slider extends Widget {
-    // Value range:
-    private float minValue = 4f;
-    private float maxValue = 32f;
-    
-    Knob knob;
+	
+	
+	enum GrabStyle{
+    	LAZY, // Grabs relative to the mouse
+    	GRADUAL, // Moves to the mouse gradually while click is held
+    	INSTANT // Snaps to where you click
+    }
+	
+    String value_name;
+    TextWidget value_display;
 
     // Current numeric value (derived from normalized)
     private float value = 0f;
     private float value_default = 0f;
-    
-    float quantize_amount = 0.125f;
+	
+    // Value range:
+    private float minValue = 0f;
+    private float maxValue = 1f;
 
-    // Constructor: requires parent or manager per your Widget API
-    public Slider(Widget parent) {
-        super("slider", parent);
-        initialize();
-    }
+    public float scroll_amount = 4f;
+    public float scroll_amount_ctrl = 1f;
+    
+    Knob knob;
+
+    public float quantize_amount = 0.5f;
+    public float quantize_amount_ctrl = 0.125f;
+    
+    public GrabStyle grab_style;
+
 
     public Slider(UIManager manager) {
         super("slider", manager);
-        initialize();
+        initialize(false, 0.0f);
     }
     
-    public void setDefaultValue(float value) {
-    	this.value_default = value;
-    	setValue(value);
+    public Slider(String value_name, Widget parent) {
+    	this(value_name, parent, 0.0f);
     }
 
-    private void initialize() {
+    public Slider(String value_name, Widget parent, float default_value) {
+        super(value_name, parent);
+        this.value_name = value_name;
+        initialize(value_name!=null, default_value);
+    }
+
+    public Slider(String value_name, Widget parent, float default_value, float min, float max) {
+        super(value_name, parent);
+        this.value_name = value_name;
+        this.minValue = min;
+        this.maxValue = max;
+        initialize(value_name!=null, default_value);
+    }
+
+    public Slider(Widget parent, float default_value) {
+        super(parent.id+"-slider", parent);
+        initialize(false, default_value);
+    }
+
+    private void initialize(boolean render_text, float default_value) {
         // sensible defaults already set above; ensure value consistent
     	knob = new Knob(id+"_knob", this);
-    	setSize(128, 32);
-        setValue(minValue);
+    	setSize(DEFAULT_SLIDER_SIZE, DEFAULT_WIDGET_SIZE);
+    	setDefaultValue(default_value);
+    	value_display = new TextWidget(this, (value_name!=null?value_name+": ":"")+value);
+    	value_display.setVisible(render_text);
+    }
+    
+    public Slider setDefaultValue(float value) {
+    	this.value_default = value;
+    	setValue(value);
+    	return this;
     }
     
     
@@ -89,12 +122,15 @@ public class Slider extends Widget {
     	super.update();
     }
     
+    public void reset() {
+    	value = value_default;
+    	triggerValueChange(false);
+    }
+    
     @Override
-    public boolean onPointerDown(int globalX, int globalY, int button) {
-    	manager.mouse_click_offset_x = knob.getGlobalX() + (knob.shape.width/2) - globalX;
-    	manager.mouse_click_offset_y = knob.getGlobalY() + (knob.shape.height/2) - globalY;
-//        mouse_click_offset_x = widget_hovering.getGlobalX() - mx;
-//        mouse_click_offset_y = widget_hovering.getGlobalY() - my;
+    public boolean onPointerDown(int mouseX, int mouseY, int button) {
+    	manager.mouse_click_offset_x = knob.getGlobalX() + (knob.shape.width/2) - mouseX;
+    	manager.mouse_click_offset_y = knob.getGlobalY() + (knob.shape.height/2) - mouseY;
     	return true;
     }
     
@@ -107,10 +143,13 @@ public class Slider extends Widget {
     	x = (int) Math.max(x, getGlobalX());
     	x = (int) Math.min(x, max);
 
-    	boolean quantized = Gdx.input.isKeyPressed(Keys.SHIFT_LEFT);
+    	boolean quantized = isShiftPressed();
+    	float qa = isControlPressed()?quantize_amount_ctrl:quantize_amount;
     	triggerValueChange(quantized);
     	
-    	knob.setGlobalPosition((quantized?(x/quantize_amount)*quantize_amount:x), knob.getGlobalY());
+    	// Get a certain kind of quantize amount
+    	
+    	knob.setGlobalPosition((quantized?(x/qa)*qa:x), knob.getGlobalY());
     	return true;
     }
     
@@ -121,6 +160,19 @@ public class Slider extends Widget {
     	return true;
     }
     
+    @Override
+	public void scroll(float amountX, float amountY) {
+    	int max = (int) (getGlobalX()+getWidth()-knob.shape.width);
+    	int min = (int)getGlobalX();
+    	float sa = isControlPressed()?scroll_amount_ctrl:scroll_amount;
+    	int new_x = (int) (knob.getGlobalX() + ((amountY<0)?sa:-sa));
+    	new_x = Math.min(new_x, max);
+    	new_x = Math.max(new_x, min);
+    	
+    	knob.setGlobalPosition(new_x, knob.getGlobalY());
+    	triggerValueChange(isShiftPressed());
+	}
+    
     /**
      * Applies literal location of widget to determine value change
      */
@@ -129,6 +181,9 @@ public class Slider extends Widget {
     	value = minValue + (normalized_value*(maxValue-minValue));
     	if(quantize) {
     		value = Math.round(value/quantize_amount)*quantize_amount;
+    	}
+    	if(value_display.isVisible()) {
+    		value_display.setText((value_name!=null?value_name+": ":"")+value);
     	}
 //    	print("value: "+value);
 	}
@@ -156,7 +211,7 @@ public class Slider extends Widget {
 		if(isVisible()) {
 			renderer.set(ShapeType.Filled);
 			renderer.setColor(color);
-			style.drawRect(renderer, getGlobalX(), getGlobalY(), shape.width, knob.getHeight());
+			style.drawRect(renderer, getGlobalX(), getGlobalY(), shape.width, shape.height);
 //			if(!hovering) {
 			drawBorder(renderer);
 //			}
@@ -174,6 +229,19 @@ public class Slider extends Widget {
 
 	public Knob getKnob() {
 		return knob;
+	}
+	
+	
+	@Override
+	public ContextWidget spawnContextWidget() {
+		// TODO Auto-generated method stub
+		ContextWidget context = new ContextWidget(this);
+		Button show_value = new Button("show value", context);
+		show_value.setType(ButtonType.TOGGLE);
+		show_value.activated = value_display.isVisible();
+		show_value.addOnActivate(()->{value_display.setVisible(true);});
+		show_value.addOnDeactivate(()->{value_display.setVisible(false);});
+		return context;
 	}
     
 }

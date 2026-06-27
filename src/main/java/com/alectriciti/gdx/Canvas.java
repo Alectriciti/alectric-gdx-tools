@@ -65,7 +65,7 @@ public class Canvas extends Widget{
 	@Override
 	public boolean drawFont(SpriteBatch sprite_batch, boolean recursive) {
 		
-		if(render_text) {
+		if(show_text) {
 		//print(getGlobalX()+" "+getGlobalY());
 			style.font.setColor(font_color);
 			style.font.draw(sprite_batch, name_for_display, getGlobalX() + font_offset.x, getGlobalY() + shape.height - font_offset.y);

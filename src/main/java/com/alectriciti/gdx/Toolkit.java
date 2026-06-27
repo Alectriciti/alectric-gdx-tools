@@ -10,7 +10,7 @@ import java.util.Locale;
 import java.util.Set;
 
 import com.badlogic.gdx.Gdx;
-
+import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ImmediateModeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -444,6 +444,15 @@ public class Toolkit {
     	}
     }
     		
+
+
+    public static boolean isControlPressed() {
+    	return Gdx.input.isKeyPressed(Keys.CONTROL_LEFT) || Gdx.input.isKeyPressed(Keys.CONTROL_RIGHT);
+    }
+    
+    public static boolean isShiftPressed() {
+    	return Gdx.input.isKeyPressed(Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Keys.SHIFT_RIGHT);
+    }
     		
     
     
