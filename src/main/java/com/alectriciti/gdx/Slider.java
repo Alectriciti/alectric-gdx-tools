@@ -2,6 +2,9 @@ package com.alectriciti.gdx;
 
 import static com.alectriciti.gdx.Toolkit.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.alectriciti.gdx.Button.ButtonType;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
@@ -54,6 +57,14 @@ public class Slider extends Widget {
     public float quantize_amount_ctrl = 0.125f;
     
     public GrabStyle grab_style = GrabStyle.LAZY;
+    
+
+	protected List<Runnable> change_listeners = new ArrayList<Runnable>();
+	
+	public void addChangeListener(Runnable r) {
+		change_listeners.add(r);
+	}
+    
 
 
     public Slider(UIManager manager) {
@@ -214,7 +225,6 @@ public class Slider extends Widget {
     	triggerValueChange(quantized);
     	
     	// Get a certain kind of quantize amount
-    	
     	if(horizontal) {
     		knob.setGlobalPosition((quantized?(factor/qa)*qa:factor), knob.getGlobalY());
     	}else {
@@ -258,6 +268,10 @@ public class Slider extends Widget {
     	}
     	if(value_display.isVisible()) {
     		value_display.setText((value_name!=null?value_name+": ":"")+value);
+    	}
+    	
+    	for(Runnable r : change_listeners) {
+    		r.run();
     	}
 //    	print("value: "+value);
 	}
@@ -317,5 +331,6 @@ public class Slider extends Widget {
 		show_value.addOnDeactivate(()->{value_display.setVisible(false);});
 		return context;
 	}
-    
+	
+	
 }

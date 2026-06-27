@@ -29,6 +29,9 @@ public class TextWidget extends Widget{
     BitmapFont font;
     
     boolean animating = false;
+    
+    float offset_x = 4f;
+    float offset_y = 4f;
 
 //    public Message(BitmapFont font, ColoredText...msgs){
 //        construct(last_used_font, msgs);
@@ -86,7 +89,6 @@ public class TextWidget extends Widget{
                 font_cache.setColors(color, i, i+1);
                 i++;
             }
-            //i +=ct.length();
         }
     }
     
@@ -101,7 +103,7 @@ public class TextWidget extends Widget{
         // Update font cache with new text
         font_cache.clear();
         font_cache.setText(msg_raw, 0, 0);
-		font_cache.setPosition(getGlobalX(), getGlobalY()+font.getCapHeight());
+		font_cache.setPosition(getGlobalX()+offset_x, getGlobalY()+font.getCapHeight()+offset_y);
 
         // Update colors
         updateColors();
@@ -128,9 +130,8 @@ public class TextWidget extends Widget{
     protected void onPositionUpdate() {
     	super.onPositionUpdate();
     	//the font cache is independent from the widget, so link it here when the widget moves.
-    	//TODO optimize this to only be called when the position actually gets moved
 		if(font_cache!=null) {
-			font_cache.setPosition(getGlobalX(), getGlobalY()+font.getCapHeight());
+			font_cache.setPosition(getGlobalX()+offset_x, getGlobalY()+font.getCapHeight()+offset_y);
 		}
     }
 
@@ -144,11 +145,11 @@ public class TextWidget extends Widget{
 		
 		font_cache.draw(sprite_batch);
 		
-		if(show_text && name_for_display != null) {
+//		if(show_text && name_for_display != null) {
 		//print(getGlobalX()+" "+getGlobalY());
 //			font.setColor(font_color);
 //			font.draw(sprite_batch, name_for_display, getGlobalX()+font_offset.x, getGlobalY()+font.getCapHeight()+font_offset.y);
-		}
+//		}
 		if(recursive) {
 			drawFontChildren(sprite_batch, recursive);
 		}

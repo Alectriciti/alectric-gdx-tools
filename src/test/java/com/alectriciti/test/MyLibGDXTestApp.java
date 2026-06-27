@@ -156,13 +156,19 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 		info.setSize(120, 53);
 		info.setRelativePosition(10, 10);
 		
+		Style lame_style = new Style();
+		lame_style.corner_radius = 0;
+		lame_style.color_base = new Color(0, 0, 0, 1);
+		lame_style.color_hover = new Color(1, 0, 1, 1);
+//		lame_style.color_outline = new Color(1, 0, 1, 1);
 		
 		//Stress Test
-//		for(int x = 0; x<1200;x++) {
+//		for(int x = 0; x<100;x++) {
 //			Button button = new Button("x_"+x, ui_manager);
-//			button.setGlobalPosition((x%30)*32, ((int)(x/30))*32);
+//			button.setGlobalPosition((x%10)*32, ((int)(x/10))*32);
+//			button.style = lame_style;
 //		}
-		
+//		
 
 		
 		/**
@@ -246,7 +252,7 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
     	cool_style.color_outline = new Color(0.2f, 0.2f, 1, 1);
     	test_button_a.style = cool_style;
     	test_button_b.style = cool_style;
-    	
+
     	
 		Slider slider = new Slider(ui_manager, true);
 		slider.getKnob().setSize(10, slider.getKnob().getHeight());
@@ -256,6 +262,17 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 
     	a.addOnActivate(()->{slider.setValue(4f);});
     	b.addOnActivate(()->{slider.setValue(12f);});
+    	
+		Slider slider2 = new Slider(ui_manager, true);
+		slider2.getKnob().setSize(10, slider2.getKnob().getHeight());
+		slider2.setLength(200);
+		slider2.setValueRange(4,12);
+		slider2.setRelativePosition(400, 180);
+		slider2.style = lame_style;
+		slider2.getKnob().style = lame_style;
+
+    	a.addOnActivate(()->{slider2.setValue(4f);});
+    	b.addOnActivate(()->{slider2.setValue(12f);});
     	
     	
     	

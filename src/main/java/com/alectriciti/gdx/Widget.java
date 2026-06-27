@@ -793,6 +793,22 @@ public class Widget implements Contextable, Drawable{
 		setValue(Parameter.TOUCHABLE, new_touchable, InheritanceRule.STANDARD);
 	}
 	
+	
+	
+	public void setStyle(Style style, boolean recursive) {
+		this.style = style;
+		if(recursive) {
+			setStyleChildren(style, recursive);
+		}
+	}
+	
+	
+	private void setStyleChildren(Style style2, boolean recursive) {
+		for(Widget w : widgets) {
+			w.setStyle(style2, recursive);
+		}
+	}
+
 	/**
 	 * Sets a parameterized value for this widget.
 	 * 
