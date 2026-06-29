@@ -127,7 +127,7 @@ public class Widget implements Contextable, Drawable{
 	
 	/*
 	 * ignores grabbing the object, can be used for intermediate actions
-	 * such as DropdownMenuButton when a widget retracts. It's still visible, but not touchabale.
+	 * such as DropdownMenuButton when a widget retracts. It's still visible, but not touchable.
 	 */
 	public boolean touchable = true;
 	
@@ -150,9 +150,9 @@ public class Widget implements Contextable, Drawable{
 	 * Reserved for Canvas
 	 */
 	protected Widget() {
-		//Must create some kind of registry!
+		//Must create some kind of registry
 		initializeParameters();
-		}
+	}
 	
 	/**
 	 * Used for other widgets
@@ -202,7 +202,6 @@ public class Widget implements Contextable, Drawable{
 	}
 	
 	private void initializeParameters() {
-		// TODO Auto-generated method stub
 		parameters = new EnumMap<>(Parameter.class);
 		for(Parameter p : Parameter.values()) {
 			parameters.put(p, Value.UNASSIGNED);
@@ -210,6 +209,12 @@ public class Widget implements Contextable, Drawable{
 	}
 
 	public String getName() {
+		if(name_for_display==null) {
+			if(id==null) {
+				return getClass().getSimpleName();
+			}
+			return id;
+		}
 		return name_for_display;
 	}
 	
@@ -627,7 +632,7 @@ public class Widget implements Contextable, Drawable{
 	 * @return
 	 */
 	public boolean isHoverable() {
-		return false;
+		return true;
 	}
 	
 	public boolean isVisible() {

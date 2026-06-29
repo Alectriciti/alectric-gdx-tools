@@ -301,7 +301,7 @@ public class Slider extends Widget {
 			renderer.setColor(color);
 			style.drawRect(renderer, getGlobalX(), getGlobalY(), shape.width, shape.height);
 //			if(!hovering) {
-			drawBorder(renderer);
+//			drawBorder(renderer);
 //			}
 		}
     }

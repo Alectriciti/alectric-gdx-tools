@@ -16,6 +16,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.utils.ObjectSet;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
@@ -39,6 +40,9 @@ import com.alectriciti.gdx.Toolkit;
 import com.alectriciti.gdx.Widget;
 import com.alectriciti.gdx.styles.StyleOldschool;
 import com.alectriciti.gdx.Button.ButtonType;
+import com.alectriciti.gdx.events.EventListener;
+import com.alectriciti.gdx.events.WidgetAddEvent;
+import com.alectriciti.gdx.events.WidgetRemoveEvent;
 import com.alectriciti.gdx.Button;
 import com.alectriciti.gdx.UIManager;
 import com.alectriciti.gdx.InheritanceRule;
@@ -81,6 +85,15 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 		cool_style = new Style();
 		oldschool_style = new StyleOldschool();
 		
+		
+		
+		//The goal is to register a listener. When 
+		ui_manager.getEventManager().register(WidgetAddEvent.class,((o) -> {
+			print("added "+o.getWidget().getName());
+		}));
+		ui_manager.getEventManager().register(WidgetRemoveEvent.class,((o) -> {
+			print("removed "+o.getWidget().getName());
+		}));
 
 		button_mode_1 = new Button("1", ui_manager, Input.Keys.NUM_1);
 		button_mode_2 = new Button("2", ui_manager, Input.Keys.NUM_2);
@@ -348,7 +361,6 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 	public void update() {
 		int fps = Gdx.graphics.getFramesPerSecond();
 		Gdx.graphics.setTitle("fps: "+fps);
-		info.setText("widgets: "+ui_manager.widgets.size);
 	}
 
 	@Override

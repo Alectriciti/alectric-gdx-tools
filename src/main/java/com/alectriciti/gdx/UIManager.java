@@ -1,5 +1,6 @@
 package com.alectriciti.gdx;
 
+import java.awt.Event;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -14,6 +15,11 @@ import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWVidMode;
 
 import com.alectriciti.gdx.Button.ButtonType;
+import com.alectriciti.gdx.events.WidgetEvent;
+import com.alectriciti.gdx.events.WidgetRemoveEvent;
+import com.alectriciti.gdx.events.EventListener;
+import com.alectriciti.gdx.events.EventManager;
+import com.alectriciti.gdx.events.WidgetAddEvent;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Input.Keys;
@@ -166,11 +172,19 @@ public class UIManager implements InputProcessor {
 	public ObjectMap<Integer, Button> buttons_by_key = new ObjectMap<Integer, Button>();
 	
 	public InputMultiplexer input_multiplexer;
-
+	
+	private EventManager event_manager;
+	
+	public EventManager getEventManager() {
+		return event_manager;
+	}
+	
+	
 	public UIManager(InputMultiplexer input, BitmapFont font) {
 		input_multiplexer = input;
 		input_multiplexer.addProcessor(this);
 		primary_font = font;
+		event_manager = new EventManager();
 	}
 
 	/**
@@ -272,7 +286,7 @@ public class UIManager implements InputProcessor {
 		if (widget_to_assign != null) {
 			widget_hovering = widget_to_assign;
 			widget_hovering.hovering = true;
-			// print("New Candidate: "+widget_hovering.name);
+//			 print("New Candidate: "+widget_hovering.getName());
 		} else {
 			widget_hovering = null;
 		}
@@ -335,18 +349,30 @@ public class UIManager implements InputProcessor {
 				}
 			}
 			ObjectSet<Widget> widgz = new ObjectSet<Widget>(widgets_to_add);
+			//call widget listeners
 			for(Widget widget : widgz) {
 				widget.callOnCreate();
+			}
+			//call ui manager listeners for API support
+			for(Widget w : widgz) {
+				event_manager.fire(new WidgetAddEvent(w)); //run.handle(yh8);//;pll8tf6ygyigtvytfsexftbhh
 			}
 			widgets_to_add.clear();
 		}
 
 		if (!widgets_to_destroy.isEmpty()) {
+
+			//call ui manager listeners for API support
+			for(Widget w : widgets_to_destroy) {
+				event_manager.fire(new WidgetRemoveEvent(w)); //run.handle(yh8);//;pll8tf6ygyigtvytfsexftbhh
+			}
+			
 			for(Widget wd : widgets_to_destroy) {
 				widgets.remove(wd);
 				widget_independants.remove(wd);
 				buttons.remove(wd);
 			}
+			
 //			widgets.removeAll(widgets_to_destroy);
 //			widget_independants.removeAll(widgets_to_destroy);
 //			buttons.removeAll(widgets_to_destroy);
@@ -788,16 +814,6 @@ public class UIManager implements InputProcessor {
 			}
 			shape_renderer.end();
 		}
-		
-		if (widget_hovering != null) {
-			shape_renderer.begin();
-			if (edit_mode) {
-				if(widget_hovering.isEditable()) {
-					widget_hovering.drawEditMode(shape_renderer, false);
-				}
-			}
-			shape_renderer.end();
-		}
 		// Draw this ontop to allow for visibility
 		/*
 		 * if(widget_currently_adjusting!=null) { shape_renderer.begin();
@@ -1053,13 +1069,6 @@ public class UIManager implements InputProcessor {
 	 * @param widget to be registered
 	 */
 	void registerWidget(Widget widget) {
-
-//		if (widget.getParent() == null) {
-//			// widget_orphans.add(widget);
-//			widget_independants.add(widget);
-//		}
-//
-//		widgets.add(widget);
 		widgets_to_add.add(widget);
 	}
 

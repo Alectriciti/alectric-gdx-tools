@@ -96,7 +96,11 @@ public class TextInput extends TextWidget implements InputProcessor{
 		}
 		super.update();
 	}
-	
+
+	@Override
+	public boolean isHoverable() {
+		return true;
+	}
 	
 	@Override
 	public void drawShape(ShapeRenderer renderer) {

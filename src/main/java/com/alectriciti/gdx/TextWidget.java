@@ -74,6 +74,11 @@ public class TextWidget extends Widget{
         reconstruct(); 
     }
     
+	@Override
+	public boolean isHoverable() {
+		return false;
+	}
+    
     /**
      * Is only activated for console messages
      * This handles individual glyph color and opacity
