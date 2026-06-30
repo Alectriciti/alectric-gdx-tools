@@ -10,7 +10,8 @@ public enum Direction {
 	DOWN (0, -1),
 	DOWN_LEFT(-1, -1),
 	LEFT(-1, 0),
-	UP_LEFT(-1, 1);
+	UP_LEFT(-1, 1),
+	CENTER(0,0);
 	
 	float x;
 	float y;

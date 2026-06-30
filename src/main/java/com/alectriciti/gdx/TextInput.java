@@ -2,6 +2,9 @@ package com.alectriciti.gdx;
 
 import static com.alectriciti.gdx.Toolkit.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -27,6 +30,8 @@ public class TextInput extends TextWidget implements InputProcessor{
 	public boolean escape_clears_focus = true; //if true, when this widget is focused, escape will remove it
 	
 	public int tick;
+	
+	transient Runnable run_activate;
 	
 	public TextInput(UIManager manager, ColoredText...msgs) {
 		super(manager, msgs);
@@ -134,46 +139,10 @@ public class TextInput extends TextWidget implements InputProcessor{
 	            return false;
 	        }
 	    }
-
+	    
 	    // Navigation and editing keys
 	    switch (keycode) {
-//	        case Keys.LEFT: {
-//	            // Ctrl+Left -> move by word
-//	            if (Gdx.input.isKeyPressed(Keys.CONTROL_LEFT) || Gdx.input.isKeyPressed(Keys.CONTROL_RIGHT)) {
-//	                // move cursor left to previous word boundary
-//	                if (msgs != null && msgs.length > 0) {
-//	                    String s = msgs[0].getText();
-//	                    int i = Math.max(0, Math.min(cursor.index, s.length()));
-//	                    // skip any whitespace to the left
-//	                    while (i > 0 && Character.isWhitespace(s.charAt(i - 1))) i--;
-//	                    // skip non-whitespace to the left (the word)
-//	                    while (i > 0 && !Character.isWhitespace(s.charAt(i - 1))) i--;
-//	                    cursor.index = i;
-//	                }
-//	            } else {
-//	                if (cursor.index > 0) cursor.index--;
-//	            }
-//	            return true;
-//	        }
-//
-//	        case Keys.RIGHT: {
-//	            // Ctrl+Right -> move to next word boundary
-//	            if (Gdx.input.isKeyPressed(Keys.CONTROL_LEFT) || Gdx.input.isKeyPressed(Keys.CONTROL_RIGHT)) {
-//	                if (msgs != null && msgs.length > 0) {
-//	                    String s = msgs[0].getText();
-//	                    int i = Math.max(0, Math.min(cursor.index, s.length()));
-//	                    // skip non-whitespace to the right
-//	                    while (i < s.length() && !Character.isWhitespace(s.charAt(i))) i++;
-//	                    // skip whitespace to the right
-//	                    while (i < s.length() && Character.isWhitespace(s.charAt(i))) i++;
-//	                    cursor.index = i;
-//	                }
-//	            } else {
-//	                if (msgs != null && msgs.length > 0 && cursor.index < msgs[0].getText().length()) cursor.index++;
-//	            }
-//	            return true;
-//	        }
-
+	    
 	        case Keys.HOME: {
 	            cursor.index = 0;
 	            return true;
@@ -259,6 +228,10 @@ public class TextInput extends TextWidget implements InputProcessor{
 	            // Fallback: If it's an activating input but has no target, clear focus (Standard UI behavior)
 	            manager.focus(null, false);
 	        }
+	        
+	        if(willActivate && run_activate!=null) {
+	        	run_activate.run();
+	        }
 
 	        // 2. Execute Text Insertion
 	        if (!willNewline) {
@@ -316,6 +289,10 @@ public class TextInput extends TextWidget implements InputProcessor{
 	public boolean scrolled(float amountX, float amountY) {
 		// TODO Auto-generated method stub
 		return false;
+	}
+	
+	public void setActivate(Runnable run) {
+		this.run_activate = run;
 	}
 	
 }

@@ -63,8 +63,8 @@ public class Widget implements Contextable, Drawable{
 	transient List<Widget> widgets_heirarchy_cache = new ArrayList<Widget>();
 	
 	protected Rectangle shape;
-	protected Rectangle shape_base = new Rectangle(); // for UI offset
-	protected Rectangle shape_global = new Rectangle();
+	protected Rectangle shape_base = new Rectangle(); // source of truth
+	protected Rectangle shape_global = new Rectangle(); // literal position
 	
 	public Point font_offset = new Point(0, 0);
 	
@@ -346,6 +346,20 @@ public class Widget implements Contextable, Drawable{
 		return this.shape.getHeight();
 	}
 
+	public float getParentWidth() {
+		if(hasParent()) {
+			return getParent().getWidth();
+		}
+		return Gdx.graphics.getWidth();
+	}
+	
+	public float getParentHeight() {
+		if(hasParent()) {
+			return getParent().getHeight();
+		}
+		return Gdx.graphics.getHeight();
+	}
+
 	public Widget setRelativePosition(float x, float y) {
 		this.shape_base.x = x;
 		this.shape_base.y = y;
@@ -355,44 +369,45 @@ public class Widget implements Contextable, Drawable{
 		updateGlobalPosition();
 		return this;
 	}
-	
 	/**
-	 * Run this ONLY after a position change
+	 * Recalculates local shape positions based on alignment and base offsets.
+	 * Enforces visual clamping so widgets cannot escape their parent's bounds.
 	 */
 	public void updateAlignment() {
-		int width = Gdx.graphics.getWidth();
-		int height = Gdx.graphics.getHeight();
-		
-		shape.x = shape_base.x;
-		shape.y = shape_base.y;
-		
-		boolean align_top = false,  align_right = false;
+		float parentW = getParentWidth();
+		float parentH = getParentHeight();
+
+		boolean alignTop = false, alignRight = false, alignCenter = false;
+
 		switch(alignment) {
-		case DOWN_RIGHT:
-			align_right = true;
-			break;
-		case RIGHT:
-			align_right = true;
-			break;
-		case UP:
-			align_top = true;
-			break;
-		case UP_LEFT:
-			align_top = true;
-			break;
-		case UP_RIGHT:
-			align_right = true;
-			align_top = true;
-			break;
-		default:
-			break;
+			case DOWN_RIGHT: alignRight = true; break;
+			case RIGHT: alignRight = true; break;
+			case UP: alignTop = true; break;
+			case UP_LEFT: alignTop = true; break;
+			case UP_RIGHT: alignRight = true; alignTop = true; break;
+			case CENTER: alignCenter = true; break;
+			default: break;
 		}
-		if(align_top) {
-			shape.y = height + shape_base.y - shape.height;
+
+		// 1. Calculate raw local coordinates based on the untouchable anchor offset (shape_base)
+		float targetX, targetY;
+		if (alignCenter) {
+			targetX = (parentW / 2f) - (shape.width / 2f) + shape_base.x;
+			targetY = (parentH / 2f) - (shape.height / 2f) + shape_base.y;
+		} else {
+			targetX = alignRight ? (parentW - shape.width + shape_base.x) : shape_base.x;
+			targetY = alignTop ? (parentH - shape.height + shape_base.y) : shape_base.y;
 		}
-		if(align_right) {
-			shape.x = width + shape_base.x - shape.width;
-		}
+
+		// 2. Clamp local coordinates to parent bounds for RENDERING only
+		float maxX = Math.max(0, parentW - shape.width);
+		float maxY = Math.max(0, parentH - shape.height);
+
+		// 3. Assign to the actual physical shape box
+		shape.x = Math.max(0, Math.min(targetX, maxX));
+		shape.y = Math.max(0, Math.min(targetY, maxY));
+        
+        // NO back-propagation to shape_base here!
 	}
 	
 	
@@ -433,66 +448,41 @@ public class Widget implements Contextable, Drawable{
 		
 	}
 	
-	public void setGlobalPosition(float x, float y) {
-		int width = Gdx.graphics.getWidth();
-		int height = Gdx.graphics.getHeight();
-		boolean align_top = false,  align_right = false;
+	/**
+	 * Sets the absolute screen position of the widget.
+	 * Automatically reverse-engineers the correct relative shape_base offset.
+	 */
+	public void setGlobalPosition(float globalX, float globalY) {
+		float parentWidth = getParentWidth();
+		float parentHeight = getParentHeight();
+		
+		// Convert absolute global coordinates into local coordinates
+		float localX = (parent != null) ? globalX - parent.getGlobalX() : globalX;
+		float localY = (parent != null) ? globalY - parent.getGlobalY() : globalY;
+		
+		boolean alignTop = false, alignRight = false, alignCenter = false;
 		switch(alignment) {
-		case DOWN_RIGHT:
-			align_right = true;
-			break;
-		case RIGHT:
-			align_right = true;
-			break;
-		case UP:
-			align_top = true;
-			break;
-		case UP_LEFT:
-			align_top = true;
-			break;
-		case UP_RIGHT:
-			align_right = true;
-			align_top = true;
-			break;
-		default:
-			break;
+			case DOWN_RIGHT: alignRight = true; break;
+			case RIGHT: alignRight = true; break;
+			case UP: alignTop = true; break;
+			case UP_LEFT: alignTop = true; break;
+			case UP_RIGHT: alignRight = true; alignTop = true; break;
+			case CENTER: alignCenter = true; break;
+			default: break;
 		}
 		
+		// Apply reverse alignment math to calculate the new anchor offset (shape_base)
+		if (alignCenter) {
+			shape_base.x = localX - (parentWidth / 2f) + (shape.width / 2f);
+			shape_base.y = localY - (parentHeight / 2f) + (shape.height / 2f);
+		} else {
+			shape_base.x = alignRight ? (localX - parentWidth + shape.width) : localX;
+			shape_base.y = alignTop ? (localY - parentHeight + shape.height) : localY;
+		}
 		
-	    if (parent != null) {
-	        shape_base.x = x - parent.shape_global.x;
-	        shape_base.y = y - parent.shape_global.y;
-	        
-	        if(align_top) {
-	            shape_base.y = (y - parent.shape_global.y) - (height - shape.height);
-	        }else {
-	            shape_base.y = y - parent.shape_global.y;
-	        }
-	        if(align_right) {
-	            shape_base.x = (x - parent.shape_global.x) - (width - shape.width);
-	        }else {
-	            shape_base.x = x - parent.shape_global.x;
-	        }
-	    } else {
-	        shape_base.x = x;
-	        shape_base.y = y;
-	        
-	        if(align_top) {
-	            shape_base.y = y - (height - shape.height);
-	        } else {
-	            shape_base.y = y;
-	        }
-	        
-	        if(align_right) {
-	            shape_base.x = x - (width - shape.width);
-	        } else {
-	            shape_base.x = x;
-	        }
-	    }
-	    
-	    updateAlignment();
-	    updateGlobalPosition();
-	    
+		// Process the new anchor through the alignment and bounding system
+		updateAlignment(); 
+		updateGlobalPosition();
 	}
 		
 	protected void setFollowParent(boolean b) {

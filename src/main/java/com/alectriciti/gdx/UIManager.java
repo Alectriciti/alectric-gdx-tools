@@ -153,12 +153,12 @@ public class UIManager implements InputProcessor {
 	 * These references exist globally to allow for extra functionality
 	 */
 	public ObjectSet<Widget> widgets = new ObjectSet<Widget>();
-	// public HashSet<Widget> widget_orphans = new HashSet<Widget>();
 
 	private ObjectSet<Widget> widgets_to_add = new ObjectSet<Widget>();
 	private ObjectSet<Widget> widgets_to_destroy = new ObjectSet<Widget>();
 	
-	Set<Widget> transient_widgets = new HashSet<Widget>(); // Widgets which close automatically, relating to focus 
+	// Widgets which get deactivated automatically if new focus is not related
+	public Set<Widget> transient_widgets = new HashSet<Widget>();
 
 	public List<Button> buttons = new ArrayList<Button>();
 	public List<Button> buttons_rapidfiring = new ArrayList<Button>();

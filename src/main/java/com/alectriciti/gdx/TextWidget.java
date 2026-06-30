@@ -128,7 +128,10 @@ public class TextWidget extends Widget{
     	reconstruct();
     }
     
-    
+    public String getText() {
+    	if(msgs.length<=0)return id;
+    	return msgs[0].getText();
+    }
     
     
 	@Override
