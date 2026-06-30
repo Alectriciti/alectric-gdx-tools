@@ -15,15 +15,12 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
-import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.utils.ObjectSet;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 import static com.alectriciti.gdx.Toolkit.*;
 
-import java.awt.Point;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,13 +33,11 @@ import com.alectriciti.gdx.Slider;
 import com.alectriciti.gdx.Style;
 import com.alectriciti.gdx.TextDialog;
 import com.alectriciti.gdx.TextInput;
+import com.alectriciti.gdx.TextWidget;
 import com.alectriciti.gdx.Toolkit;
 import com.alectriciti.gdx.Widget;
 import com.alectriciti.gdx.styles.StyleOldschool;
 import com.alectriciti.gdx.Button.ButtonType;
-import com.alectriciti.gdx.events.EventListener;
-import com.alectriciti.gdx.events.WidgetAddEvent;
-import com.alectriciti.gdx.events.WidgetRemoveEvent;
 import com.alectriciti.gdx.Button;
 import com.alectriciti.gdx.UIManager;
 import com.alectriciti.gdx.InheritanceRule;
@@ -66,6 +61,13 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 	
 	Style cool_style;
 
+
+	TextWidget info_text1;
+	TextWidget info_text2;
+	TextWidget info_text3;
+	TextWidget info_text4;
+	TextWidget info_text5;
+	
 	Button button_mode_1, button_mode_2, button_mode_3, button_mode_4;
 	
 	@Override
@@ -87,13 +89,19 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 		
 		
 		
-		//The goal is to register a listener. When 
-		ui_manager.getEventManager().register(WidgetAddEvent.class,((o) -> {
-			print("added "+o.getWidget().getName());
-		}));
-		ui_manager.getEventManager().register(WidgetRemoveEvent.class,((o) -> {
-			print("removed "+o.getWidget().getName());
-		}));
+		//Event Testing
+		RegisterTestEventHandlers();
+
+		info_text1 = new TextWidget(ui_manager, new ColoredText("info", Color.BLUE));
+		info_text1.setGlobalPosition(16, 420);
+		info_text2 = new TextWidget(ui_manager, new ColoredText("info", Color.GREEN));
+		info_text2.setGlobalPosition(16, 400);
+		info_text3 = new TextWidget(ui_manager, new ColoredText("info", Color.YELLOW));
+		info_text3.setGlobalPosition(16, 380);
+		info_text4 = new TextWidget(ui_manager, new ColoredText("info", Color.PURPLE));
+		info_text4.setGlobalPosition(16, 360);
+		info_text5 = new TextWidget(ui_manager, new ColoredText("info", Color.PINK));
+		info_text5.setGlobalPosition(16, 340);
 
 		button_mode_1 = new Button("1", ui_manager, Input.Keys.NUM_1);
 		button_mode_2 = new Button("2", ui_manager, Input.Keys.NUM_2);
@@ -241,7 +249,10 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
     	
     	
 
-    	new Button("blah", other_menu);
+    	Button blah = new Button("blah", other_menu);
+    	Button bs = new Button("bs", blah);
+    	bs.setRelativePosition(32, 0);
+    	
     	DropdownMenuButton dropdownMenuButton = new DropdownMenuButton("super blarg extreme", other_menu);
     	dropdownMenuButton.setDirection(Direction.RIGHT);
 
@@ -251,16 +262,16 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 
 		SneakyButton sneaky_button = new SneakyButton("sneaker", ui_manager);
 		
-		Button a, b, c;
+		Button button_lock, button_unlock, c;
 
-		a = new Button("default", ui_manager);
-		b = new Button("styled", ui_manager);
-		a.setSize(100, 32);
-		b.setSize(100, 32);
-		a.setGlobalPosition(100, 280);
-		b.setGlobalPosition(100, 240);
+		button_lock = new Button("lock", ui_manager);
+		button_unlock = new Button("unlock", ui_manager);
+		button_lock.setSize(100, 32);
+		button_unlock.setSize(100, 32);
+		button_lock.setGlobalPosition(100, 280);
+		button_unlock.setGlobalPosition(100, 240);
 
-		b.style = oldschool_style;
+		button_unlock.style = oldschool_style;
 		
     	cool_style.color_outline = new Color(0.2f, 0.2f, 1, 1);
     	test_button_a.style = cool_style;
@@ -273,9 +284,14 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 		slider.setValueRange(4,12);
 		slider.setRelativePosition(400, 220);
 
-    	a.addOnActivate(()->{slider.setValue(4f);});
-    	b.addOnActivate(()->{slider.setValue(12f);});
-    	
+    	button_lock.addOnActivate(()->{
+    		slider.setLocked(true);
+    		main_menu.setLocked(true);
+    	});
+    	button_unlock.addOnActivate(()->{
+    		slider.setLocked(false);
+    		main_menu.setLocked(false);
+    	});
 		Slider slider2 = new Slider(ui_manager, true);
 		slider2.getKnob().setSize(10, slider2.getKnob().getHeight());
 		slider2.setLength(200);
@@ -284,8 +300,8 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 		slider2.style = lame_style;
 		slider2.getKnob().style = lame_style;
 
-    	a.addOnActivate(()->{slider2.setValue(4f);});
-    	b.addOnActivate(()->{slider2.setValue(12f);});
+    	button_lock.addOnActivate(()->{slider2.setValue(4f);});
+    	button_unlock.addOnActivate(()->{slider2.setValue(12f);});
     	
     	
     	
@@ -309,6 +325,22 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 		
 	}
 	
+	
+	
+	
+	private void RegisterTestEventHandlers() {
+//		ui_manager.getEventManager().register(WidgetAddEvent.class,((o) -> {
+//			print("added "+o.getWidget().getName());
+//		}));
+//		ui_manager.getEventManager().register(WidgetRemoveEvent.class,((o) -> {
+//			print("removed "+o.getWidget().getName());
+//		}));
+//		ui_manager.getEventManager().register(WidgetClickEvent.class,((o) -> {
+//			print("removed "+o.getWidget().getName());
+//			o.setCancelled(true);
+//		}));
+	}
+
 	Canvas confirm_box;
 	
 	int global_test_button_index;
@@ -320,7 +352,7 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 				Button b = new Button((""+i), ui_manager);
 				buttons.add(b);
 			}
-		}else {
+		} else {
 			for(int i = 0; i < amount; i++) {
 				String name = names[i];
 				if(names!=null) {
@@ -361,7 +393,13 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 	public void update() {
 		int fps = Gdx.graphics.getFramesPerSecond();
 		Gdx.graphics.setTitle("fps: "+fps);
-	}
+
+		info_text1.setText("widget hover: "+(ui_manager.widget_hovering!=null?ui_manager.widget_hovering.getId():"null"));
+		info_text2.setText("widget focus: "+(ui_manager.widget_focused!=null?ui_manager.widget_focused.getId():"null"));
+		info_text3.setText("widget click: "+(ui_manager.mouse_clicked_widget!=null?ui_manager.mouse_clicked_widget.getId():"null"));
+		info_text4.setText("context widget: "+(ui_manager.context_widget!=null?ui_manager.context_widget.getId():"null"));
+		info_text5.setText("pointerCapturedWidget: "+(ui_manager.pointerCapturedWidget!=null?ui_manager.pointerCapturedWidget.getId():"null"));
+		}
 
 	@Override
 	public void render() {

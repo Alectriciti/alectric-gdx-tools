@@ -1,23 +1,16 @@
 package com.alectriciti.gdx;
 
-import java.awt.Event;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWVidMode;
 
 import com.alectriciti.gdx.Button.ButtonType;
-import com.alectriciti.gdx.events.WidgetEvent;
 import com.alectriciti.gdx.events.WidgetRemoveEvent;
-import com.alectriciti.gdx.events.EventListener;
 import com.alectriciti.gdx.events.EventManager;
 import com.alectriciti.gdx.events.WidgetAddEvent;
 import com.badlogic.gdx.Gdx;
@@ -28,7 +21,6 @@ import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Window;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Graphics.Lwjgl3Monitor;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
-import com.badlogic.gdx.Graphics.DisplayMode;
 import com.badlogic.gdx.Graphics.Monitor;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
@@ -36,7 +28,6 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonReader;
@@ -65,7 +56,6 @@ public class UIManager implements InputProcessor {
 	int key_repeat_delay_fast = 60; // ticks before key repeat starts
 	boolean debug_mode = true;
 	
-
 	int left_pressed_ticks, right_pressed_ticks, up_pressed_ticks, down_pressed_ticks;
 
 	int repeat_start_ticks = 8;        // when repeating begins
@@ -123,7 +113,7 @@ public class UIManager implements InputProcessor {
 	/**
 	 * This is the button that is currently being clicked
 	 */
-	Widget mouse_clicked_widget = null;
+	public Widget mouse_clicked_widget = null;
 
 	
 	/**
@@ -132,7 +122,7 @@ public class UIManager implements InputProcessor {
 	float mouse_click_offset_x;
 	float mouse_click_offset_y;
 	
-	private Widget pointerCapturedWidget = null; // widget that captured pointer (for drag)
+	public Widget pointerCapturedWidget = null; // widget that captured pointer (for drag)
 //	private int pointerCapturedId = -1; // pointer id (if you support multi-touch) - we use 0 for mouse
 
 	static BitmapFont primary_font;
@@ -141,9 +131,13 @@ public class UIManager implements InputProcessor {
 	// List<Canvas> canvases = new ArrayList<Canvas>();
 	List<Widget> widget_independants = new ArrayList<Widget>();
 	List<Canvas> canvases_active = new ArrayList<Canvas>();
-	Widget widget_focused;
-	Widget context_widget_candidate;
-	ContextWidget context_widget;
+	
+
+
+	public Widget widget_hovering;
+	public Widget widget_focused;
+	public Widget context_widget_candidate;
+	public ContextWidget context_widget;
 	int global_canvas_z = 0;
 
 	public int ui_tick = 0;
@@ -238,13 +232,14 @@ public class UIManager implements InputProcessor {
 		}
 
 
+		//dropdown menu bug!!! TODO 
 		for(Widget w : transient_widgets) {
 			if(w instanceof Activatable) {
 				if(new_widget == null) {
 					((Activatable)w).deactivate();
 					continue;
 				}
-				if(new_widget.isDescendantOf(w) || new_widget.isInSameGroup(w)) {
+				if(new_widget.isRelated(w)|| new_widget.isInSameGroup(w)) {
 					continue;
 				}
 				((Activatable)w).deactivate();
@@ -272,8 +267,6 @@ public class UIManager implements InputProcessor {
 	private boolean edit_mode_pressed; // a lock mechanism
 	boolean constraint_mode;
 	int constraint_amount = 4;
-
-	Widget widget_hovering;
 
 	public boolean isEdittingMode() {
 		return edit_mode;
@@ -355,7 +348,7 @@ public class UIManager implements InputProcessor {
 			}
 			//call ui manager listeners for API support
 			for(Widget w : widgz) {
-				event_manager.fire(new WidgetAddEvent(w)); //run.handle(yh8);//;pll8tf6ygyigtvytfsexftbhh
+				event_manager.fireEvent(new WidgetAddEvent(w)); //run.handle(yh8);//;pll8tf6ygyigtvytfsexftbhh
 			}
 			widgets_to_add.clear();
 		}
@@ -364,7 +357,7 @@ public class UIManager implements InputProcessor {
 
 			//call ui manager listeners for API support
 			for(Widget w : widgets_to_destroy) {
-				event_manager.fire(new WidgetRemoveEvent(w)); //run.handle(yh8);//;pll8tf6ygyigtvytfsexftbhh
+				event_manager.fireEvent(new WidgetRemoveEvent(w));
 			}
 			
 			for(Widget wd : widgets_to_destroy) {
@@ -389,7 +382,7 @@ public class UIManager implements InputProcessor {
 			}
 			for (Widget w : widgets) {
 				for(Widget wd : widgets_to_destroy) {
-					w.widgets.remove(wd);
+					w.widgets_children.remove(wd);
 				}
 			}
 
@@ -457,55 +450,7 @@ public class UIManager implements InputProcessor {
 	    if (pointerCapturedWidget == null) {
 	        // If a widget_hovering exists, let it handle pointerDown first (gives it priority)
 	        if (Gdx.input.isButtonJustPressed(Buttons.LEFT)) {
-	    		if(context_widget!=null) {
-	    			if(widget_hovering!=null && (widget_hovering.equals(context_widget) || context_widget.equals(widget_hovering.getParent()))) {
-		    			//related action to context window
-	    			} else {
-		    			context_widget.deactivate();
-		    			context_widget = null;
-	    			}
-    	    	}
-	        	if (widget_hovering != null) {
-	        		
-	        	    // If we are in edit mode (or widget forces editability), prefer the "move widget" behavior.
-	        	    // This prevents interactive widgets (sliders, color pickers) from capturing pointer while editing.
-	        	    if (edit_mode || widget_hovering.isAlwaysEditable()) {
-	        	        if (widget_hovering.isEditable()) {
-	        	            // Start moving/adjusting the widget (existing behavior)
-	        	            widget_currently_adjusting = widget_hovering;
-	        	            mouse_click_offset_x = widget_hovering.getGlobalX() - mx;
-	        	            mouse_click_offset_y = widget_hovering.getGlobalY() - my;
-	        	            // Note: we DO NOT call onPointerDown in edit mode; movement has priority.
-	        	        } else {
-	        	            // Not editable: fall back to focusing / clicking behavior
-	        	            widget_hovering.focus();
-	        	            mouse_clicked_widget = widget_hovering;
-	        	            widget_hovering.callOnClicked();
-	        	        }
-	        	    } else {
-	        	        // Normal (non-edit) mode: give the widget a chance to capture pointer (e.g. Slider).
-        	            mouse_click_offset_x = widget_hovering.getGlobalX() - mx;
-        	            mouse_click_offset_y = widget_hovering.getGlobalY() - my;
-	        	        boolean captured = widget_hovering.onPointerDown(mx, my, Buttons.LEFT);
-	        	        if (captured) {
-	        	            pointerCapturedWidget = widget_hovering;
-	        	            pointerCapturedWidget.pressing = true;
-//	        	            pointerCapturedId = 0;
-	        	            // also set as clicked widget for legacy logic
-	        	            mouse_clicked_widget = widget_hovering;
-//	        	            widget_hovering.callOnClicked();
-	        	        }
-
-	        	        // If not captured, fall back to default focus/click behavior (buttons, etc.)
-	        	        widget_hovering.focus();
-	        	        mouse_clicked_widget = widget_hovering;
-	        	        widget_hovering.callOnClicked(); // existing API call
-        	            return; // captured — consume event
-	        	    }
-
-	        	} else {
-	        	    focus(null, false);
-	        	}
+	    		left_click_just_pressed(mx, my);
 	        }
 	    } else {
 	        // A widget already captured pointer previously. In most mouse cases this won't happen
@@ -535,6 +480,65 @@ public class UIManager implements InputProcessor {
 	    }
 	}
 
+	private void left_click_just_pressed(int mx, int my) {
+		if(context_widget!=null) {
+			if(widget_hovering!=null && (widget_hovering.equals(context_widget) || context_widget.equals(widget_hovering.getParent()))) {
+				//related action to context window
+			} else {
+				context_widget.deactivate();
+				context_widget = null;
+			}
+		}
+		if (widget_hovering != null) {
+			
+		    // If we are in edit mode (or widget forces editability), prefer the "move widget" behavior.
+		    // This prevents interactive widgets (sliders, color pickers) from capturing pointer while editing.
+		    if (edit_mode || widget_hovering.isAlwaysEditable()) {
+		        if (widget_hovering.isEditable()) {
+		            // Start moving/adjusting the widget (existing behavior)
+		            widget_currently_adjusting = widget_hovering;
+		            mouse_click_offset_x = widget_hovering.getGlobalX() - mx;
+		            mouse_click_offset_y = widget_hovering.getGlobalY() - my;
+		            // Note: we DO NOT call onPointerDown in edit mode; movement has priority.
+		        } else {
+		            // Not editable: fall back to focusing / clicking behavior
+		        	
+		        	WidgetClickEvent widgetClickEvent = new WidgetClickEvent(mouse_clicked_widget, mouse_x, mouse_y, true);
+		            event_manager.fireEvent(widgetClickEvent);
+		            if(!widgetClickEvent.isCancelled()) {
+			            widget_hovering.focus();
+			            mouse_clicked_widget = widget_hovering;
+			            widget_hovering.callOnClicked();
+		            }
+		        }
+		    } else {
+		        // Normal (non-edit) mode: give the widget a chance to capture pointer (e.g. Slider).
+
+		    	WidgetClickEvent widgetClickEvent = new WidgetClickEvent(widget_hovering, mouse_x, mouse_y, false);
+		        event_manager.fireEvent(widgetClickEvent);
+		        if(!widgetClickEvent.isCancelled() && !widget_hovering.isLocked()) {
+		            mouse_click_offset_x = widget_hovering.getGlobalX() - mx;
+		            mouse_click_offset_y = widget_hovering.getGlobalY() - my;
+			        boolean captured = widget_hovering.onPointerDown(mx, my, Buttons.LEFT);
+			        if (captured) {
+			            pointerCapturedWidget = widget_hovering;
+			            pointerCapturedWidget.pressing = true;
+			            // also set as clicked widget for legacy logic
+			        }
+
+			        // If not captured, fall back to default focus/click behavior (buttons, etc.)
+			        widget_hovering.focus();
+			        mouse_clicked_widget = widget_hovering;
+			        widget_hovering.callOnClicked(); // existing API call
+		            return; // captured — consume event
+		        }
+		    }
+
+		} else {
+		    focus(null, false);
+		}
+	}
+
 	public void debug(String msg) {
 		if(debug_mode)
 		System.out.println(ANSI_BLUE+"[DEBUG] "+ANSI_RESET+msg);
@@ -546,7 +550,12 @@ public class UIManager implements InputProcessor {
 //	    int mx = mouse_x;
 //	    int my = mouse_y;
 
-	    // If a widget captured the pointer, give it a chance to handle pointerUp
+	    // If a widget captured the pointer, 
+	    if (widget_hovering != null) {
+	        widget_hovering.hovering = false;
+	        widget_hovering = null;
+	    }
+	    //give it a chance to handle pointerUp
 	    if (pointerCapturedWidget != null) {
 //	        boolean consumed = pointerCapturedWidget.onPointerUp(mx, my, pointerCapturedId, Buttons.LEFT);
 	        // release capture regardless (single-pointer model)
@@ -558,12 +567,6 @@ public class UIManager implements InputProcessor {
 	            mouse_clicked_widget.callOnReleased();
 	            mouse_clicked_widget.pressing = false;
 	            mouse_clicked_widget = null;
-	        }
-
-	        // clear hovering state as you already do
-	        if (widget_hovering != null) {
-	            widget_hovering.hovering = false;
-	            widget_hovering = null;
 	        }
 	        scrollSelectionOffset = 0;
 	        // release buttons
@@ -585,7 +588,7 @@ public class UIManager implements InputProcessor {
 	            if (button_clicked.is_key_down) {
 	                button_clicked.pressing = false;
 	                button_clicked.cancelled = true;
-	            } else {
+	            } else if (!button_clicked.isLocked()){
 	                switch (button_clicked.button_type) {
 	                    case PRESS:
 	                        button_clicked.activate();
@@ -610,10 +613,6 @@ public class UIManager implements InputProcessor {
 	        }
 	        mouse_clicked_widget.callOnReleased();
 	        mouse_clicked_widget = null;
-	    }
-	    if (widget_hovering != null) {
-	        widget_hovering.hovering = false;
-	        widget_hovering = null;
 	    }
 	    scrollSelectionOffset = 0;
 	    for (Button b : buttons) {
@@ -850,50 +849,52 @@ public class UIManager implements InputProcessor {
 	    }
 
 		if (buttons_by_key.containsKey(keycode)) {
-			Button b = buttons_by_key.get(keycode);
+			Button button = buttons_by_key.get(keycode);
 
 			//fire based on button type and activate event handler
-			switch (b.button_type) {
-			case RAPIDFIRE:
-				b.is_key_down = true;
-				if (b.cancelled) {
-					b.pressing = false;
-				} else {
-					b.pressing = true;
-					b.activate();
-					buttons_rapidfiring.add(b);
-				}
-				break;
-			case PRESS:
-				b.is_key_down = true;
-				if (b.cancelled) {
-					b.pressing = false;
-				} else {
-					b.pressing = true;
-				}
-				break;
-			case PRESS_AND_RELEASE:
-				if (!b.is_key_down) {
-					b.is_key_down = true;
-					if (b.cancelled) {
-						b.pressing = false;
+			if(!button.isLocked()) {
+				switch (button.button_type) {
+				case RAPIDFIRE:
+					button.is_key_down = true;
+					if (button.cancelled) {
+						button.pressing = false;
 					} else {
-						b.pressing = true;
-						b.activate();
+						button.pressing = true;
+						button.activate();
+						buttons_rapidfiring.add(button);
 					}
+					break;
+				case PRESS:
+					button.is_key_down = true;
+					if (button.cancelled) {
+						button.pressing = false;
+					} else {
+						button.pressing = true;
+					}
+					break;
+				case PRESS_AND_RELEASE:
+					if (!button.is_key_down) {
+						button.is_key_down = true;
+						if (button.cancelled) {
+							button.pressing = false;
+						} else {
+							button.pressing = true;
+							button.activate();
+						}
+					}
+					break;
+				case TOGGLE:
+					if (!button.activated) {
+						button.activate();
+						button.activated = true;
+						print(button.name_for_display + " ACTIVATED");
+					} else {
+						button.deactivate();
+						button.activated = false;
+						print(button.name_for_display + " DEACTIVATED");
+					}
+					break;
 				}
-				break;
-			case TOGGLE:
-				if (!b.activated) {
-					b.activate();
-					b.activated = true;
-					print(b.name_for_display + " ACTIVATED");
-				} else {
-					b.deactivate();
-					b.activated = false;
-					print(b.name_for_display + " DEACTIVATED");
-				}
-				break;
 			}
 			return true;
 		}
@@ -1211,7 +1212,7 @@ public class UIManager implements InputProcessor {
 
 	public void markForDestruction(Widget widget) {
 		widgets_to_destroy.add(widget);
-		for (Widget w : widget.getAllChildren()) {
+		for (Widget w : widget.getDescendants()) {
 			widgets_to_destroy.add(w);
 		}
 	}

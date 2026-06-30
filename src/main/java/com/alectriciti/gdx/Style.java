@@ -22,7 +22,10 @@ public class Style {
     
     // --- Colors ---
     public Color color_base = new Color(0.15f, 0.15f, 0.15f, 1f);
+    public Color color_base_locked = new Color(0.05f, 0.05f, 0.05f, 1f);
     public Color color_hover = new Color(0.35f, 0.75f, 0.35f, 1f); // Used for Hover AND Click Effects
+    public Color color_hover_locked = new Color(0.75f, 0.35f, 0.35f, 1f); // Used for Hover AND Click Effects
+    
     public Color color_press = new Color(0.1f, 0.1f, 0.1f, 1f);
     public Color color_activated = new Color(0.1f, 0.5f, 0.1f, 1f);
     

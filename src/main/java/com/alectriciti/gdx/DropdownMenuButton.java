@@ -89,8 +89,8 @@ public class DropdownMenuButton extends Button{
 		expand_amount_target = 1;
 		animating = true;
 		updatePositionForChildren();
-		for(Widget w : widgets) {
-			w.setVisible(true, InheritanceRule.LOYAL);
+		for(Widget w : getDescendants()) {
+			w.setVisible(true, InheritanceRule.RECURSIVE);
 			w.setTouchable(true);
 		}
 		
@@ -100,7 +100,7 @@ public class DropdownMenuButton extends Button{
 	protected void dropdownClose() {
 		expand_amount_target = 0;
 		animating = true; //enables animation within update()
-		for(Widget w : widgets) {
+		for(Widget w : getDescendants()) {
 			if(w instanceof DropdownMenuButton) {
 				DropdownMenuButton db = (DropdownMenuButton) w;
 				db.deactivate();
@@ -122,11 +122,11 @@ public class DropdownMenuButton extends Button{
 			if(Math.abs(expand_amount_target - expand_amount) > 0.02) {
 				updatePositionForChildren();
 				if(activated) {
-					for(Widget w : widgets) {
+					for(Widget w : getDescendants()) {
 						w.color_texture_alpha.a = expand_amount;
 					}
 				}else {
-					for(Widget w : widgets) {
+					for(Widget w : getDescendants()) {
 						w.color_texture_alpha.a = expand_amount;
 					}
 				}
@@ -136,8 +136,8 @@ public class DropdownMenuButton extends Button{
 				if(activated) {
 					
 				}else {
-					for(Widget w : widgets) {
-						w.setVisible(false, InheritanceRule.STANDARD);
+					for(Widget w : getDescendants()) {
+						w.setVisible(false, InheritanceRule.RECURSIVE);
 					}
 					finishedAnimation();
 				}
@@ -167,20 +167,22 @@ public class DropdownMenuButton extends Button{
 	protected void updatePositionForChildren() {
 		float offset = 0;
 		//Adjust the actual widgets
-		for(Widget w : widgets) {
+		for(Widget w : widgets_children) {
 			offset += (w.getHeight()+1)*expand_amount;
 			w.setRelativePosition(direction.x*offset, direction.y*offset);
+		}
+		for(Widget w : getDescendants()) {
 			w.setOpacity(Math.max(0, (expand_amount*2)-1));
 		}
 		
 		//apply the button effect to the overall size of the dropdown
 		if(effect!=null) {
-			for(Widget w : widgets) {
+			for(Widget w : widgets_children) {
 				effect.shape = effect.shape.merge(w.shape_global);
 			}
 		}
 	}
-	
+
 	@Override
 	public boolean drawTexture(SpriteBatch batch, boolean recursive) {
 		// TODO Auto-generated method stub
@@ -224,6 +226,10 @@ public class DropdownMenuButton extends Button{
 	 */
 	public Runnable getAutocloseRunnable() {
 		return run_autoclose;
+	}
+	
+	protected boolean doesSendInheritanceUponAttach() {
+		return false;
 	}
 	
 	

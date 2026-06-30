@@ -50,13 +50,14 @@ public class Widget implements Contextable, Drawable{
 	public Style style = UIManager.getDefaultStyle();
 	
 	public String getId() {
+		if(id==null)return getClass().getSimpleName();
 		return id;
 	}
 	
 	public String name_for_display; //The display name
 	public boolean show_text = false;
 
-	public transient LinkedList<Widget> widgets = new LinkedList<Widget>();
+	public transient LinkedList<Widget> widgets_children = new LinkedList<Widget>();
 	
 	//A constantly refreshing cache for quickly determining grandchildren
 	transient List<Widget> widgets_heirarchy_cache = new ArrayList<Widget>();
@@ -76,6 +77,7 @@ public class Widget implements Contextable, Drawable{
 	
 	public transient boolean hovering = false;
 	public transient boolean pressing = false;
+	public transient boolean locked = false;
 	
 	transient private boolean currently_clicked = false;
 	
@@ -167,7 +169,7 @@ public class Widget implements Contextable, Drawable{
 		this.shape = new Rectangle();
 		if(parent != null) {
 			this.manager = parent.manager;
-			this.attachToWidget(parent); //parent first!
+			this.attachToWidget(parent); //attach to parent first!
 			this.manager.registerWidget(this); // do this last, it might make an orphan
 		}else {
 			printError("Error instantiating "+id+" ... Canvas is NULL. Register with a WidgetManager instead");
@@ -247,6 +249,11 @@ public class Widget implements Contextable, Drawable{
 			}
 			this.parent = new_widget_parent;
 			new_widget_parent.attachChildWidget(this);
+			if(this.parent.doesSendInheritanceUponAttach()) {
+				for(Parameter p : Parameter.values()) {
+					setValue(p, this.parent.getValue(p));
+				}
+			}
 			refreshHeirarchyCache();
 			return true;
 		}else {
@@ -256,6 +263,10 @@ public class Widget implements Contextable, Drawable{
 		}
 	}
 	
+	protected boolean doesSendInheritanceUponAttach() {
+		return true;
+	}
+
 	/**
 	 * Attaches and registers the widget to this widget
 	 * The idea is that this is called at two places:
@@ -269,7 +280,7 @@ public class Widget implements Contextable, Drawable{
 			widget_to_attach.parent.detachWidget(widget_to_attach, false);
 		}
 		widget_to_attach.parent = this;
-		widgets.add(widget_to_attach);
+		widgets_children.add(widget_to_attach);
 		
 		refreshHeirarchyUpward();
 	}
@@ -279,7 +290,7 @@ public class Widget implements Contextable, Drawable{
 	 * @param widget_to_remove
 	 */
 	public void detachWidget(Widget widget_to_remove, boolean update_cache) {
-		widgets.remove(widget_to_remove);
+		widgets_children.remove(widget_to_remove);
 		if(update_cache) {
 			refreshHeirarchyUpward();
 		}
@@ -287,10 +298,10 @@ public class Widget implements Contextable, Drawable{
 	
 	private void refreshHeirarchyCache() {
 		widgets_heirarchy_cache.clear();
-		for(Widget child : widgets) {
+		for(Widget child : widgets_children) {
 			widgets_heirarchy_cache.add(child); // add the child directly
 			child.refreshHeirarchyCache(); // update child's cache
-			widgets_heirarchy_cache.addAll(child.getAllChildren()); //add all descendants
+			widgets_heirarchy_cache.addAll(child.getDescendants()); //add all descendants
 		}
 	}
 	
@@ -301,9 +312,18 @@ public class Widget implements Contextable, Drawable{
 		}
 	}
 
-	public List<Widget> getAllChildren() {
+	public List<Widget> getChildren(){
+		return widgets_children;
+	}
+	
+	public List<Widget> getDescendants() {
 		return widgets_heirarchy_cache;
 	}
+	
+//	private Widget[] getDescendants() {
+//		// TODO Auto-generated method stub
+//		return null;
+//	}
 	
 	public void setSizeToFont() {
 		
@@ -399,7 +419,7 @@ public class Widget implements Contextable, Drawable{
 			shape_global.x = shape.x;
 			shape_global.y = shape.y;
 		}
-		for(Widget w : widgets) {
+		for(Widget w : widgets_children) {
 			w.updateGlobalPosition();
 		}
 		onPositionUpdate();
@@ -585,7 +605,7 @@ public class Widget implements Contextable, Drawable{
 	}
 	
 	protected void drawEditModeChildren(ShapeRenderer renderer, boolean recursive) {
-		for(Widget w : widgets) {
+		for(Widget w : widgets_children) {
 			w.drawEditMode(renderer, recursive);
 		}
 	}
@@ -601,7 +621,7 @@ public class Widget implements Contextable, Drawable{
 	public void drawShape(ShapeRenderer renderer) {
 		if(isVisible()) {
 			if(hovering) {
-				color_outline = LerpColor(color_outline, style.color_hover, style.color_fade_in);
+				color_outline = LerpColor(color_outline, isLocked()?style.color_hover_locked:style.color_hover, style.color_fade_in);
 			}else {
 				color_outline = LerpColor(color_outline, style.color_outline, style.color_fade_out);
 			}
@@ -609,19 +629,19 @@ public class Widget implements Contextable, Drawable{
 	}
 	
 	protected void drawShapeChildren(ShapeRenderer renderer, boolean recursive) {
-		for(Widget w : widgets) {
+		for(Widget w : widgets_children) {
 			w.drawShape(renderer);
 		}
 	}
 	
 	protected void drawTextureChildren(SpriteBatch sprite_batch, boolean recursive) {
-		for(Widget w : widgets) {
+		for(Widget w : widgets_children) {
 			w.drawTexture(sprite_batch, recursive);
 		}
 	}
 	
 	protected void drawFontChildren(SpriteBatch sprite_batch, boolean recursive) {
-		for(Widget w : widgets) {
+		for(Widget w : widgets_children) {
 			w.drawFont(sprite_batch, recursive);
 		}
 	}
@@ -664,33 +684,50 @@ public class Widget implements Contextable, Drawable{
 	public boolean isRelated(Widget relative) {
 		if(relative == null) return false;
 		if(relative == this) return true;
-		if(this.getParent() == relative) {
+		if(isAncestorOf(relative)) {
 			return true;
 		}
-		if(relative.getParent() == this) {
+		if(isDescendantOf(relative)) {
 			return true;
 		}
 		return false;
 	}
 	
-	public boolean isDescendantOf(Widget ancestor) {
-//		if(ancestor==null)return false;
-//		if(getParent()==null)return false;
-		Widget w = this;
-		while(w != null) {
-			if(w.getParent()==ancestor) {
-				return true;
-			}
-			w = w.getParent();
+	public boolean isAncestorOf(Widget descendant) {
+		if(widgets_heirarchy_cache.contains(descendant)) {
+			return true;
 		}
 		return false;
+//		Widget w = descendant;
+//		while(w != null) {
+//			if(w.getParent()==this) {
+//				return true;
+//			}
+//			w = w.getParent();
+//		}
+//		return false;
+	}
+	
+	public boolean isDescendantOf(Widget ancestor) {
+		if(ancestor.widgets_heirarchy_cache.contains(this)) {
+			return true;
+		}
+		return false;
+//		Widget w = this;
+//		while(w != null) {
+//			if(w.getParent()==ancestor) {
+//				return true;
+//			}
+//			w = w.getParent();
+//		}
+//		return false;
 	}
 	
 	protected void pushNewZPosition(boolean recursive) {
 		z = manager.global_canvas_z;
 		manager.global_canvas_z++;
 		if(recursive) {
-			for(Widget w : widgets) {
+			for(Widget w : widgets_children) {
 				w.pushNewZPosition(recursive);
 			}
 		}
@@ -746,7 +783,7 @@ public class Widget implements Contextable, Drawable{
 	}
 	
 	public boolean isParent() {
-		return !widgets.isEmpty();
+		return !widgets_children.isEmpty();
 	}
 	
 	
@@ -809,7 +846,7 @@ public class Widget implements Contextable, Drawable{
 	
 	
 	private void setStyleChildren(Style style2, boolean recursive) {
-		for(Widget w : widgets) {
+		for(Widget w : widgets_children) {
 			w.setStyle(style2, recursive);
 		}
 	}
@@ -829,7 +866,7 @@ public class Widget implements Contextable, Drawable{
 		case RECURSIVE:
 			// 📝 Applies the Value to itself (1/2) ✏️
 			applyValue(parameter, value);
-			for(Widget w : widgets) {
+			for(Widget w : widgets_children) {
 				// 📝 Applies the Value to it's child (2/2) ✏️
 				w.setValue(parameter, value, rule_override);
 			}
@@ -869,6 +906,21 @@ public class Widget implements Contextable, Drawable{
 
 	public void setValue(Parameter parameter, Value value) {
 		this.setValue(parameter, value, InheritanceRule.STANDARD);
+	}
+	
+	
+	/**
+	 * Prevents this widget from activating
+	 */
+	public void setLocked(boolean locked) {
+		this.locked = locked;
+	}
+	
+	/**
+	 * @return If locked, the widget will fail to activate, such as buttons/sliders
+	 */
+	public boolean isLocked() {
+		return this.locked;
 	}
 	
 	

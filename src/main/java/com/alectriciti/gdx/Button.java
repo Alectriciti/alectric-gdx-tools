@@ -53,7 +53,7 @@ public class Button extends Widget implements Activatable{
 	public EffectPulse effect;
 	
 	public ButtonType button_type = ButtonType.PRESS;
-
+	
 	public Point font_offset = new Point(2, 2);
 
 	int[] button_codes; //used for unregistering buttons in UIManager for widget_to_destroy
@@ -88,7 +88,6 @@ public class Button extends Widget implements Activatable{
 	public Button(String name, UIManager widgetManager) {
 		this(name, widgetManager, null);
 	}
-	
 	
 	private void registerButton(int...button_codes) {
 		manager.buttons.add(this);
@@ -205,7 +204,7 @@ public class Button extends Widget implements Activatable{
 				if(pressed_ticks>0) {
 					pressed_ticks=0;
 				}
-				color = LerpColor(color, style.color_base, 0.25f);
+				color = LerpColor(color, isLocked()?style.color_base_locked:style.color_base, 0.25f);
 				//color.set(color_default.r*d, color_default.g*d, color_default.b*d, color_default.a);
 			}
 		super.update();

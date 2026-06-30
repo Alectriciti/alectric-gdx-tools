@@ -6,6 +6,7 @@ package com.alectriciti.gdx.events;
 public abstract class Event {
     
     private boolean consumed = false;
+    protected boolean cancelled = false;
 
     /**
      * Marks this event as handled. 

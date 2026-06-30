@@ -27,7 +27,7 @@ public class EventManager {
      * Stops propagating instantly if a listener calls event.consume().
      */
     @SuppressWarnings("unchecked")
-    public void fire(Event event) {
+    public void fireEvent(Event event) {
         Array<EventListener<? extends Event>> listeners = bus.get(event.getClass());
         
         if (listeners != null) {
