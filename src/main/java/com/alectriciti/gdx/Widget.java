@@ -65,6 +65,8 @@ public class Widget implements Contextable, Drawable{
 	protected Rectangle shape;
 	protected Rectangle shape_base = new Rectangle(); // source of truth
 	protected Rectangle shape_global = new Rectangle(); // literal position
+	public transient float clamp_offset_x = 0;
+	public transient float clamp_offset_y = 0;
 	
 	public Point font_offset = new Point(0, 0);
 	
@@ -389,25 +391,13 @@ public class Widget implements Contextable, Drawable{
 			default: break;
 		}
 
-		// 1. Calculate raw local coordinates based on the untouchable anchor offset (shape_base)
-		float targetX, targetY;
 		if (alignCenter) {
-			targetX = (parentW / 2f) - (shape.width / 2f) + shape_base.x;
-			targetY = (parentH / 2f) - (shape.height / 2f) + shape_base.y;
+			shape.x = (parentW / 2f) - (shape.width / 2f) + shape_base.x;
+			shape.y = (parentH / 2f) - (shape.height / 2f) + shape_base.y;
 		} else {
-			targetX = alignRight ? (parentW - shape.width + shape_base.x) : shape_base.x;
-			targetY = alignTop ? (parentH - shape.height + shape_base.y) : shape_base.y;
+			shape.x = alignRight ? (parentW - shape.width + shape_base.x) : shape_base.x;
+			shape.y = alignTop ? (parentH - shape.height + shape_base.y) : shape_base.y;
 		}
-
-		// 2. Clamp local coordinates to parent bounds for RENDERING only
-		float maxX = Math.max(0, parentW - shape.width);
-		float maxY = Math.max(0, parentH - shape.height);
-
-		// 3. Assign to the actual physical shape box
-		shape.x = Math.max(0, Math.min(targetX, maxX));
-		shape.y = Math.max(0, Math.min(targetY, maxY));
-        
-        // NO back-propagation to shape_base here!
 	}
 	
 	
@@ -426,18 +416,55 @@ public class Widget implements Contextable, Drawable{
 	}
 	
 	public void updateGlobalPosition() {
-		if(parent!=null && follow_parent) {
+		if(parent != null && follow_parent) {
 			shape_global.x = parent.getGlobalX() + shape.x;
 			shape_global.y = parent.getGlobalY() + shape.y;
-		}else {
-			
+		} else {
 			shape_global.x = shape.x;
 			shape_global.y = shape.y;
 		}
+		
+		// Apply dynamic screen boundaries WITHOUT mutating the widget's intended layout intent
+		shape_global.x += clamp_offset_x;
+		shape_global.y += clamp_offset_y;
+
 		for(Widget w : widgets_children) {
 			w.updateGlobalPosition();
 		}
 		onPositionUpdate();
+	}
+	
+	/**
+	 * Calculates a temporary pushback offset to prevent this widget from rendering off the physical screen.
+	 * Run this ONLY on top-level root widgets or popups before calling updateGlobalPosition().
+	 */
+	public void calculateScreenClamp() {
+		clamp_offset_x = 0;
+		clamp_offset_y = 0;
+
+		float screenW = Gdx.graphics.getWidth();
+		float screenH = Gdx.graphics.getHeight();
+
+		// Calculate where the widget WOULD be, ignoring current offsets
+		float rawX = (parent != null && follow_parent) ? parent.getGlobalX() + shape.x : shape.x;
+		float rawY = (parent != null && follow_parent) ? parent.getGlobalY() + shape.y : shape.y;
+
+		float rightEdge = rawX + shape.width;
+		float topEdge = rawY + shape.height;
+
+		// Calculate horizontal pushback
+		if (rawX < 0) {
+			clamp_offset_x = -rawX;
+		} else if (rightEdge > screenW) {
+			clamp_offset_x = screenW - rightEdge;
+		}
+
+		// Calculate vertical pushback
+		if (rawY < 0) {
+			clamp_offset_y = -rawY;
+		} else if (topEdge > screenH) {
+			clamp_offset_y = screenH - topEdge;
+		}
 	}
 	
 	

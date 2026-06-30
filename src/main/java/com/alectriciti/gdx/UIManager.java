@@ -1082,6 +1082,7 @@ public class UIManager implements InputProcessor {
 	public void alignAllWidgets() {
 		for (Widget w : widgets) {
 			w.updateAlignment();
+			w.calculateScreenClamp();
 			w.updateGlobalPosition();
 		}
 	}
