@@ -35,7 +35,7 @@ public class TextInput extends TextWidget implements InputProcessor{
 	
 	public TextInput(UIManager manager, ColoredText...msgs) {
 		super(manager, msgs);
-		touchable = true;
+    	setTouchable(true);
 		cursor = new TextCursor(this);
 		cursor.index = this.length;
 		// TODO Auto-generated constructor stub
@@ -43,7 +43,7 @@ public class TextInput extends TextWidget implements InputProcessor{
 	
 	public TextInput(Widget parent, ColoredText...msgs) {
 		super(parent, msgs);
-		touchable = true;
+    	setTouchable(true);
 		cursor = new TextCursor(this);
 		cursor.index = this.length;
 		// TODO Auto-generated constructor stub

@@ -89,6 +89,8 @@ public class Widget implements Contextable, Drawable{
 	
 	transient protected Texture texture;
 	protected FileHandle texture_file;	
+
+	transient List<Runnable> run_on_click = new ArrayList<Runnable>();
 	
 	public void setTexture(FileHandle fileHandle) {
 		this.texture_file = fileHandle;
@@ -133,7 +135,7 @@ public class Widget implements Contextable, Drawable{
 	 * ignores grabbing the object, can be used for intermediate actions
 	 * such as DropdownMenuButton when a widget retracts. It's still visible, but not touchable.
 	 */
-	public boolean touchable = true;
+//	public boolean touchable = true;
 	
 	
 	/**
@@ -682,7 +684,7 @@ public class Widget implements Contextable, Drawable{
 	 */
 	public boolean isTouchable() {
 		if(shape==null)return false;
-		return touchable;
+		return getValue(Parameter.TOUCHABLE).get();
 	}
 	
 	
@@ -764,6 +766,13 @@ public class Widget implements Contextable, Drawable{
 	final void callOnClicked() {
 		currently_clicked = true;
 		OnMouseClicked();
+		for(Runnable r : run_on_click) {
+			r.run();
+		}
+	}
+	
+	public void addOnClick(Runnable r) {
+		this.run_on_click.add(r);
 	}
 	
 	/*
@@ -850,6 +859,10 @@ public class Widget implements Contextable, Drawable{
 	
 	public void setTouchable(boolean new_touchable) {
 		setValue(Parameter.TOUCHABLE, new_touchable, InheritanceRule.STANDARD);
+	}
+	
+	public void setTouchable(boolean new_touchable, InheritanceRule rule_override) {
+		setValue(Parameter.TOUCHABLE, new_touchable, rule_override);
 	}
 	
 	

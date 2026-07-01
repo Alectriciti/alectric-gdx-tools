@@ -39,17 +39,17 @@ public class TextWidget extends Widget{
     
     public TextWidget(Widget parent, String s){
     	this(parent, new ColoredText(s, Color.WHITE));
-		touchable = false;
+    	setTouchable(false);
     }
 
     public TextWidget(Widget parent, ColoredText...msgs){
     	super(parent.id+"msg", parent);
-		touchable = false;
+    	setTouchable(false);
         construct(msgs);
     }
     public TextWidget(UIManager manager, ColoredText...msgs){
     	super("msg", manager);
-		touchable = false;
+    	setTouchable(false);
         construct(msgs);
     }
     
@@ -115,10 +115,16 @@ public class TextWidget extends Widget{
     }
 
 
-    
+
     
     public void setText(String text) {
     	msgs[0].updateText(text);
+    	reconstruct();
+    }
+    
+    public void setText(String text, Color c) {
+    	msgs[0].updateText(text);
+    	msgs[0].color = c;
     	reconstruct();
     }
     

@@ -9,12 +9,20 @@ import com.badlogic.gdx.math.Rectangle;
 
 public class EffectPulse extends Widget{
 	
-	
+
 	
 	public EffectPulse(Widget w, Rectangle r, Color c) {
 		super(w.manager);
 		this.show_text = false;
 		this.shape = new Rectangle(r);
+		this.color = c.cpy();
+		this.editable = false;
+	}
+	
+	public EffectPulse(Widget w, Color c) {
+		super(w.manager);
+		this.show_text = false;
+		this.shape = new Rectangle(w.shape_global);
 		this.color = c.cpy();
 		this.editable = false;
 	}

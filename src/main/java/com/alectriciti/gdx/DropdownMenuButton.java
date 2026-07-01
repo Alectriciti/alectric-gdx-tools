@@ -105,9 +105,8 @@ public class DropdownMenuButton extends Button{
 				DropdownMenuButton db = (DropdownMenuButton) w;
 				db.deactivate();
 			}
-//			w.setTouchable(false);
+			w.setTouchable(false);
 		}
-		// TODO Auto-generated method stub
 		
 	}
 	
