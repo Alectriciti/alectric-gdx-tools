@@ -232,7 +232,6 @@ public class UIManager implements InputProcessor {
 		}
 
 
-		//dropdown menu bug!!! TODO 
 		for(Widget w : transient_widgets) {
 			if(w instanceof Activatable) {
 				if(new_widget == null) {
@@ -423,9 +422,9 @@ public class UIManager implements InputProcessor {
 		//Set Mouse Data
 		if (Gdx.input.isButtonPressed(Buttons.LEFT)) {
 			left_click_down();
-		} else if (left_mouse_is_pressed) {
-			left_click_release();
-		}
+		} 
+		//else if (left_mouse_is_pressed) {
+		//}
 		//Set Mouse Data
 		if (Gdx.input.isButtonPressed(Buttons.RIGHT)) {
 			right_click_down();
@@ -445,18 +444,6 @@ public class UIManager implements InputProcessor {
 	    // Update mouse_x/mouse_y earlier in update() already; still get local copy
 	    int mx = mouse_x;
 	    int my = mouse_y;
-
-	    // If there is currently no captured pointer widget, try to capture
-	    if (pointerCapturedWidget == null) {
-	        // If a widget_hovering exists, let it handle pointerDown first (gives it priority)
-	        if (Gdx.input.isButtonJustPressed(Buttons.LEFT)) {
-	    		left_click_just_pressed(mx, my);
-	        }
-	    } else {
-	        // A widget already captured pointer previously. In most mouse cases this won't happen
-	        // because we capture at press; but if it did, we could route pressed-to-it.
-	        // (no action required here)
-	    }
 
 	    // while mouse is held and adjusting widget
 	    if (widget_currently_adjusting != null) {
@@ -480,11 +467,13 @@ public class UIManager implements InputProcessor {
 	    }
 	}
 
-	private void left_click_just_pressed(int mx, int my) {
+	private boolean left_click_just_pressed(int mx, int my) {
+		// If a context widget exists, check if the click is related to it
 		if(context_widget!=null) {
 			if(widget_hovering!=null && (widget_hovering.equals(context_widget) || context_widget.equals(widget_hovering.getParent()))) {
-				//related action to context window
+				//related action to context window, nothing happens here
 			} else {
+				// click is unrelated to context window, close it
 				context_widget.deactivate();
 				context_widget = null;
 			}
@@ -511,6 +500,7 @@ public class UIManager implements InputProcessor {
 			            widget_hovering.callOnClicked();
 		            }
 		        }
+	            return true;
 		    } else {
 		        // Normal (non-edit) mode: give the widget a chance to capture pointer (e.g. Slider).
 
@@ -530,13 +520,14 @@ public class UIManager implements InputProcessor {
 			        widget_hovering.focus();
 			        mouse_clicked_widget = widget_hovering;
 			        widget_hovering.callOnClicked(); // existing API call
-		            return; // captured — consume event
+		            return true; // captured — consume event
 		        }
 		    }
-
+	        return true;
 		} else {
 		    focus(null, false);
 		}
+		return false; // not captured — allow event to propagate
 	}
 
 	public void debug(String msg) {
@@ -544,7 +535,7 @@ public class UIManager implements InputProcessor {
 		System.out.println(ANSI_BLUE+"[DEBUG] "+ANSI_RESET+msg);
 	}
 
-	private void left_click_release() {
+	private boolean left_click_release() {
 	    left_mouse_is_pressed = false;
 
 //	    int mx = mouse_x;
@@ -573,7 +564,7 @@ public class UIManager implements InputProcessor {
 	        for (Button b : buttons) {
 	            b.pressing = false;
 	        }
-	        return; // consumed
+	        return true; // consumed
 	    }
 
 	    // If no pointer-capture, proceed with existing release logic (unchanged)
@@ -618,15 +609,18 @@ public class UIManager implements InputProcessor {
 	    for (Button b : buttons) {
 	        b.pressing = false;
 	    }
+	    return false;
 	}
 	
 
 
-	private void right_click_down() {
+	private boolean right_click_down() {
 		right_mouse_is_pressed = true;
     	if (widget_hovering != null) {
         	context_widget_candidate = widget_hovering;
+        	return true;
     	}
+    	return false;
 	}
 
 	private void right_click_release() {
@@ -961,14 +955,27 @@ public class UIManager implements InputProcessor {
 
 	@Override
 	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-		// TODO Auto-generated method stub
+
+	    // If there is currently no captured pointer widget, try to capture
+	    if (pointerCapturedWidget == null) {
+	        // If a widget_hovering exists, let it handle pointerDown first (gives it priority)
+	        if (button == Buttons.LEFT) {
+	    		return left_click_just_pressed(mouse_x, mouse_y);
+	        }else if(button == Buttons.RIGHT) {
+	        	return right_click_down();
+	        }
+	    } else {
+	        // A widget already captured pointer previously. In most mouse cases this won't happen
+	        // because we capture at press; but if it did, we could route pressed-to-it.
+	        // (no action required here)
+	    }
 		return false;
 	}
 
 	@Override
 	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-		// TODO Auto-generated method stub
-		return false;
+		boolean b = left_click_release();
+		return b;
 	}
 
 	@Override
