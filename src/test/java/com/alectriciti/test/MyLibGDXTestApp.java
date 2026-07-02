@@ -31,6 +31,7 @@ import com.alectriciti.gdx.ContextWidget;
 import com.alectriciti.gdx.Direction;
 import com.alectriciti.gdx.DropdownMenuButton;
 import com.alectriciti.gdx.Slider;
+import com.alectriciti.gdx.Slider.GrabStyle;
 import com.alectriciti.gdx.Style;
 import com.alectriciti.gdx.TextDialog;
 import com.alectriciti.gdx.TextInput;
@@ -298,16 +299,17 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
     		slider.setLocked(false);
     		main_menu.setLocked(false);
     	});
-		Slider slider2 = new Slider(ui_manager, true);
+		Slider slider2 = new Slider(ui_manager, true).setGrabStyle(GrabStyle.INSTANT);
 		slider2.getKnob().setSize(10, slider2.getKnob().getHeight());
 		slider2.setLength(200);
 		slider2.setValueRange(4,12);
 		slider2.setRelativePosition(400, 180);
-		slider2.style = lame_style;
-		slider2.getKnob().style = lame_style;
-
-    	button_lock.addOnActivate(()->{slider2.setValue(4f);});
-    	button_unlock.addOnActivate(()->{slider2.setValue(12f);});
+		
+		Slider slider3 = new Slider(ui_manager, true).setGrabStyle(GrabStyle.GRADUAL,0.2f);
+		slider3.getKnob().setSize(10, slider3.getKnob().getHeight());
+		slider3.setLength(200);
+		slider3.setValueRange(4,12);
+		slider3.setRelativePosition(400, 140);
     	
     	
     	

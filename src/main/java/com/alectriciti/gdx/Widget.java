@@ -483,36 +483,40 @@ public class Widget implements Contextable, Drawable{
 	 * Automatically reverse-engineers the correct relative shape_base offset.
 	 */
 	public void setGlobalPosition(float globalX, float globalY) {
-		float parentWidth = getParentWidth();
-		float parentHeight = getParentHeight();
-		
-		// Convert absolute global coordinates into local coordinates
-		float localX = (parent != null) ? globalX - parent.getGlobalX() : globalX;
-		float localY = (parent != null) ? globalY - parent.getGlobalY() : globalY;
-		
-		boolean alignTop = false, alignRight = false, alignCenter = false;
-		switch(alignment) {
-			case DOWN_RIGHT: alignRight = true; break;
-			case RIGHT: alignRight = true; break;
-			case UP: alignTop = true; break;
-			case UP_LEFT: alignTop = true; break;
-			case UP_RIGHT: alignRight = true; alignTop = true; break;
-			case CENTER: alignCenter = true; break;
-			default: break;
-		}
-		
-		// Apply reverse alignment math to calculate the new anchor offset (shape_base)
-		if (alignCenter) {
-			shape_base.x = localX - (parentWidth / 2f) + (shape.width / 2f);
-			shape_base.y = localY - (parentHeight / 2f) + (shape.height / 2f);
-		} else {
-			shape_base.x = alignRight ? (localX - parentWidth + shape.width) : localX;
-			shape_base.y = alignTop ? (localY - parentHeight + shape.height) : localY;
-		}
-		
-		// Process the new anchor through the alignment and bounding system
-		updateAlignment(); 
-		updateGlobalPosition();
+	    float parentWidth = getParentWidth();
+	    float parentHeight = getParentHeight();
+	    
+	    // Convert absolute global coordinates into local coordinates
+	    float localX = (parent != null) ? globalX - parent.getGlobalX() : globalX;
+	    float localY = (parent != null) ? globalY - parent.getGlobalY() : globalY;
+	    
+	    boolean alignTop = false, alignRight = false, alignCenter = false;
+	    switch(alignment) {
+	        case DOWN_RIGHT: alignRight = true; break;
+	        case RIGHT: alignRight = true; break;
+	        case UP: alignTop = true; break;
+	        case UP_LEFT: alignTop = true; break;
+	        case UP_RIGHT: alignRight = true; alignTop = true; break;
+	        case CENTER: alignCenter = true; break;
+	        default: break;
+	    }
+	    
+	    // Apply reverse alignment math to calculate the new anchor offset (shape_base)
+	    if (alignCenter) {
+	        shape_base.x = localX - (parentWidth / 2f) + (shape.width / 2f);
+	        shape_base.y = localY - (parentHeight / 2f) + (shape.height / 2f);
+	    } else {
+	        shape_base.x = alignRight ? (localX - parentWidth + shape.width) : localX;
+	        shape_base.y = alignTop ? (localY - parentHeight + shape.height) : localY;
+	    }
+	    
+	    // --- BUG FIX: Clear stale clamp offsets before updating global position ---
+	    this.clamp_offset_x = 0;
+	    this.clamp_offset_y = 0;
+	    
+	    // Process the new anchor through the alignment and bounding system
+	    updateAlignment(); 
+	    updateGlobalPosition();
 	}
 		
 	protected void setFollowParent(boolean b) {

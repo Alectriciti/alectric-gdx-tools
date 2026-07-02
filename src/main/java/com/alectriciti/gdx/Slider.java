@@ -29,7 +29,7 @@ import com.badlogic.gdx.math.Vector2;
 public class Slider extends Widget {
 	
 	
-	enum GrabStyle{
+	public enum GrabStyle{
     	LAZY, // Grabs relative to the mouse
     	GRADUAL, // Moves to the mouse gradually while click is held
     	INSTANT // Snaps to where you click
@@ -56,8 +56,12 @@ public class Slider extends Widget {
     public float quantize_amount = 0.5f;
     public float quantize_amount_ctrl = 0.125f;
     
-    public GrabStyle grab_style = GrabStyle.LAZY;
+    // Tracks the raw, un-offset mouse position for GRADUAL updates
+    private int last_mouse_x = 0;
+    private int last_mouse_y = 0;
     
+    public GrabStyle grab_style = GrabStyle.LAZY;
+    public float grab_strength = 0.5f; // Only relevant for GRADUAL
 
 	protected List<Runnable> change_listeners = new ArrayList<Runnable>();
 	
@@ -106,6 +110,23 @@ public class Slider extends Widget {
         super(parent.id+"-slider", parent);
         initialize(false, default_value, DEFAULT_SLIDER_SIZE);
     }
+    
+    
+    /**
+	 * Sets the grab style for the slider.
+	 * @param style The desired grab style (LAZY, GRADUAL, INSTANT).
+	 * @param strength The strength of the grab effect (only relevant for GRADUAL).
+	 * @return The Slider instance for chaining.
+	 */
+    public Slider setGrabStyle(GrabStyle style, float strength) {
+		this.grab_style = style;
+		this.grab_strength = 1.0f - strength;
+		return this;
+	}
+    
+    public Slider setGrabStyle(GrabStyle style) {
+    	return setGrabStyle(style, 0.75f);
+	}
 
     private void initialize(boolean render_text, float default_value, int slider_size) {
         // sensible defaults already set above; ensure value consistent
@@ -165,8 +186,24 @@ public class Slider extends Widget {
     
     @Override
     protected void update() {
-    	// TODO Auto-generated method stub
     	super.update();
+    	// Handle GRADUAL grab style logic while the slider is being pressed
+        if (isPressed() && grab_style == GrabStyle.GRADUAL) {
+            // Check if offset is significant enough to continue gliding
+            if (Math.abs(manager.mouse_click_offset_x) > 0.5f || Math.abs(manager.mouse_click_offset_y) > 0.5f) {
+                
+                // Multiply by 0.8f to smoothly shrink the offset over time
+                manager.mouse_click_offset_x *= grab_strength; 
+                manager.mouse_click_offset_y *= grab_strength;
+                
+                // Re-evaluate the slider position with the newly shrunk offset
+                onPointerDragged(last_mouse_x, last_mouse_y);
+            } else {
+                // Lock to exactly 0 once it's close enough
+                manager.mouse_click_offset_x = 0;
+                manager.mouse_click_offset_y = 0;
+            }
+        }
     }
     
     public void reset() {
@@ -176,21 +213,34 @@ public class Slider extends Widget {
     
     @Override
     public boolean onPointerDown(int mouseX, int mouseY, int button) {
-    	manager.mouse_click_offset_x = knob.getGlobalX() + (knob.shape.width/2) - mouseX;
-    	manager.mouse_click_offset_y = knob.getGlobalY() + (knob.shape.height/2) - mouseY;
-    	switch(grab_style) {
-		case GRADUAL:
-			//slowly move toward the location clicked
-			break;
-		case INSTANT:
-			//get clicked location and move the slider to it instantly
-			
-			break;
-		case LAZY: //default implementation
-			break;
-		default:
-			break;
-    	}
+    	// Track the initial mouse position
+        this.last_mouse_x = mouseX;
+        this.last_mouse_y = mouseY;
+        
+        // Calculate the standard relative offset
+        float initial_offset_x = knob.getGlobalX() + (knob.shape.width / 2f) - mouseX;
+        float initial_offset_y = knob.getGlobalY() + (knob.shape.height / 2f) - mouseY;
+
+        switch(grab_style) {
+            case INSTANT:
+                // Snap immediately by clearing offsets and forcing a drag event
+                manager.mouse_click_offset_x = 0;
+                manager.mouse_click_offset_y = 0;
+                onPointerDragged(mouseX, mouseY);
+                break;
+            case GRADUAL:
+                // Start with the standard offset; update() loop will smooth it to 0
+                manager.mouse_click_offset_x = initial_offset_x;
+                manager.mouse_click_offset_y = initial_offset_y;
+                onPointerDragged(mouseX, mouseY); // Optional: updates text instantly
+                break;
+            case LAZY: 
+            default:
+                // Standard offset relative to the mouse
+                manager.mouse_click_offset_x = initial_offset_x;
+                manager.mouse_click_offset_y = initial_offset_y;
+                break;
+        }
     	return true;
     }
     

@@ -1086,7 +1086,7 @@ public class UIManager implements InputProcessor {
 
 				// We crossed the threshold! Convert potential to active drag.
 				// Fire the Start Drag Event so game logic can respond (e.g. play sound, highlight drop targets)
-				dragEvent = new DragStartEvent(dragged_item, screenX, screenY);
+				dragEvent = new DragStartEvent(dragged_item, mouse_x, mouse_y);
 				event_manager.fireEvent(dragEvent);
 				
 				if(dragEvent.isCancelled()) {
@@ -1226,12 +1226,17 @@ public class UIManager implements InputProcessor {
 	 * Should be run on resize
 	 */
 	public void alignAllWidgets() {
-		for (Widget w : widgets) {
+		for(Widget w : widget_independants) {
 			w.updateAlignment();
-			if(w.getParent()==null) {
-				w.calculateScreenClamp();
-			}
+			w.calculateScreenClamp();
 			w.updateGlobalPosition();
+		}
+		for(Widget wi : widget_independants) {
+			for (Widget w : wi.widgets_children) {
+			w.updateAlignment();
+			w.calculateScreenClamp();
+			w.updateGlobalPosition();
+			}
 		}
 	}
 
