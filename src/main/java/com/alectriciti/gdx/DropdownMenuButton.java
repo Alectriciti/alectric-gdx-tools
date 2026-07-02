@@ -63,15 +63,6 @@ public class DropdownMenuButton extends Button{
 	@Override
 	public void activate() {
 		// TODO Auto-generated method stub
-//		if(!autoclose_settings_initialized) {
-//			for(Widget w : widgets) {
-//				if(w.getClass().equals(Button.class)) {
-//					Button b = (Button) w;
-//					b.addOnActivate(run_autoclose);
-//				}
-//			}
-//			autoclose_settings_initialized = true;
-//		}
 		super.activate();
 		manager.transient_widgets.add(this);
 		dropdownOpen();
@@ -89,8 +80,12 @@ public class DropdownMenuButton extends Button{
 		expand_amount_target = 1;
 		animating = true;
 		updatePositionForChildren();
-		for(Widget w : getDescendants()) {
-			w.setVisible(true, InheritanceRule.RECURSIVE);
+		for(Widget w : getChildren()) {
+			if(w instanceof DropdownMenuButton) {
+				w.setVisible(true, InheritanceRule.STANDARD);
+			}else {
+				w.setVisible(true, InheritanceRule.RECURSIVE);
+			}
 			w.setTouchable(true);
 		}
 		
@@ -135,8 +130,12 @@ public class DropdownMenuButton extends Button{
 				if(activated) {
 					
 				}else {
-					for(Widget w : getDescendants()) {
-						w.setVisible(false, InheritanceRule.RECURSIVE);
+					for(Widget w : getChildren()) {
+						if(w instanceof DropdownMenuButton) {
+							w.setVisible(false, InheritanceRule.STANDARD);
+						}else {
+							w.setVisible(false, InheritanceRule.RECURSIVE);
+						}
 					}
 					finishedAnimation();
 				}

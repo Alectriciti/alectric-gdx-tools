@@ -704,12 +704,13 @@ public class UIManager implements InputProcessor {
     		context_widget.deactivate(); // Deactives (closes) the existing context widget
     		if(widget_hovering == context_widget.getParent()) {
     			context_widget = null; // Prevents re-opening a context window on the same widget
-    			return;
+//    			return;
     		}
     	}
+//    	print("WAHHHOOOO");
 	    
 	    //If the widget the pointer is over is STILL the proposed context_widget, select it.
-	    if(context_widget_candidate != null && widget_hovering == context_widget_candidate) {
+	    if(context_widget_candidate != null) {
 	    	context_widget_candidate.focus(); //focus the widget candidate
 	    	context_widget = context_widget_candidate.spawnContextWidget(); //spawn a new widget
 	    	context_widget_candidate = null;
@@ -1046,7 +1047,8 @@ public class UIManager implements InputProcessor {
 	        if (button == Buttons.LEFT) {
 	        	// Use current mouse position for consistency
 	    		return left_click_just_pressed(mouse_x, mouse_y); // consume event if captured by a widget
-	        }else if(button == Buttons.RIGHT) {
+	        }
+	        if(button == Buttons.RIGHT) {
 	        	return right_click_down(); // consume event if captured by a widget
 	        }
 	    } else {
