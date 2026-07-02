@@ -15,6 +15,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
@@ -36,6 +37,7 @@ import com.alectriciti.gdx.TextInput;
 import com.alectriciti.gdx.TextWidget;
 import com.alectriciti.gdx.Toolkit;
 import com.alectriciti.gdx.Widget;
+import com.alectriciti.gdx.events.DragDropEvent;
 import com.alectriciti.gdx.styles.StyleOldschool;
 import com.alectriciti.gdx.Button.ButtonType;
 import com.alectriciti.gdx.Button;
@@ -70,6 +72,8 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 	
 	Button button_mode_1, button_mode_2, button_mode_3, button_mode_4;
 	
+	
+	
 	@Override
 	public void create() {
 		
@@ -102,6 +106,8 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 		info_text4.setGlobalPosition(16, 360);
 		info_text5 = new TextWidget(ui_manager, new ColoredText("info", Color.PINK));
 		info_text5.setGlobalPosition(16, 340);
+		
+		info_text5.setTouchable(true);
 
 		button_mode_1 = new Button("1", ui_manager, Input.Keys.NUM_1);
 		button_mode_2 = new Button("2", ui_manager, Input.Keys.NUM_2);
@@ -304,6 +310,9 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
     	button_unlock.addOnActivate(()->{slider2.setValue(12f);});
     	
     	
+    	
+    	
+    	AllConsumingCanvas canvas = new AllConsumingCanvas("canvas", ui_manager, 200, 200);
     	
     	
 		ui_manager.automaticallyAssignIDsToWidgets();

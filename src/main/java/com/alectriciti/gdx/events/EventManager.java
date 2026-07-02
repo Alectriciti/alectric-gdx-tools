@@ -1,5 +1,8 @@
 package com.alectriciti.gdx.events;
 
+import static com.alectriciti.gdx.Toolkit.*;
+
+import com.alectriciti.gdx.UIManager;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 
@@ -28,6 +31,7 @@ public class EventManager {
      */
     @SuppressWarnings("unchecked")
     public void fireEvent(Event event) {
+    	print("event fired: " + event.getClass().getSimpleName());
         Array<EventListener<? extends Event>> listeners = bus.get(event.getClass());
         
         if (listeners != null) {

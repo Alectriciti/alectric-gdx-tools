@@ -22,15 +22,14 @@ public class Canvas extends Widget{
 	
 	public boolean focused = true;
 	
-	public Canvas(String name, UIManager manager, Rectangle shape) {
+	public Canvas(String name, UIManager manager, int width, int height) {
 		super();
 		this.name_for_display = name;
 		this.manager = manager;
 		this.manager.registerWidget(this);
 		//this.manager.registerCanvas(this);
-		this.shape = new Rectangle(shape.x, shape.y, shape.width, shape.height);
+		this.shape = new Rectangle(0,0, width, height);
 		this.shape_global = new Rectangle(shape);
-		//this.shape_edit_handle = new Rectangle(shape.x, shape.y+shape.height-EDIT_HANDLE_HEIGHT, shape.width, EDIT_HANDLE_HEIGHT);
 		
 		this.color = new Color(0.2f, 0.2f, 0.2f, 0.5f);
 		this.font_offset = new Point(4, -2);

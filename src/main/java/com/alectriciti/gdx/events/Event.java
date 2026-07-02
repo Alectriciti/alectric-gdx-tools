@@ -19,4 +19,13 @@ public abstract class Event {
     public boolean isConsumed() {
         return consumed;
     }
+    
+    public void setCancelled(boolean cancelled) {
+		this.cancelled = cancelled;
+	}
+    
+    public boolean isCancelled() {
+		return cancelled;
+	}
+    
 }

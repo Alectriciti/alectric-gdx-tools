@@ -25,7 +25,7 @@ public class TextDialog extends Canvas {
      * @param onConfirm Callback executed when the confirm button is pressed, passing the raw string.
      */
     public TextDialog(String id, UIManager manager, String initial_text, Consumer<String> onConfirm) {
-        super(id, manager, new Rectangle(100, 100, 200, 100));
+        super(id, manager, 200, 100);
         
         // Center the dialog dynamically based on the current window size
         setGlobalPosition(Gdx.graphics.getWidth() / 2f - 100, Gdx.graphics.getHeight() / 2f - 50);

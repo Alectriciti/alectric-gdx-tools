@@ -11,6 +11,10 @@ import org.lwjgl.glfw.GLFWVidMode;
 
 import com.alectriciti.gdx.Button.ButtonType;
 import com.alectriciti.gdx.events.WidgetRemoveEvent;
+import com.alectriciti.gdx.events.DragDropEvent;
+import com.alectriciti.gdx.events.DragStartEvent;
+import com.alectriciti.gdx.events.Draggable;
+import com.alectriciti.gdx.events.DropTarget;
 import com.alectriciti.gdx.events.EventManager;
 import com.alectriciti.gdx.events.WidgetAddEvent;
 import com.badlogic.gdx.Gdx;
@@ -25,6 +29,7 @@ import com.badlogic.gdx.Graphics.Monitor;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -148,6 +153,18 @@ public class UIManager implements InputProcessor {
 	int WIDTH, HEIGHT;
 
 	int mouse_x, mouse_y;
+	
+	
+	// --- Drag & Drop Variables ---
+	public float minimum_drag_distance = 10f; // Pixels to move before triggering a drag
+	
+	private Draggable potential_drag_item = null; // Armed, but not yet dragged
+	private Draggable dragged_item = null;        // Actively being dragged
+	public Widget drop_target_candidate = null; // The currently hovered, compatible drop target
+	
+	private int drag_start_x, drag_start_y;       // Where the click originated
+	private float drag_ghost_offset_x, drag_ghost_offset_y; // To prevent visual snapping
+	
 
 	/**
 	 * These references exist globally to allow for extra functionality
@@ -436,6 +453,11 @@ public class UIManager implements InputProcessor {
 
 	}
 
+	public void debug(String msg) {
+		if(debug_mode)
+		System.out.println(ANSI_BLUE+"[DEBUG] "+ANSI_RESET+msg);
+	}
+
 	private void left_click_down() {
 	    left_mouse_is_pressed = true;
 	    
@@ -502,7 +524,19 @@ public class UIManager implements InputProcessor {
 		        }
 	            return true;
 		    } else {
-		        // Normal (non-edit) mode: give the widget a chance to capture pointer (e.g. Slider).
+		    	// Normal (non-edit) mode: give the widget a chance to capture pointer (e.g. Slider).
+		    	
+				// --- NEW: Arm Drag & Drop ---
+				if (widget_hovering instanceof Draggable && !widget_hovering.isLocked()) {
+					potential_drag_item = (Draggable) widget_hovering;
+					drag_start_x = mx;
+					drag_start_y = my;
+					
+					// Calculate offset so the ghost texture doesn't snap to center
+					drag_ghost_offset_x = widget_hovering.getGlobalX() - mx;
+					drag_ghost_offset_y = widget_hovering.getGlobalY() - my;
+				}
+				// ----------------------------
 
 		    	WidgetClickEvent widgetClickEvent = new WidgetClickEvent(widget_hovering, mouse_x, mouse_y, false);
 		        event_manager.fireEvent(widgetClickEvent);
@@ -530,17 +564,53 @@ public class UIManager implements InputProcessor {
 		return false; // not captured — allow event to propagate
 	}
 
-	public void debug(String msg) {
-		if(debug_mode)
-		System.out.println(ANSI_BLUE+"[DEBUG] "+ANSI_RESET+msg);
-	}
-
 	private boolean left_click_release() {
 	    left_mouse_is_pressed = false;
+	    
+	    
+	 // --- NEW: Drop Logic ---
+ 		if (dragged_item != null) {
+ 			DragDropEvent event = null;
+ 		    DropTarget final_target = null;
+ 			
+ 			// If we are hovering over a valid target, execute the drop logic
+ 			if (drop_target_candidate instanceof DropTarget) {
+ 				final_target = (DropTarget) drop_target_candidate;
+ 			}
+ 			
+ 			// Fire the event. Game logic can now check if final_target == null to spawn 
+             // the item in the 3D world, knowing the UI didn't eat it!
+ 			event = new DragDropEvent(dragged_item, final_target, mouse_x, mouse_y, true);
+ 			event_manager.fireEvent(event);
+ 			boolean success = false;
+ 			
+ 			if(!event.isCancelled()) {
+	 			dragged_item.onDrop(mouse_x, mouse_y);
+	 			
+	 			if(final_target!=null) {
+	 				success = final_target.onDropReceived(dragged_item, mouse_x, mouse_y);
+	 			}
+ 			}
 
-//	    int mx = mouse_x;
-//	    int my = mouse_y;
-
+ 			drop_target_candidate.highlight(false);
+ 			drop_target_candidate.color_outline = (success?Color.GREEN : Color.RED);
+ 			if(success) {
+ 				new EffectPulse(drop_target_candidate, Color.GREEN);
+ 			}
+ 			
+ 			// Clean up state
+ 			dragged_item = null;
+ 			potential_drag_item = null;
+ 			drop_target_candidate = null;
+ 			
+ 			return true; // Consume event so we don't accidentally click what we dropped on
+ 		}
+ 		
+ 		// If they clicked and released without moving past the threshold
+ 		potential_drag_item = null; 
+ 		// -----------------------
+	
+ 		
 	    // If a widget captured the pointer, 
 	    if (widget_hovering != null) {
 	        widget_hovering.hovering = false;
@@ -816,6 +886,20 @@ public class UIManager implements InputProcessor {
 		 * widget_currently_adjusting.drawFont(sprite_batch, font, false);
 		 * sprite_batch.end(); }
 		 */
+		// Draw Drag & Drop Ghost
+		// Draw Drag & Drop Ghost
+				if (dragged_item != null) {
+					sprite_batch.begin();
+					float draw_x = mouse_x + drag_ghost_offset_x;
+					float draw_y = mouse_y + drag_ghost_offset_y;
+					
+					sprite_batch.setColor(1, 1, 1, 0.7f); 
+		            // The widget draws whatever it wants (text, shapes, textures)
+					dragged_item.drawDragGhost(sprite_batch, draw_x, draw_y); 
+					sprite_batch.setColor(1, 1, 1, 1);
+					
+					sprite_batch.end();
+				}
 	}
 
 	public void registerGroup(Widget w) {
@@ -960,9 +1044,10 @@ public class UIManager implements InputProcessor {
 	    if (pointerCapturedWidget == null) {
 	        // If a widget_hovering exists, let it handle pointerDown first (gives it priority)
 	        if (button == Buttons.LEFT) {
-	    		return left_click_just_pressed(mouse_x, mouse_y);
+	        	// Use current mouse position for consistency
+	    		return left_click_just_pressed(mouse_x, mouse_y); // consume event if captured by a widget
 	        }else if(button == Buttons.RIGHT) {
-	        	return right_click_down();
+	        	return right_click_down(); // consume event if captured by a widget
 	        }
 	    } else {
 	        // A widget already captured pointer previously. In most mouse cases this won't happen
@@ -983,10 +1068,62 @@ public class UIManager implements InputProcessor {
 		// TODO Auto-generated method stub
 		return false;
 	}
-
+	
 	@Override
 	public boolean touchDragged(int screenX, int screenY, int pointer) {
-		// TODO Auto-generated method stub
+		
+		DragStartEvent dragEvent = null;
+		// 1. Check if we are armed, but haven't dragged yet
+		if (potential_drag_item != null && dragged_item == null) {
+			// Calculate standard Pythagorean distance
+			float dx = mouse_x - drag_start_x;
+			float dy = mouse_y - drag_start_y;
+			float distance = (float) Math.sqrt((dx * dx) + (dy * dy));
+			
+			if (distance >= minimum_drag_distance) {
+
+				// We crossed the threshold! Convert potential to active drag.
+				// Fire the Start Drag Event so game logic can respond (e.g. play sound, highlight drop targets)
+				dragEvent = new DragStartEvent(dragged_item, screenX, screenY);
+				event_manager.fireEvent(dragEvent);
+				
+				if(dragEvent.isCancelled()) {
+					// If the event was cancelled, abort the drag
+					dragged_item = null;
+					return false; // Don't consume the event
+				}
+				
+				dragged_item = potential_drag_item;
+				potential_drag_item = null; // Clear the armed state
+				
+				// Optional: Unfocus/Cancel the widget click so it doesn't fire a button press
+				if (mouse_clicked_widget != null) {
+					mouse_clicked_widget.pressing = false;
+					mouse_clicked_widget = null; 
+				}
+			}
+		}
+		
+		if (dragged_item != null) {
+			dragged_item.onDrag(mouse_x, mouse_y);
+            
+			// --- NEW: Poll for Drop Targets ---
+			Widget hovered = getSelectableWidgetAtPosition(mouse_x, mouse_y); //[cite: 3]
+			
+			if (hovered instanceof DropTarget && ((DropTarget) hovered).doesAccept(dragged_item)) {
+				drop_target_candidate = hovered;
+				drop_target_candidate.highlight(true);
+			} else {
+				if(drop_target_candidate != null) {
+					drop_target_candidate.highlight(false);
+				}
+				drop_target_candidate = null;
+			}
+			// ----------------------------------
+
+			return true; // Consume the event!
+		}
+		
 		return false;
 	}
 
@@ -1089,7 +1226,9 @@ public class UIManager implements InputProcessor {
 	public void alignAllWidgets() {
 		for (Widget w : widgets) {
 			w.updateAlignment();
-			w.calculateScreenClamp();
+			if(w.getParent()==null) {
+				w.calculateScreenClamp();
+			}
 			w.updateGlobalPosition();
 		}
 	}

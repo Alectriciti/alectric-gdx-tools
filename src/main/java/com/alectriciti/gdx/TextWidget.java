@@ -4,6 +4,7 @@ import static com.alectriciti.gdx.Toolkit.*;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.BitmapFontCache;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
@@ -12,10 +13,12 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import static com.badlogic.gdx.graphics.GL20.*;
 import static com.badlogic.gdx.graphics.GL20.GL_FUNC_ADD;
 
+import com.alectriciti.gdx.events.Draggable;
+
 /**
  * A chat message is a divided collection of [ColoredText]s, which allow for multi-colored lines of text
  */
-public class TextWidget extends Widget{
+public class TextWidget extends Widget implements Draggable{
 	
     ColoredText[] msgs; //The array of messages separated by color
     float[] opacities; // The array of opacities separated by individual glyph
@@ -178,5 +181,21 @@ public class TextWidget extends Widget{
     public void destroy(){
         //manager.unregisterMsg(this);
     }
+
+	@Override
+	public void onDrag(int mouseX, int mouseY) {
+		print("ya dragging at "+mouseX+", "+mouseY);
+	}
+
+	@Override
+	public void onDrop(int mouseX, int mouseY) {
+		print("dropping at "+mouseX+", "+mouseY);
+	}
+	
+	@Override
+	public void drawDragGhost(SpriteBatch batch, float x, float y) {
+		// Just use your existing font to draw the string right at the mouse cursor
+		font.draw(batch, this.getText(), x, y);
+	}
 
 }

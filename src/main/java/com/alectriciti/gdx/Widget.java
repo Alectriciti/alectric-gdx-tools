@@ -79,6 +79,7 @@ public class Widget implements Contextable, Drawable{
 	
 	public transient boolean hovering = false;
 	public transient boolean pressing = false;
+	public transient boolean highlighted = false;
 	public transient boolean locked = false;
 	
 	transient private boolean currently_clicked = false;
@@ -546,6 +547,11 @@ public class Widget implements Contextable, Drawable{
 			color.a = opacity;
 			font_color.a = opacity;
 		}
+		if(highlighted) {
+			color_outline = LerpColor(color_outline, style.color_drag_receive, 0.1f);
+		}else {
+			color_outline = LerpColor(color_outline, style.color_outline, 0.1f);
+		}
 	}
 	
 	
@@ -812,6 +818,10 @@ public class Widget implements Contextable, Drawable{
 		return !widgets_children.isEmpty();
 	}
 	
+	
+	public void highlight(boolean b) {
+		this.highlighted = b;
+	}
 	
 	/**
 	 * Pointer input APIs — default implementations do nothing.
