@@ -31,7 +31,9 @@ import com.alectriciti.gdx.ContextWidget;
 import com.alectriciti.gdx.Direction;
 import com.alectriciti.gdx.DropdownMenuButton;
 import com.alectriciti.gdx.Slider;
-import com.alectriciti.gdx.Slider.GrabStyle;
+import com.alectriciti.gdx.Slider2D;
+import com.alectriciti.gdx.Slider3D;
+import com.alectriciti.gdx.GrabStyle;
 import com.alectriciti.gdx.Style;
 import com.alectriciti.gdx.TextDialog;
 import com.alectriciti.gdx.TextInput;
@@ -39,11 +41,14 @@ import com.alectriciti.gdx.TextWidget;
 import com.alectriciti.gdx.Toolkit;
 import com.alectriciti.gdx.Widget;
 import com.alectriciti.gdx.events.DragDropEvent;
+import com.alectriciti.gdx.events.Draggable;
 import com.alectriciti.gdx.styles.StyleOldschool;
 import com.alectriciti.gdx.Button.ButtonType;
 import com.alectriciti.gdx.Button;
 import com.alectriciti.gdx.UIManager;
 import com.alectriciti.gdx.InheritanceRule;
+import com.alectriciti.gdx.Orientation;
+import com.alectriciti.gdx.ScrollArea;
 
 public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListener {
 	
@@ -285,8 +290,9 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
     	test_button_b.style = cool_style;
 
     	
-		Slider slider = new Slider(ui_manager, true);
-		slider.getKnob().setSize(10, slider.getKnob().getHeight());
+		Slider slider = new Slider(ui_manager, Orientation.HORIZONTAL);
+		slider.setGrabStyle(GrabStyle.GRAB);
+//		slider.getKnob().setSize(10, slider.getKnob().getHeight());
 		slider.setLength(200);
 		slider.setValueRange(4,12);
 		slider.setRelativePosition(400, 220);
@@ -299,23 +305,48 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
     		slider.setLocked(false);
     		main_menu.setLocked(false);
     	});
-		Slider slider2 = new Slider(ui_manager, true).setGrabStyle(GrabStyle.INSTANT);
-		slider2.getKnob().setSize(10, slider2.getKnob().getHeight());
+		Slider slider2 = new Slider(ui_manager, Orientation.HORIZONTAL).setGrabStyle(GrabStyle.INSTANT);
+//		slider2.getKnob().setSize(10, slider2.getKnob().getHeight());
 		slider2.setLength(200);
 		slider2.setValueRange(4,12);
 		slider2.setRelativePosition(400, 180);
 		
-		Slider slider3 = new Slider(ui_manager, true).setGrabStyle(GrabStyle.GRADUAL,0.2f);
-		slider3.getKnob().setSize(10, slider3.getKnob().getHeight());
+		Slider slider3 = new Slider(ui_manager, Orientation.VERTICAL).setGrabStyle(GrabStyle.GRADUAL,0.2f);
+		slider3.getKnob().setWidth(16);
 		slider3.setLength(200);
 		slider3.setValueRange(4,12);
-		slider3.setRelativePosition(400, 140);
+		slider3.setRelativePosition(340, 140);
+
+		
+		Slider2D slider_xy = new Slider2D("2d slider", ui_manager);
+		slider_xy.grab_style = GrabStyle.GRAB;
+    	slider_xy.setGlobalPosition(300, 400);
+		
+		Slider3D slider_xyz = new Slider3D("3d slider", ui_manager);
+
+    	slider_xyz.setGlobalPosition(500, 400);
+    	
+    	AllConsumingCanvas canvas;
+    	
+    	canvas = new AllConsumingCanvas("canvas", ui_manager, 300, 200);
+    	canvas.setGlobalPosition(600, 100);
+    	canvas.show_text = true;
+    	
+//    	ScrollArea scroll_area = new ScrollArea("scroll area", canvas, 260, 200);
+//    	scroll_area.setRelativePosition(0, 20);
+//    	
+//    	scroll_area.setEditable(false);
     	
     	
-    	
-    	
-    	AllConsumingCanvas canvas = new AllConsumingCanvas("canvas", ui_manager, 200, 200);
-    	
+//    	Slider slider_in_scroll_horizontal = new Slider("slider horizontal", canvas, true);
+////    	slider_in_scroll_horizontal.setLength(300);
+//    	slider_in_scroll_horizontal.setRelativePosition(0, 0);
+//    	slider_in_scroll_horizontal.show_text = false;
+//    	
+//    	Slider slider_in_scroll_vertical = new Slider("slider vertical", canvas, false);
+////    	slider_in_scroll_vertical.setLength(200);
+//    	slider_in_scroll_vertical.setRelativePosition(170, 0);
+//    	slider_in_scroll_vertical.show_text = false;
     	
 		ui_manager.automaticallyAssignIDsToWidgets();
 		

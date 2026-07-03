@@ -9,7 +9,7 @@ public class TestDesktopLauncher {
         Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
         config.setTitle("Test App");
         config.setForegroundFPS(60);
-        config.setWindowedMode(800, 600);
+        config.setWindowedMode(1200, 600);
         config.setDecorated(true);
         MyLibGDXTestApp gdx_app = new MyLibGDXTestApp();
         config.setWindowListener(gdx_app);

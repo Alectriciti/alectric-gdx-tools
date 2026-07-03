@@ -591,11 +591,12 @@ public class UIManager implements InputProcessor {
 	 				success = final_target.onDropReceived(dragged_item, mouse_x, mouse_y);
 	 			}
  			}
-
- 			drop_target_candidate.highlight(false);
- 			drop_target_candidate.color_outline = (success?Color.GREEN : Color.RED);
- 			if(success) {
- 				new EffectPulse(drop_target_candidate, Color.GREEN);
+ 			if(drop_target_candidate!=null) {
+	 			drop_target_candidate.highlight(false);
+	 			drop_target_candidate.color_outline = (success?Color.GREEN : Color.RED);
+	 			if(success) {
+	 				new EffectPulse(drop_target_candidate, Color.GREEN);
+	 			}
  			}
  			
  			// Clean up state

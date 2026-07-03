@@ -57,7 +57,6 @@ public class Canvas extends Widget{
 	
 	@Override
 	public void drawBorder(ShapeRenderer shape_renderer) {
-		// TODO Auto-generated method stub
 		super.drawBorder(shape_renderer);
 	}
 	

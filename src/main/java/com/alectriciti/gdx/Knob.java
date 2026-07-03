@@ -7,10 +7,13 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 
 public class Knob extends Widget{
+    
+	
+	
     	
-    	
-	public Knob(String id, Widget parent) {
+	public Knob(String id, Widget parent, Orientation orientation) {
 		super(id, parent);
+    	updateKnobSize();
 	}
 	
     	@Override
@@ -57,5 +60,20 @@ public class Knob extends Widget{
     		// TODO Auto-generated method stub
     		return super.isAlwaysEditable();
     	}
+
+		public void updateKnobSize() {
+			if(parent instanceof Slider) {
+				Slider s = ((Slider)parent);
+				if(s.orientation == Orientation.HORIZONTAL) {
+					this.setSize(DEFAULT_WIDGET_SIZE, s.getHeight());
+				} else {
+					this.setSize(s.getWidth(), DEFAULT_WIDGET_SIZE);
+				}
+			}
+		}
+
+		public void setWidth(int i) {
+			this.setSize(i, this.getHeight());
+		}
     	
     }

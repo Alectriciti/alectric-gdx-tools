@@ -8,7 +8,6 @@ import java.util.List;
 import com.alectriciti.gdx.Button.ButtonType;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
-import com.badlogic.gdx.Input.Orientation;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.MathUtils;
@@ -28,17 +27,10 @@ import com.badlogic.gdx.math.Vector2;
  */
 public class Slider extends Widget {
 	
-	
-	public enum GrabStyle{
-    	LAZY, // Grabs relative to the mouse
-    	GRADUAL, // Moves to the mouse gradually while click is held
-    	INSTANT // Snaps to where you click
-    }
-	
     String value_name;
     TextWidget value_display;
     
-    boolean horizontal = true;
+    public Orientation orientation = Orientation.HORIZONTAL;
 
     // Current numeric value (derived from normalized)
     private float value = 0f;
@@ -70,17 +62,14 @@ public class Slider extends Widget {
 	}
     
 
+	
+	/**
+	 * Quick Initializers
+	 */
 
-    public Slider(UIManager manager) {
-        super("slider", manager);
-        initialize(false, 0.0f, DEFAULT_SLIDER_SIZE);
-    }
-
-
-    public Slider(UIManager manager, boolean horizontal) {
-        super("slider", manager);
-        this.horizontal = horizontal;
-        initialize(false, 0.0f, DEFAULT_SLIDER_SIZE);
+    
+    public Slider(String value_name, Widget parent, Orientation orientation) {
+		this(value_name, parent);
     }
     
     public Slider(String value_name, Widget parent) {
@@ -88,27 +77,28 @@ public class Slider extends Widget {
     }
 
     public Slider(String value_name, Widget parent, float default_value) {
-        super(value_name, parent);
-        this.value_name = value_name;
-        initialize(value_name!=null, default_value, DEFAULT_SLIDER_SIZE);
+        this(value_name, parent, default_value, Orientation.HORIZONTAL);
     }
     
-    public Slider(String value_name, Widget parent, float default_value, float min, float max) {
-    	this(value_name, parent, default_value, min, max, true);
+
+    /**
+     * True Initializers
+     */
+    
+    public Slider(UIManager manager) {
+        super("slider", manager);
+        initialize(false, 0.0f, DEFAULT_SLIDER_SIZE, Orientation.HORIZONTAL);
     }
 
-    public Slider(String value_name, Widget parent, float default_value, float min, float max, boolean horizontal) {
+    public Slider(UIManager manager, Orientation orientation) {
+        super("slider", manager);
+        initialize(false, 0.0f, DEFAULT_SLIDER_SIZE, orientation);
+    }
+
+    public Slider(String value_name, Widget parent, float default_value, Orientation orientation) {
         super(value_name, parent);
         this.value_name = value_name;
-        this.minValue = min;
-        this.maxValue = max;
-        this.horizontal = horizontal;
-        initialize(value_name!=null, default_value, DEFAULT_SLIDER_SIZE);
-    }
-
-    public Slider(Widget parent, float default_value) {
-        super(parent.id+"-slider", parent);
-        initialize(false, default_value, DEFAULT_SLIDER_SIZE);
+        initialize(value_name!=null, default_value, DEFAULT_SLIDER_SIZE, orientation);
     }
     
     
@@ -128,14 +118,21 @@ public class Slider extends Widget {
     	return setGrabStyle(style, 0.75f);
 	}
 
-    private void initialize(boolean render_text, float default_value, int slider_size) {
+    private void initialize(boolean render_text, float default_value, int slider_size, Orientation orientation) {
         // sensible defaults already set above; ensure value consistent
-    	knob = new Knob(id+"_knob", this);
-    	if(horizontal) {
+    	this.orientation = orientation;
+    	switch(orientation) {
+		case HORIZONTAL:
     		setSize(slider_size, DEFAULT_WIDGET_SIZE);
-    	}else {
+			break;
+		case VERTICAL:
     		setSize(DEFAULT_WIDGET_SIZE, slider_size);
+			break;
+		case NONE:
+		default:
+			break;
     	}
+    	knob = new Knob(id+"_knob", this, orientation);
     	setDefaultValue(default_value);
     	value_display = new TextWidget(this, (value_name!=null?value_name+": ":"")+value);
     	value_display.setVisible(render_text);
@@ -143,7 +140,7 @@ public class Slider extends Widget {
     
     
     // ---------- Public API ----------
-
+    
     /**
      * Sets the numeric value range for the slider.
      * min = knob at far left, max = knob at far right.
@@ -160,11 +157,12 @@ public class Slider extends Widget {
      * Sets the physical length of this slider
      */
     public Slider setLength(float length) {
-    	if(horizontal) {
+    	if(orientation == Orientation.HORIZONTAL) {
     		setSize(length, getHeight());
     	}else {
     		setSize(getWidth(), length);
     	}
+    	knob.updateKnobSize();
     	return this;
     }
     
@@ -213,6 +211,15 @@ public class Slider extends Widget {
     
     @Override
     public boolean onPointerDown(int mouseX, int mouseY, int button) {
+    	// Check if the click coordinates fall directly within the knob's boundaries
+        boolean hitKnob = mouseX >= knob.getGlobalX() && mouseX <= knob.getGlobalX() + knob.shape.width &&
+                          mouseY >= knob.getGlobalY() && mouseY <= knob.getGlobalY() + knob.shape.height;
+        
+        // If GRAB is active and we missed the knob, pass the click through to widgets behind us
+        if (grab_style == GrabStyle.GRAB && !hitKnob) {
+            return false;
+        }
+        
     	// Track the initial mouse position
         this.last_mouse_x = mouseX;
         this.last_mouse_y = mouseY;
@@ -234,7 +241,8 @@ public class Slider extends Widget {
                 manager.mouse_click_offset_y = initial_offset_y;
                 onPointerDragged(mouseX, mouseY); // Optional: updates text instantly
                 break;
-            case LAZY: 
+            case LAZY:
+            case GRAB:
             default:
                 // Standard offset relative to the mouse
                 manager.mouse_click_offset_x = initial_offset_x;
@@ -261,6 +269,8 @@ public class Slider extends Widget {
     	mouseX += manager.mouse_click_offset_x;
     	mouseY += manager.mouse_click_offset_y;
     	
+    	boolean horizontal = orientation == Orientation.HORIZONTAL;
+    	
     	float globalPosition = horizontal?getGlobalX():getGlobalY();
     	float knob_length = horizontal?knob.shape.width:knob.shape.height;
     	
@@ -284,7 +294,7 @@ public class Slider extends Widget {
     }
     
     private float getLength() {
-    	return horizontal?getWidth():getHeight();
+    	return orientation == Orientation.HORIZONTAL?getWidth():getHeight();
 }
 
 	@Override
@@ -343,6 +353,7 @@ public class Slider extends Widget {
     	knob.setGlobalPosition(new_x, knob.getGlobalY());
     }
 
+
 	@Override
     public void drawShape(ShapeRenderer renderer) {
 		super.drawShape(renderer);
@@ -350,19 +361,32 @@ public class Slider extends Widget {
 			renderer.set(ShapeType.Filled);
 			renderer.setColor(color);
 			style.drawRect(renderer, getGlobalX(), getGlobalY(), shape.width, shape.height);
-//			if(!hovering) {
-//			drawBorder(renderer);
-//			}
+			if(!hovering) {
+			drawBorder(renderer);
+			}
 		}
     }
     
     @Override
     public void drawBorder(ShapeRenderer shape_renderer) {
-    	// TODO Auto-generated method stub
-		shape_renderer.set(ShapeType.Line);
-		shape_renderer.setColor(color_outline);
-    	super.drawBorder(shape_renderer);
-//		drawShapeChildren(shape_renderer, true);
+    	if(!isVisible()) {
+    		return;
+    	}
+		super.drawBorder(shape_renderer);
+        
+        if(knob.isMouseOver()) {
+			shape_renderer.set(ShapeType.Line);
+			shape_renderer.setColor(color_outline);
+			knob.style.drawRect(shape_renderer, knob.getGlobalX(), knob.getGlobalY(), knob.shape.width, knob.shape.height);
+        }
+    }
+    
+    @Override
+    protected void setHoverColor() {
+    	if(grab_style == GrabStyle.GRAB) {
+    		if(!knob.isMouseOver())return;
+    	}
+		super.setHoverColor();
     }
 
 	public Knob getKnob() {

@@ -419,22 +419,21 @@ public class Widget implements Contextable, Drawable{
 	}
 	
 	public void updateGlobalPosition() {
-		if(parent != null && follow_parent) {
-			shape_global.x = parent.getGlobalX() + shape.x;
-			shape_global.y = parent.getGlobalY() + shape.y;
-		} else {
-			shape_global.x = shape.x;
-			shape_global.y = shape.y;
-		}
-		
-		// Apply dynamic screen boundaries WITHOUT mutating the widget's intended layout intent
-		shape_global.x += clamp_offset_x;
-		shape_global.y += clamp_offset_y;
+	    if(parent != null && follow_parent) {
+	        shape_global.x = parent.getChildOriginX() + shape.x;
+	        shape_global.y = parent.getChildOriginY() + shape.y;
+	    } else {
+	        shape_global.x = shape.x;
+	        shape_global.y = shape.y;
+	    }
+	    
+	    shape_global.x += clamp_offset_x;
+	    shape_global.y += clamp_offset_y;
 
-		for(Widget w : widgets_children) {
-			w.updateGlobalPosition();
-		}
-		onPositionUpdate();
+	    for(Widget w : widgets_children) {
+	        w.updateGlobalPosition();
+	    }
+	    onPositionUpdate();
 	}
 	
 	/**
@@ -534,6 +533,15 @@ public class Widget implements Contextable, Drawable{
 	
 	public float getGlobalY() {
 		return shape_global.y;
+	}
+	
+	// allows parents to dictate where their children render from
+	public float getChildOriginX() {
+	    return getGlobalX();
+	}
+
+	public float getChildOriginY() {
+	    return getGlobalY();
 	}
 	
 	public void setColor(Color c) {
@@ -643,20 +651,27 @@ public class Widget implements Contextable, Drawable{
 		shape_renderer.set(ShapeType.Line);
 		shape_renderer.setColor(color_outline);
 		style.drawRect(shape_renderer, getGlobalX(), getGlobalY(), shape.width, shape.height);
-//		drawRectRound(shape_renderer, getGlobalX(), getGlobalY(), shape.width, shape.height, style.corner_radius);
 	}
 
 	@Override
 	public void drawShape(ShapeRenderer renderer) {
 		if(isVisible()) {
-			if(hovering) {
-				color_outline = LerpColor(color_outline, isLocked()?style.color_hover_locked:style.color_hover, style.color_fade_in);
-			}else {
-				color_outline = LerpColor(color_outline, style.color_outline, style.color_fade_out);
-			}
+			setHoverColor();
 		}
 	}
 	
+	public boolean isMouseOver() {
+		return containsGlobal(getMouseX(), getMouseY());
+	}
+	
+	protected void setHoverColor() {
+		if(hovering) {
+			color_outline = LerpColor(color_outline, isLocked()?style.color_hover_locked:style.color_hover, style.color_fade_in);
+		}else {
+			color_outline = LerpColor(color_outline, style.color_outline, style.color_fade_out);
+		}
+	}
+
 	protected void drawShapeChildren(ShapeRenderer renderer, boolean recursive) {
 		for(Widget w : widgets_children) {
 			w.drawShape(renderer);
@@ -879,6 +894,9 @@ public class Widget implements Contextable, Drawable{
 		setValue(Parameter.TOUCHABLE, new_touchable, rule_override);
 	}
 	
+	public void setEditable(boolean new_editable) {
+		this.editable = new_editable;
+	}
 	
 	
 	public void setStyle(Style style, boolean recursive) {
@@ -1084,22 +1102,35 @@ public class Widget implements Contextable, Drawable{
 	 * Override this in widgets that need custom hit regions (Slider knob, color pickers, etc).
 	 */
 	public Rectangle getSelectionRegion() {
-	    // If your Widget class already has a Rectangle field called `shape`, prefer that:
-	    try {
-	        if (this.shape != null) {
-	            // shape stores local x,y (maybe) — we want global coordinates
-	            return new Rectangle(getGlobalX(), getGlobalY(), shape.width, shape.height);
+	    Rectangle hitBox = new Rectangle(getGlobalX(), getGlobalY(), shape.width, shape.height);
+	    
+	    Widget current_parent = this.getParent();
+	    while(current_parent != null) {
+	        // If the parent is a ScrollArea (or any clipping widget), we intersect the bounds
+	        if (current_parent instanceof ScrollArea) {
+	            Rectangle parentBounds = current_parent.getShapeGlobal();
+	            
+	            // Math to find the intersection of the two rectangles
+	            float left = Math.max(hitBox.x, parentBounds.x);
+	            float right = Math.min(hitBox.x + hitBox.width, parentBounds.x + parentBounds.width);
+	            float bottom = Math.max(hitBox.y, parentBounds.y);
+	            float top = Math.min(hitBox.y + hitBox.height, parentBounds.y + parentBounds.height);
+	            
+	            // If they don't overlap at all, the width or height will be negative
+	            if (right < left || top < bottom) {
+	                return null; // Entirely out of bounds, no hit region!
+	            }
+	            
+	            hitBox.set(left, bottom, right - left, top - bottom);
 	        }
-	    } catch (Throwable t) {
-	        // ignore if `shape` doesn't exist in your actual Widget class (fallback below)
+	        current_parent = current_parent.getParent();
 	    }
-
-	    // Fallback: use getGlobalX/Y with width/height accessors (modify if your API differs)
-	    float gx = getGlobalX();
-	    float gy = getGlobalY();
-	    float w = getWidth();   // replace with your width accessor if different
-	    float h = getHeight();  // replace with your height accessor if different
-	    return new Rectangle(gx, gy, w, h);
+	    return hitBox;
+	}
+	
+	// Helper needed for the above logic
+	public Rectangle getShapeGlobal() {
+	    return shape_global;
 	}
 
 	
