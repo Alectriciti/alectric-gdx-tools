@@ -11,10 +11,18 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
  * A a simple class that holds style information for widgets. This allows for easy theming and customization of the appearance of widgets. You can create multiple Style instances with different values to create different themes for your UI.
  */
 public class Style {
+	
+	
+	public static Style BASIC = new Style() {
+		
+		public void build() {
+			corner_radius = 0.0f;
+		}
+		
+	};
     
     // --- Geometry ---
     public float corner_radius = 3f;
-    public float border_thickness = 2f;
     
     // --- Timing ---
     public float color_fade_in = 0.25f;
@@ -47,12 +55,16 @@ public class Style {
 
     public Style() {
     	this.font = UIManager.primary_font;
+    	build();
     }
 
 
     public Style(BitmapFont font) {
     	this.font = font;
+    	build();
     }
+    
+    public void build() {}
     
 
 	public void drawShape(Drawable drawable, ShapeRenderer renderer) {

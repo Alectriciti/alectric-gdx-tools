@@ -1,6 +1,7 @@
 package com.alectriciti.gdx;
 
 import static com.alectriciti.gdx.Toolkit.LerpColor;
+import static com.alectriciti.gdx.Toolkit.print;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -15,6 +16,7 @@ public class Knob extends Widget{
 	public Knob(String id, Widget parent, Orientation orientation) {
 		super(id, parent);
 		this.orientation = orientation;
+		color.mul(1.4f);
     	updateKnobSize();
 	}
 	
@@ -22,7 +24,7 @@ public class Knob extends Widget{
     	public void drawShape(ShapeRenderer shape_renderer) {
     		// TODO Auto-generated method stub
     		shape_renderer.set(ShapeType.Filled);
-    		shape_renderer.setColor(style.color_base.cpy().mul(1.5f));
+    		shape_renderer.setColor(color);
     		style.drawRect(shape_renderer, getGlobalX(), getGlobalY(), shape.width, shape.height);
     		drawBorder(shape_renderer);
     	}

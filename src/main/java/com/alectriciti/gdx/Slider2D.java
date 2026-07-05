@@ -35,6 +35,7 @@ public class Slider2D extends Widget {
     public Vector2 quantize_amount_ctrl = new Vector2(0.125f, 0.125f);
     
     public GrabStyle grab_style = GrabStyle.LAZY;
+    public float grab_strength = 0.5f; // Only relevant for GRADUAL
     
     protected Knob knob;
     protected List<Runnable> change_listeners = new ArrayList<Runnable>();
@@ -85,6 +86,21 @@ public class Slider2D extends Widget {
         return value;
     }
 
+	/**
+	 * Sets the grab style for the slider.
+	 * @param style The desired grab style (LAZY, GRADUAL, INSTANT).
+	 * @param strength The strength of the grab effect (only relevant for GRADUAL).
+	 * @return The Slider instance for chaining.
+	 */
+    public void setGrabStyle(GrabStyle style, float strength) {
+		this.grab_style = style;
+		this.grab_strength = 1.0f - strength;
+	}
+    
+    public void setGrabStyle(GrabStyle style) {
+    	setGrabStyle(style, 0.75f);
+	}
+
     public void reset() {
         setValue(value_default);
         triggerValueChange(false);
@@ -97,8 +113,8 @@ public class Slider2D extends Widget {
         // Handle GRADUAL grab style logic across both axes
         if (isPressed() && grab_style == GrabStyle.GRADUAL) {
             if (Math.abs(manager.mouse_click_offset_x) > 0.5f || Math.abs(manager.mouse_click_offset_y) > 0.5f) {
-                manager.mouse_click_offset_x *= 0.8f;
-                manager.mouse_click_offset_y *= 0.8f;
+                manager.mouse_click_offset_x *= grab_strength;
+                manager.mouse_click_offset_y *= grab_strength;
                 onPointerDragged(last_mouse_x, last_mouse_y);
             } else {
                 manager.mouse_click_offset_x = 0;
@@ -254,11 +270,12 @@ public class Slider2D extends Widget {
         }
     }
 
+
     
     @Override
     protected void setHoverColor() {
     	if(grab_style == GrabStyle.GRAB) {
-    		if(!knob.isMouseOver())return;
+    		if(!knob.isMouseOver() && !isPressed())return;
     	}
 		super.setHoverColor();
     }

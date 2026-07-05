@@ -26,6 +26,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.alectriciti.gdx.Canvas;
+import com.alectriciti.gdx.SliderColorPicker;
+import com.alectriciti.gdx.ColorPickerMode;
 import com.alectriciti.gdx.ColoredText;
 import com.alectriciti.gdx.ContextWidget;
 import com.alectriciti.gdx.Direction;
@@ -359,6 +361,14 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
         scroll_area.assignSliderSettings(slider_in_scroll_horizontal);
         scroll_area.assignSliderSettings(slider_in_scroll_vertical);
         
+        
+        SliderColorPicker picker = new SliderColorPicker("color picker", ui_manager);
+//        picker.setColorPickerMode(ColorPickerMode.HUE);
+        picker.setGlobalPosition(700, 10);
+        picker.addChangeListener(() -> {
+        	UIManager.getDefaultStyle().color_hover = picker.getCurrentColor();
+        });
+//        picker.set
         
 		ui_manager.automaticallyAssignIDsToWidgets();
 		

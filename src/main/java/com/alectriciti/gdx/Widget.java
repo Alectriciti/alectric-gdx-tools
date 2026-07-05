@@ -142,9 +142,9 @@ public class Widget implements Contextable, Drawable{
 	/**
 	 * The color which is drawn to be active at all times
 	 */
-	public Color color = style.color_base;
-	public Color font_color = style.color_text;
-	public Color color_outline = style.color_outline;
+	public Color color = style.color_base.cpy();
+	public Color font_color = style.color_text.cpy();
+	public Color color_outline = style.color_outline.cpy();
 	private float opacity = 1;
 	
 	public boolean focused;

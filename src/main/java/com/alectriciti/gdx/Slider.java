@@ -417,7 +417,7 @@ public class Slider extends Widget {
     	}
 		super.drawBorder(shape_renderer);
         
-        if(knob.isMouseOver()) {
+        if(knob.isMouseOver() || knob.isPressed()) {
 			shape_renderer.set(ShapeType.Line);
 			shape_renderer.setColor(color_outline);
 			knob.style.drawRect(shape_renderer, knob.getGlobalX(), knob.getGlobalY(), knob.shape.width, knob.shape.height);
@@ -427,7 +427,7 @@ public class Slider extends Widget {
     @Override
     protected void setHoverColor() {
     	if(grab_style == GrabStyle.GRAB) {
-    		if(!knob.isMouseOver())return;
+    		if(!knob.isMouseOver() && !isPressed())return;
     	}
 		super.setHoverColor();
     }
