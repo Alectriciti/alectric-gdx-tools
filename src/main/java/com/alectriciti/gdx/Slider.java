@@ -426,9 +426,6 @@ public class Slider extends Widget {
     
     @Override
     protected void setHoverColor() {
-    	if(grab_style == GrabStyle.GRAB) {
-    		if(!knob.isMouseOver() && !isPressed())return;
-    	}
 		super.setHoverColor();
     }
 

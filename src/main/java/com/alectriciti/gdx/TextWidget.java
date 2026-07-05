@@ -25,16 +25,24 @@ public class TextWidget extends Widget implements Draggable{
     int length; //Actual length of the string
 
     public String msg_raw = ""; // The full message for console printing purposes
-    
+
     BitmapFontCache font_cache;
+    BitmapFontCache font_cache_shadow;
     GlyphLayout layout;
     
     BitmapFont font;
     
     boolean animating = false;
     
+    
+    private boolean auto_reconstruct = true;
+    
     float offset_x = 4f;
     float offset_y = 4f;
+    
+    Color shadow;
+    float offset_shadow_x = 0;
+    float offset_shadow_y = 0;
 
 //    public Message(BitmapFont font, ColoredText...msgs){
 //        construct(last_used_font, msgs);
@@ -72,6 +80,8 @@ public class TextWidget extends Widget implements Draggable{
         }
         font_cache = new BitmapFontCache(font);
         font_cache.setUseIntegerPositions(true);
+        
+        
 
         // Let reconstruct() handle the string assembly, cap height positioning, and color updates uniformly.
         reconstruct(); 
@@ -80,6 +90,12 @@ public class TextWidget extends Widget implements Draggable{
 	@Override
 	public boolean isHoverable() {
 		return false;
+	}
+	
+	public void enableDropShadow(Color c) {
+		shadow = c.cpy();
+        font_cache_shadow = new BitmapFontCache(font);
+        font_cache_shadow.setUseIntegerPositions(true);
 	}
     
     /**
@@ -100,6 +116,14 @@ public class TextWidget extends Widget implements Draggable{
         }
     }
     
+    /**
+     * Setting this to false requires you to update reconstruct() after making changes
+     * @param b
+     */
+    public void setAutoreconstruct(boolean b) {
+    	this.auto_reconstruct = b;
+    }
+    
     protected void reconstruct() {
         // Rebuild raw text
         StringBuilder builder = new StringBuilder();
@@ -112,29 +136,40 @@ public class TextWidget extends Widget implements Draggable{
         font_cache.clear();
         font_cache.setText(msg_raw, 0, 0);
 		font_cache.setPosition(getGlobalX()+offset_x, getGlobalY()+font.getCapHeight()+offset_y);
-
+		
+		if(shadow!=null) {
+	        font_cache_shadow.clear();
+	        font_cache_shadow.setText(msg_raw, 0, 0);
+	        font_cache_shadow.setPosition(getGlobalX()+offset_x, getGlobalY()+font.getCapHeight()+offset_y);
+	        font_cache_shadow.tint(shadow); 
+		}
+        
         // Update colors
         updateColors();
     }
 
 
-
     
     public void setText(String text) {
     	msgs[0].updateText(text);
-    	reconstruct();
+    	if (auto_reconstruct)reconstruct();
     }
     
     public void setText(String text, Color c) {
     	msgs[0].updateText(text);
     	msgs[0].color = c;
-    	reconstruct();
+    	if (auto_reconstruct)reconstruct();
     }
-    
+
     
     public void setText(int line, String text) {
     	msgs[line].updateText(text);
-    	reconstruct();
+    	if (auto_reconstruct)reconstruct();
+    }
+    
+    public void setText(int line, Color c) {
+    	msgs[line].color = c;
+    	if (auto_reconstruct)reconstruct();
     }
     
     public String getText() {
@@ -149,28 +184,37 @@ public class TextWidget extends Widget implements Draggable{
     	//the font cache is independent from the widget, so link it here when the widget moves.
 		if(font_cache!=null) {
 			font_cache.setPosition(getGlobalX()+offset_x, getGlobalY()+font.getCapHeight()+offset_y);
+			if(shadow!=null)
+				font_cache_shadow.setPosition(getGlobalX()+offset_x+offset_shadow_x, getGlobalY()+font.getCapHeight()+offset_y+offset_shadow_y);
 		}
     }
 
 
 	@Override
 	public boolean drawFont(SpriteBatch sprite_batch) {
-		
-		if(!isVisible()){
-			return false;
-		}
-		
-		font_cache.draw(sprite_batch);
-		
-//		if(show_text && name_for_display != null) {
-		//print(getGlobalX()+" "+getGlobalY());
-//			font.setColor(font_color);
-//			font.draw(sprite_batch, name_for_display, getGlobalX()+font_offset.x, getGlobalY()+font.getCapHeight()+font_offset.y);
-//		}
-//		if(recursive) {
-//			drawFontChildren(sprite_batch, recursive);
-//		}
-		return true;
+	    if(!isVisible()){
+	        return false;
+	    }
+
+		if(shadow!=null) {
+//	        float shadowOffsetX = 2f;
+//	        float shadowOffsetY = -2f;
+	        
+	        // 1. Shift the cache's vertices and tint them to your shadow color
+//	        font_cache.translate(offset_shadow_x, offset_shadow_y);
+	        
+	        // 2. Draw the shadow
+	        font_cache_shadow.draw(sprite_batch);
+	        
+	        // 3. Revert the shift and restore your widget's original font color
+//	        font_cache.translate(-offset_shadow_x, -offset_shadow_y);
+//	        font_cache.tint(font_color); 
+	    }
+
+	    // 4. Draw the actual main text on top
+	    font_cache.draw(sprite_batch);
+	    
+	    return true;
 	}
 	
     public int length() {

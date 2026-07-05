@@ -21,8 +21,8 @@ import com.badlogic.gdx.math.Vector2;
 public class Slider2D extends Widget {
     
     public String value_name;
-    public TextWidget value_display;
 
+    public TextWidget value_display;
     // Current numeric value (derived from normalized position)
     protected Vector2 value = new Vector2();
     protected Vector2 value_default = new Vector2();

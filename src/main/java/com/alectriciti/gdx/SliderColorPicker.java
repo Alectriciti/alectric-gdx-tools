@@ -11,6 +11,8 @@ import static com.badlogic.gdx.graphics.GL20.GL_ONE_MINUS_SRC_COLOR;
 import static com.badlogic.gdx.graphics.GL20.GL_SRC_ALPHA;
 import static com.badlogic.gdx.graphics.GL20.GL_SRC_ALPHA_SATURATE;
 
+import java.text.DecimalFormat;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -101,6 +103,13 @@ public class SliderColorPicker extends Slider3D {
         setZRange(0f, 1f); 
 		this.scroll_amount_z = 0.05f;
 		this.scroll_amount_ctrl_z = 0.01f;
+
+		value_display = new TextWidget(this, new ColoredText("R ", Color.RED),
+				new ColoredText("G ", Color.GREEN),
+				new ColoredText("B ", Color.BLUE)
+				);
+		value_display.enableDropShadow(Color.WHITE);
+		value_display.setAutoreconstruct(false);
     }
     /**
      * Instantly swaps the dimensional behavior of the slider.
@@ -131,8 +140,10 @@ public class SliderColorPicker extends Slider3D {
             val = value.y;
             sat = zValue; //[cite: 23]
         }
-
-        return new Color().fromHsv(hue, sat, val);
+        
+        Color c = new Color().fromHsv(hue, sat, val);
+        c.a = 1.0f;
+        return c;
     }
 
     /**
@@ -185,9 +196,18 @@ public class SliderColorPicker extends Slider3D {
     
     @Override
     protected void updateTextDisplay() {
-        if(value_display != null && value_display.isVisible()) {
-            value_display.setText((value_name != null ? value_name + ": " : "") + 
-                String.format("%.2f", value.x) + ", " + String.format("%.2f", value.y));
+        	
+    	if(value_display != null && value_display.isVisible()) {
+    		Color c = getCurrentColor();
+    		DecimalFormat f = new DecimalFormat("#.##");
+    		f.setMinimumFractionDigits(2);
+        	value_display.setText(0, f.format(c.r));
+        	value_display.setText(1, f.format(c.g)+" ");
+        	value_display.setText(2, f.format(c.b)+" ");
+        	value_display.setText(0, new Color(c.r, 0, 0, 1));
+        	value_display.setText(1, new Color(0, c.g, 0, 1));
+        	value_display.setText(2, new Color(0, 0, c.b, 1));
+        	value_display.reconstruct();
         }
     }
 
