@@ -75,34 +75,42 @@ public class DropdownMenuButton extends Button{
 		dropdownClose();
 	}
 	
+	private void setTransientStateRecursive(Widget widget, boolean visible, boolean touchable) {
+	    widget.transient_visible = visible;
+	    widget.transient_touchable = touchable;
+	    
+	    // CRITICAL FIX: If this child is itself a DropdownMenuButton, 
+	    // stop here! Do not force its children to unmask. Let it manage itself.
+	    if (widget instanceof DropdownMenuButton) {
+	        return; 
+	    }
+	    
+	    for (Widget child : widget.getChildren()) {
+	        setTransientStateRecursive(child, visible, touchable);
+	    }
+	}
 	
 	protected void dropdownOpen() {
-		expand_amount_target = 1;
-		animating = true;
-		updatePositionForChildren();
-		for(Widget w : getChildren()) {
-			if(w instanceof DropdownMenuButton) {
-				w.setVisible(true, InheritanceRule.STANDARD);
-			}else {
-				w.setVisible(true, InheritanceRule.RECURSIVE);
-			}
-			w.setTouchable(true);
-		}
-		
-		
+	    expand_amount_target = 1;
+	    animating = true;
+	    updatePositionForChildren();
+	    for(Widget w : getChildren()) {
+	        // Unmask the children, letting them rely entirely on their logical state
+	        setTransientStateRecursive(w, true, true);
+	    }
 	}
 
 	protected void dropdownClose() {
-		expand_amount_target = 0;
-		animating = true; //enables animation within update()
-		for(Widget w : getDescendants()) {
-			if(w instanceof DropdownMenuButton) {
-				DropdownMenuButton db = (DropdownMenuButton) w;
-				db.deactivate();
-			}
-			w.setTouchable(false);
-		}
-		
+	    expand_amount_target = 0;
+	    animating = true; 
+	    for(Widget w : getChildren()) {
+	        if(w instanceof DropdownMenuButton) {
+	            DropdownMenuButton db = (DropdownMenuButton) w;
+	            db.deactivate();
+	        }
+	        // Visually fading out, but immediately prevent clicks!
+	        setTransientStateRecursive(w, true, false); 
+	    }
 	}
 	
 	@Override
@@ -124,22 +132,19 @@ public class DropdownMenuButton extends Button{
 						w.color_texture_alpha.a = expand_amount;
 					}
 				}
-			}else {
-				//animation has stopped
-				animating = false;
-				if(activated) {
-					
-				}else {
-					for(Widget w : getChildren()) {
-						if(w instanceof DropdownMenuButton) {
-							w.setVisible(false, InheritanceRule.STANDARD);
-						}else {
-							w.setVisible(false, InheritanceRule.RECURSIVE);
-						}
-					}
-					finishedAnimation();
-				}
-			}
+			} else {
+		        // animation has stopped
+		        animating = false;
+		        if(activated) {
+		            
+		        } else {
+		            for(Widget w : getChildren()) {
+		                // Completely hide and disable interaction now that it is closed
+		                setTransientStateRecursive(w, false, false);
+		            }
+		            finishedAnimation();
+		        }
+		    }
 		}
 		
 	}
@@ -211,10 +216,16 @@ public class DropdownMenuButton extends Button{
 	
 	@Override
 	protected void attachChildWidget(Widget widget_to_attach) {
-		super.attachChildWidget(widget_to_attach);
-		widget_to_attach.editable = false;
-		widget_to_attach.setVisible(false);
-		print(widget_to_attach.name_for_display+" : "+widget_to_attach.isVisible());
+	    // Let the base Widget handle the structural linking
+	    super.attachChildWidget(widget_to_attach);
+	    widget_to_attach.editable = false;
+	    
+	    // Determine if this specific dropdown is currently open
+	    boolean is_currently_open = (this.activated || this.expand_amount > 0);
+	    
+	    // Immediately apply this dropdown's state to the new child 
+	    // so it doesn't default to visible while the menu is closed!
+	    setTransientStateRecursive(widget_to_attach, is_currently_open, is_currently_open);
 	}
 
 	

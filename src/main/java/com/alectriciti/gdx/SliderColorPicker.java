@@ -241,7 +241,9 @@ public class SliderColorPicker extends Slider3D {
         
         // Adjust the direction. Generally, scrolling "up" (negative amountY) increases the value.
         float delta = (amountY < 0) ? scroll_step : -scroll_step;
-        
+        if(delta<0) {
+        	delta+=1;
+        }
         setZValue((zValue + delta )% 1.0f);
     }
     

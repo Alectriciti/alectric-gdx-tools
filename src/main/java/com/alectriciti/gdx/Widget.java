@@ -82,6 +82,10 @@ public class Widget implements Contextable, Drawable{
 	public transient boolean highlighted = false;
 	public transient boolean locked = false;
 	
+	// Add these transient properties to handle temporary UI states (like animations/dropdowns)
+	public transient boolean transient_visible = true;
+	public transient boolean transient_touchable = true;
+	
 	transient private boolean currently_clicked = false;
 	
 	transient boolean animating; // this will run on update() if relevant
@@ -707,18 +711,23 @@ public class Widget implements Contextable, Drawable{
 	}
 	
 	public boolean isVisible() {
-		return getValue(Parameter.VISIBLE).get();
+	    // If the parent is invisible, this widget MUST be invisible.
+	    if (parent != null && !parent.isVisible()) {
+	        return false;
+	    }
+	    // Otherwise, rely on its own masking and logical state
+	    return transient_visible && getValue(Parameter.VISIBLE).get();
 	}
-	
-	/**
-	 * If the object is currently interactable
-	 * @return
-	 */
+
 	public boolean isTouchable() {
-		if(shape==null)return false;
-		return getValue(Parameter.TOUCHABLE).get();
+	    if(shape == null) return false;
+	    
+	    // If the parent is untouchable/invisible, this widget MUST be untouchable.
+	    if (parent != null && (!parent.isTouchable() || !parent.isVisible())) {
+	        return false;
+	    }
+	    return transient_touchable && getValue(Parameter.TOUCHABLE).get();
 	}
-	
 	
 	public int getZIndex() {
 		return z;
