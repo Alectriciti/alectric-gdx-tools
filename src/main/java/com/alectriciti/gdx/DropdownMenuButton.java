@@ -182,9 +182,9 @@ public class DropdownMenuButton extends Button{
 	}
 
 	@Override
-	public boolean drawTexture(SpriteBatch batch, boolean recursive) {
+	public boolean drawTexture(SpriteBatch batch) {
 		// TODO Auto-generated method stub
-		return super.drawTexture(batch, recursive);
+		return super.drawTexture(batch);
 	}
 	
 	@Override
@@ -200,12 +200,12 @@ public class DropdownMenuButton extends Button{
 	}
 	
 	@Override
-	public boolean drawFont(SpriteBatch batch, boolean recursive) {
+	public boolean drawFont(SpriteBatch batch) {
 		// TODO Auto-generated method stub
-		super.drawFont(batch, false);
+		super.drawFont(batch);
 			//font failed to draw
 
-		drawFontChildren(batch, recursive);
+//		drawFontChildren(batch, recursive);
 		return true;
 	}
 	

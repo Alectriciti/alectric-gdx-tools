@@ -52,7 +52,7 @@ public class Slider extends Widget {
     private int last_mouse_x = 0;
     private int last_mouse_y = 0;
     
-    public GrabStyle grab_style = GrabStyle.LAZY;
+    public GrabStyle grab_style = GrabStyle.GRADUAL;
     public float grab_strength = 0.5f; // Only relevant for GRADUAL
 
 	protected List<Runnable> change_listeners = new ArrayList<Runnable>();
@@ -66,10 +66,9 @@ public class Slider extends Widget {
 	/**
 	 * Quick Initializers
 	 */
-
     
     public Slider(String value_name, Widget parent, Orientation orientation) {
-		this(value_name, parent);
+        this(value_name, parent, 0.0f, orientation);
     }
     
     public Slider(String value_name, Widget parent) {
@@ -95,14 +94,22 @@ public class Slider extends Widget {
         initialize(false, 0.0f, DEFAULT_SLIDER_SIZE, orientation);
     }
 
+    
+    public Slider(Widget w, Orientation orientation) {
+        super("slider", w);
+        initialize(false, 0.0f, DEFAULT_SLIDER_SIZE, orientation);
+	}
+
     public Slider(String value_name, Widget parent, float default_value, Orientation orientation) {
         super(value_name, parent);
         this.value_name = value_name;
         initialize(value_name!=null, default_value, DEFAULT_SLIDER_SIZE, orientation);
     }
     
-    
-    /**
+
+
+
+	/**
 	 * Sets the grab style for the slider.
 	 * @param style The desired grab style (LAZY, GRADUAL, INSTANT).
 	 * @param strength The strength of the grab effect (only relevant for GRADUAL).
@@ -162,6 +169,28 @@ public class Slider extends Widget {
     	}else {
     		setSize(getWidth(), length);
     	}
+    	knob.updateKnobSize();
+    	return this;
+    }
+    
+    /**
+     * Sets the relative thickness of this slider
+     */
+    public Slider setThickness(float thickness) {
+    	if(orientation == Orientation.HORIZONTAL) {
+    		setSize(getWidth(), thickness);
+    	}else {
+    		setSize(thickness, getHeight());
+    	}
+    	knob.updateKnobSize();
+    	return this;
+    }
+    
+    /**
+     * Sets the relative thickness of this slider
+     */
+    public Slider setKnobSize(int knob_size) {
+    	knob.setSize(knob_size);
     	knob.updateKnobSize();
     	return this;
     }
@@ -306,14 +335,22 @@ public class Slider extends Widget {
     
     @Override
 	public void scroll(float amountX, float amountY) {
-    	int max = (int) (getGlobalX()+getWidth()-knob.shape.width);
-    	int min = (int)getGlobalX();
-    	float sa = isControlPressed()?scroll_amount_ctrl:scroll_amount;
-    	int new_x = (int) (knob.getGlobalX() + ((amountY<0)?sa:-sa));
-    	new_x = Math.min(new_x, max);
-    	new_x = Math.max(new_x, min);
+
+    	boolean horizontal = orientation == Orientation.HORIZONTAL;
+    	float pos_val = horizontal?getGlobalX():getGlobalY();
     	
-    	knob.setGlobalPosition(new_x, knob.getGlobalY());
+    	int max = (int) (pos_val + (horizontal?(getWidth()-knob.shape.width):(getHeight()-knob.shape.height)));
+    	int min = (int) pos_val;
+    	print("min: "+min+" max: "+max);
+    	float sa = isControlPressed()?scroll_amount_ctrl:scroll_amount;
+    	int new_val = (int) ((horizontal?knob.getGlobalX():knob.getGlobalY()) + (sa*-amountY));
+    	new_val = Math.min(new_val, max);
+    	new_val = Math.max(new_val, min);
+    	
+    	if(horizontal)
+			knob.setGlobalPosition(new_val, knob.getGlobalY());
+		else
+	    	knob.setGlobalPosition(knob.getGlobalX(), new_val);
     	triggerValueChange(isShiftPressed());
 	}
     
@@ -321,7 +358,13 @@ public class Slider extends Widget {
      * Applies literal location of widget to determine value change
      */
     private void triggerValueChange(boolean quantize) {
-    	float normalized_value = ((float)(knob.getGlobalX() - getGlobalX())) / (getWidth()-knob.getWidth());
+    	float normalized_value;
+    	boolean horizontal = orientation == Orientation.HORIZONTAL;
+    	if(horizontal) {
+			normalized_value = ((float)(knob.getGlobalX() - getGlobalX())) / (getWidth()-knob.getWidth());
+    	}else {
+			normalized_value = ((float)(knob.getGlobalY() - getGlobalY())) / (getHeight()-knob.getHeight());
+		}
     	value = minValue + (normalized_value*(maxValue-minValue));
     	if(quantize) {
     		value = Math.round(value/quantize_amount)*quantize_amount;

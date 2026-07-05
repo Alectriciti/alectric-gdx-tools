@@ -180,7 +180,7 @@ public class Widget implements Contextable, Drawable{
 			printError("Error instantiating "+id+" ... Canvas is NULL. Register with a WidgetManager instead");
 		}
 		setSize(DEFAULT_WIDGET_SIZE, DEFAULT_WIDGET_SIZE);
-		updateGlobalPosition();
+//		updateGlobalPosition();
 		pushNewZPosition(false);
 	}
 	
@@ -598,7 +598,7 @@ public class Widget implements Contextable, Drawable{
 	}
 	
 	
-	public boolean drawFont(SpriteBatch sprite_batch, boolean recursive) {
+	public boolean drawFont(SpriteBatch sprite_batch) {
 		
 		if(!isVisible()){
 			return false;
@@ -608,9 +608,6 @@ public class Widget implements Contextable, Drawable{
 		//print(getGlobalX()+" "+getGlobalY());
 			style.font.setColor(font_color);
 			style.font.draw(sprite_batch, getTextToRender(), getGlobalX()+font_offset.x, getGlobalY()+style.font.getCapHeight()+font_offset.y);
-		}
-		if(recursive) {
-			drawFontChildren(sprite_batch, recursive);
 		}
 		return true;
 	}
@@ -627,16 +624,13 @@ public class Widget implements Contextable, Drawable{
 	 * @param b 
 	 * @return whether or not the texture was able to draw
 	 */
-	public boolean drawTexture(SpriteBatch sprite_batch, boolean recursive) {
+	public boolean drawTexture(SpriteBatch sprite_batch) {
 		boolean valid = texture!=null;
 		if(isVisible()) {
 			if(valid) {
 				sprite_batch.setColor(color_texture_alpha);
 				sprite_batch.draw(texture, getGlobalX(), getGlobalY(), shape.width-1, shape.height-1);
 			}
-		}
-		if(recursive) {
-			drawTextureChildren(sprite_batch, recursive);
 		}
 		return valid;
 	}
@@ -676,17 +670,30 @@ public class Widget implements Contextable, Drawable{
 		for(Widget w : widgets_children) {
 			w.drawShape(renderer);
 		}
+		for(Widget w : widgets_children) {
+			w.drawShapeChildren(renderer, recursive);
+		}
 	}
 	
 	protected void drawTextureChildren(SpriteBatch sprite_batch, boolean recursive) {
 		for(Widget w : widgets_children) {
-			w.drawTexture(sprite_batch, recursive);
+			w.drawTexture(sprite_batch);
+		}
+		if(recursive) {
+			for(Widget w : widgets_children) {
+				w.drawTextureChildren(sprite_batch, recursive);
+			}
 		}
 	}
 	
 	protected void drawFontChildren(SpriteBatch sprite_batch, boolean recursive) {
 		for(Widget w : widgets_children) {
-			w.drawFont(sprite_batch, recursive);
+			w.drawFont(sprite_batch);
+		}
+		if(recursive) {
+			for(Widget w : widgets_children) {
+				w.drawFontChildren(sprite_batch, recursive);
+			}
 		}
 	}
 	

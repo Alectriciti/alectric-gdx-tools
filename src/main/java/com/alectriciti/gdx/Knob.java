@@ -10,9 +10,11 @@ public class Knob extends Widget{
     
 	
 	
+	Orientation orientation;
     	
 	public Knob(String id, Widget parent, Orientation orientation) {
 		super(id, parent);
+		this.orientation = orientation;
     	updateKnobSize();
 	}
 	
@@ -65,15 +67,25 @@ public class Knob extends Widget{
 			if(parent instanceof Slider) {
 				Slider s = ((Slider)parent);
 				if(s.orientation == Orientation.HORIZONTAL) {
-					this.setSize(DEFAULT_WIDGET_SIZE, s.getHeight());
+					this.setSize(getWidth(), s.getHeight());
 				} else {
-					this.setSize(s.getWidth(), DEFAULT_WIDGET_SIZE);
+					this.setSize(s.getWidth(), getHeight());
 				}
 			}
 		}
 
-		public void setWidth(int i) {
-			this.setSize(i, this.getHeight());
+		public void setSize(int i) {
+			switch(orientation) {
+				case HORIZONTAL:
+					this.setSize(i, this.getHeight());
+					break;
+				case VERTICAL:
+					this.setSize(this.getWidth(), i);
+					break;
+				default:
+					setSize(i, i);
+					break;
+			}
 		}
     	
     }

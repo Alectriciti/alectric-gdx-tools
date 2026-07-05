@@ -154,7 +154,7 @@ public class TextWidget extends Widget implements Draggable{
 
 
 	@Override
-	public boolean drawFont(SpriteBatch sprite_batch, boolean recursive) {
+	public boolean drawFont(SpriteBatch sprite_batch) {
 		
 		if(!isVisible()){
 			return false;
@@ -167,9 +167,9 @@ public class TextWidget extends Widget implements Draggable{
 //			font.setColor(font_color);
 //			font.draw(sprite_batch, name_for_display, getGlobalX()+font_offset.x, getGlobalY()+font.getCapHeight()+font_offset.y);
 //		}
-		if(recursive) {
-			drawFontChildren(sprite_batch, recursive);
-		}
+//		if(recursive) {
+//			drawFontChildren(sprite_batch, recursive);
+//		}
 		return true;
 	}
 	
@@ -184,12 +184,12 @@ public class TextWidget extends Widget implements Draggable{
 
 	@Override
 	public void onDrag(int mouseX, int mouseY) {
-		print("ya dragging at "+mouseX+", "+mouseY);
+//		print("ya dragging at "+mouseX+", "+mouseY);
 	}
 
 	@Override
 	public void onDrop(int mouseX, int mouseY) {
-		print("dropping at "+mouseX+", "+mouseY);
+//		print("dropping at "+mouseX+", "+mouseY);
 	}
 	
 	@Override

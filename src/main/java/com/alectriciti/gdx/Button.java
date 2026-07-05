@@ -263,7 +263,7 @@ public class Button extends Widget implements Activatable{
 	}
 
 	@Override
-	public boolean drawTexture(SpriteBatch batch, boolean recursive) {
+	public boolean drawTexture(SpriteBatch batch) {
 		boolean valid = texture != null;
 		if (valid) {
 			if(isVisible()) {
@@ -284,9 +284,6 @@ public class Button extends Widget implements Activatable{
 				}
 			}
 		}
-		if(recursive) {
-			drawTextureChildren(batch, recursive);
-		}
 		return valid;
 	}
 	
@@ -298,7 +295,7 @@ public class Button extends Widget implements Activatable{
 	}
 
 	@Override
-	public boolean drawFont(SpriteBatch batch, boolean recursive) {
+	public boolean drawFont(SpriteBatch batch) {
 		// TODO Auto-generated method stub
 		if(isVisible()) {
 			if(pressing) {
@@ -311,9 +308,6 @@ public class Button extends Widget implements Activatable{
 			if(show_text && name_for_display!=null) {
 				style.font.draw(batch, name_for_display, getGlobalX()+font_offset.x, getGlobalY()+style.font.getCapHeight()+font_offset.y);
 			}
-		}
-		if(recursive) {
-			drawFontChildren(batch, recursive);
 		}
 		return true;
 	}

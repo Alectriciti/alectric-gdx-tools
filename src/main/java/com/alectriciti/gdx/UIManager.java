@@ -112,7 +112,7 @@ public class UIManager implements InputProcessor {
 	 * This is the widget that is currently being adjusted and dragged around (the
 	 * red outline)
 	 */
-	Widget widget_currently_adjusting = null;
+	Widget widget_currently_editing = null;
 	Canvas canvas_proposed_to_attach = null;
 
 	/**
@@ -468,7 +468,7 @@ public class UIManager implements InputProcessor {
 	    int my = mouse_y;
 
 	    // while mouse is held and adjusting widget
-	    if (widget_currently_adjusting != null) {
+	    if (widget_currently_editing != null) {
 	        AdjustWidgetPosition();
 	    }
 
@@ -507,7 +507,7 @@ public class UIManager implements InputProcessor {
 		    if (edit_mode || widget_hovering.isAlwaysEditable()) {
 		        if (widget_hovering.isEditable()) {
 		            // Start moving/adjusting the widget (existing behavior)
-		            widget_currently_adjusting = widget_hovering;
+		            widget_currently_editing = widget_hovering;
 		            mouse_click_offset_x = widget_hovering.getGlobalX() - mx;
 		            mouse_click_offset_y = widget_hovering.getGlobalY() - my;
 		            // Note: we DO NOT call onPointerDown in edit mode; movement has priority.
@@ -639,8 +639,8 @@ public class UIManager implements InputProcessor {
 	    }
 
 	    // If no pointer-capture, proceed with existing release logic (unchanged)
-	    if (widget_currently_adjusting != null) {
-	        widget_currently_adjusting = null;
+	    if (widget_currently_editing != null) {
+	        widget_currently_editing = null;
 	    }
 	    if (mouse_clicked_widget == null) {
 	        // focus(null);
@@ -721,20 +721,23 @@ public class UIManager implements InputProcessor {
 
 
 	private void AdjustWidgetPosition() {
-		if (widget_currently_adjusting instanceof WindowMoverWidget) {
+		if (widget_currently_editing instanceof WindowMoverWidget) {
 			// move window logic
-			WindowMoverWidget window = (WindowMoverWidget) widget_currently_adjusting;
+			WindowMoverWidget window = (WindowMoverWidget) widget_currently_editing;
 			window.moveWindow((int) mouse_click_offset_x, (int) mouse_click_offset_y);
 
 		} else {
 			if (constraint_mode) {
-				widget_currently_adjusting.setGlobalPosition(
+				widget_currently_editing.setGlobalPosition(
 						((mouse_x + (int) (mouse_click_offset_x)) / constraint_amount) * constraint_amount,
 						((mouse_y + (int) (mouse_click_offset_y)) / constraint_amount) * constraint_amount);
 			} else {
-				widget_currently_adjusting.setGlobalPosition((int) (mouse_x + mouse_click_offset_x),
+				widget_currently_editing.setGlobalPosition((int) (mouse_x + mouse_click_offset_x),
 						(int) (mouse_y + mouse_click_offset_y));
 			}
+//			widget_currently_editing.updateAlignment();
+			widget_currently_editing.calculateScreenClamp();
+			widget_currently_editing.updateGlobalPosition();
 		}
 	}
 
@@ -817,9 +820,9 @@ public class UIManager implements InputProcessor {
 	                }
 	            } else {
 	                // If widget returns null for some reason, safe fallback to existing containsGlobal
-	                if (w.containsGlobal(mouseX, mouseY)) {
-	                    found_widgets.add(w);
-	                }
+//	                if (w.containsGlobal(mouseX, mouseY)) {
+//	                    found_widgets.add(w);
+//	                }
 	            }
 	        }
 	    }
@@ -855,8 +858,8 @@ public class UIManager implements InputProcessor {
 				widget.style.drawShape(widget, shape_renderer);
 				shape_renderer.end();
 				sprite_batch.begin();
-				widget.drawTexture(sprite_batch, true);
-				widget.drawFont(sprite_batch, true);
+				widget.drawTexture(sprite_batch);
+				widget.drawFont(sprite_batch);
 				sprite_batch.end();
 				
 				shape_renderer.begin();
@@ -1235,7 +1238,7 @@ public class UIManager implements InputProcessor {
 		for(Widget wi : widget_independants) {
 			for (Widget w : wi.widgets_children) {
 			w.updateAlignment();
-			w.calculateScreenClamp();
+//			w.calculateScreenClamp();
 			w.updateGlobalPosition();
 			}
 		}

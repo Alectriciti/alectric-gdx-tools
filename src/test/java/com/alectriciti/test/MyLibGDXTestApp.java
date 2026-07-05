@@ -312,7 +312,7 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 		slider2.setRelativePosition(400, 180);
 		
 		Slider slider3 = new Slider(ui_manager, Orientation.VERTICAL).setGrabStyle(GrabStyle.GRADUAL,0.2f);
-		slider3.getKnob().setWidth(16);
+		slider3.getKnob().setSize(16);
 		slider3.setLength(200);
 		slider3.setValueRange(4,12);
 		slider3.setRelativePosition(340, 140);
@@ -328,26 +328,38 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
     	
     	AllConsumingCanvas canvas;
     	
-    	canvas = new AllConsumingCanvas("canvas", ui_manager, 300, 200);
+    	canvas = new AllConsumingCanvas(null, ui_manager, 300, 200);
     	canvas.setGlobalPosition(600, 100);
-    	canvas.show_text = true;
-    	
-//    	ScrollArea scroll_area = new ScrollArea("scroll area", canvas, 260, 200);
-//    	scroll_area.setRelativePosition(0, 20);
-//    	
-//    	scroll_area.setEditable(false);
-    	
-    	
-//    	Slider slider_in_scroll_horizontal = new Slider("slider horizontal", canvas, true);
-////    	slider_in_scroll_horizontal.setLength(300);
-//    	slider_in_scroll_horizontal.setRelativePosition(0, 0);
-//    	slider_in_scroll_horizontal.show_text = false;
-//    	
-//    	Slider slider_in_scroll_vertical = new Slider("slider vertical", canvas, false);
-////    	slider_in_scroll_vertical.setLength(200);
-//    	slider_in_scroll_vertical.setRelativePosition(170, 0);
-//    	slider_in_scroll_vertical.show_text = false;
-    	
+    	ScrollArea scroll_area = new ScrollArea("scroll area", canvas, 300-16, 200-16);
+        scroll_area.setRelativePosition(0, 16);
+        scroll_area.setEditable(false);
+
+        Button button_x = new Button("X", scroll_area);
+        Button button_y = new Button("Y", scroll_area);
+        button_x.setRelativePosition(0, 0);
+        button_y.setRelativePosition(0, 330);
+        
+        // Add child widgets BEFORE assigning slider settings so the ScrollArea can measure them properly
+        
+        Slider slider_in_scroll_horizontal = new Slider(canvas, Orientation.HORIZONTAL);
+        slider_in_scroll_horizontal.setRelativePosition(0, 0);
+        slider_in_scroll_horizontal.setLength(284);
+        slider_in_scroll_horizontal.setThickness(8);
+        slider_in_scroll_horizontal.setKnobSize(8);
+        slider_in_scroll_horizontal.show_text = false;
+        
+        Slider slider_in_scroll_vertical = new Slider(canvas, Orientation.VERTICAL);
+        slider_in_scroll_vertical.setRelativePosition(284, 0);
+        slider_in_scroll_vertical.setLength(200);
+        slider_in_scroll_vertical.setThickness(8);
+        slider_in_scroll_vertical.setKnobSize(8);
+        slider_in_scroll_vertical.show_text = false;
+
+        // Automagically wire up the settings!
+        scroll_area.assignSliderSettings(slider_in_scroll_horizontal);
+        scroll_area.assignSliderSettings(slider_in_scroll_vertical);
+        
+        
 		ui_manager.automaticallyAssignIDsToWidgets();
 		
 		shape_renderer = new ShapeRenderer();
