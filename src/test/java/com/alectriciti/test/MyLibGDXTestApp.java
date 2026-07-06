@@ -362,7 +362,7 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
         scroll_area.assignSliderSettings(slider_in_scroll_vertical);
 
         
-        SliderColorPicker picker = new SliderColorPicker("color picker", ui_manager);
+        SliderColorPicker picker = new SliderColorPicker("color picker", other_menu);
 //        picker.setColorPickerMode(ColorPickerMode.HUE);
         picker.setGlobalPosition(700, 10);
         picker.setSize(200, 200);

@@ -26,17 +26,19 @@ import com.badlogic.gdx.math.Vector3;
  */
 public class SliderColorPicker extends Slider3D {
 	
-	public class ColorKnob extends Knob{
+	class ColorKnob extends Knob{
 
 		public ColorKnob(String id, Widget parent, Orientation orientation) {
 			super(id, parent, orientation);
 			setStyle(Style.BASIC, true);
-			// TODO Auto-generated constructor stub
 		}
 		
 		@Override
 		public void drawShape(ShapeRenderer shape_renderer) {
 			// TODO Auto-generated method stub
+    		if(!isVisible()) {
+    			return;
+    		}
 			color_outline = getCurrentColor();
 			drawBorder(shape_renderer);
 		}
@@ -44,6 +46,9 @@ public class SliderColorPicker extends Slider3D {
 		@Override
 		public void drawBorder(ShapeRenderer shape_renderer) {
 //			Gdx.gl.glBlendEquation(GL20.GL_FUNC_ADD);
+    		if(!isVisible()) {
+    			return;
+    		}
 			shape_renderer.setColor(color_outline);
     		style.drawRect(shape_renderer, getGlobalX(), getGlobalY(), shape.width, shape.height);
 
@@ -89,6 +94,12 @@ public class SliderColorPicker extends Slider3D {
         // Ensure the Z-axis (scroll wheel) defaults to a normalized 0-1 range[cite: 23]
     }
 
+    public SliderColorPicker(String id, Widget w) {
+        super(id, w);
+        init();
+        // Ensure the Z-axis (scroll wheel) defaults to a normalized 0-1 range[cite: 23]
+    }
+
     public SliderColorPicker(String value_name, Widget parent, Vector3 default_value) {
         super(value_name, parent, default_value); //[cite: 23]
         init();
@@ -110,6 +121,7 @@ public class SliderColorPicker extends Slider3D {
 				);
 		value_display.enableDropShadow(Color.WHITE);
 		value_display.setAutoreconstruct(false);
+        updateTextDisplay();
     }
     /**
      * Instantly swaps the dimensional behavior of the slider.

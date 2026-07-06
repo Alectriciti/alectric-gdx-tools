@@ -44,8 +44,13 @@ public class Slider2D extends Widget {
     private int last_mouse_x = 0;
     private int last_mouse_y = 0;
 
-    public Slider2D(String id, UIManager manager) {
-        super(id, manager);
+    public Slider2D(String id, UIManager uimanager) {
+        super(id, uimanager);
+        initialize(false, new Vector2(0, 0), 150, 150);
+    }
+
+    public Slider2D(String id, Widget parent) {
+        super(id, parent);
         initialize(false, new Vector2(0, 0), 150, 150);
     }
 

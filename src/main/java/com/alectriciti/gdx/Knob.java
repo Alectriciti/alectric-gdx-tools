@@ -23,6 +23,9 @@ public class Knob extends Widget{
     	@Override
     	public void drawShape(ShapeRenderer shape_renderer) {
     		// TODO Auto-generated method stub
+    		if(!isVisible()) {
+    			return;
+    		}
     		shape_renderer.set(ShapeType.Filled);
     		shape_renderer.setColor(color);
     		style.drawRect(shape_renderer, getGlobalX(), getGlobalY(), shape.width, shape.height);

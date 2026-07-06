@@ -30,6 +30,10 @@ public class Slider3D extends Slider2D {
         super(id, manager);
     }
 
+    public Slider3D(String id, Widget parent) {
+        super(id, parent); //i was parenting stuff
+    }
+
     public Slider3D(String value_name, Widget parent, Vector3 default_value) {
         // Pass X and Y to the 2D superclass
         super(value_name, parent, new Vector2(default_value.x, default_value.y));
