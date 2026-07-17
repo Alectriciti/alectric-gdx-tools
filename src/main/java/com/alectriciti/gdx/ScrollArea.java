@@ -213,7 +213,10 @@ public class ScrollArea extends Widget {
      * Determines which children are currently inside the scissored view.
      */
     private void updateCulling() {
-        visible_children_cache.clear();
+    	if(visible_children_cache==null) {
+    		return; //hasn't been initialized yet
+    	}
+    	visible_children_cache.clear();
         
         // The literal screen space the ScrollArea occupies
         Rectangle viewBounds = new Rectangle(getGlobalX(), getGlobalY(), shape.width, shape.height);
