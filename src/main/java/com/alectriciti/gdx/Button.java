@@ -89,9 +89,9 @@ public class Button extends Widget implements Activatable{
 		this(name, widgetManager, null);
 	}
 	
-	private void registerButton(int...button_codes) {
+	protected void registerButton(int...button_codes) {
 		manager.buttons.add(this);
-		manager.buttons_by_name.put(name_for_display, this);
+//		manager.buttons_by_name.put(id, this);
 		
 		if(button_codes!=null) {
 			for(int code : button_codes) {
@@ -99,6 +99,31 @@ public class Button extends Widget implements Activatable{
 			}
 			this.button_codes = button_codes;
 		}
+	}
+	
+	public void setKeybinds(int...new_codes) {
+		for(int code : this.button_codes) {
+			manager.buttons_by_key.remove(code);
+		}
+		for(int code : new_codes) {
+			manager.buttons_by_key.put(code, this);
+		}
+		this.button_codes = new_codes;
+	}
+	
+	public void addKeybind(int new_code) {
+		int count = 0;
+		if(this.button_codes!=null) {
+			if(this.button_codes.length>0) {
+				count = this.button_codes.length;
+			}
+		}
+		int[] new_button_codes = new int[count+1];
+		for(int i = 0; i < new_button_codes.length-1; i++) {
+			new_button_codes[i] = button_codes[i];
+		}
+		new_button_codes[new_button_codes.length-1] = new_code;
+		this.button_codes = new_button_codes;
 	}
 	
 	

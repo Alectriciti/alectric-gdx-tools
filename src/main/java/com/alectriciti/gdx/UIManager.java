@@ -177,9 +177,9 @@ public class UIManager implements InputProcessor {
 	// Widgets which get deactivated automatically if new focus is not related
 	public Set<Widget> transient_widgets = new HashSet<Widget>();
 
-	public List<Button> buttons = new ArrayList<Button>();
+	public ObjectSet<Button> buttons = new ObjectSet<Button>();
 	public List<Button> buttons_rapidfiring = new ArrayList<Button>();
-	public ObjectMap<String, Button> buttons_by_name = new ObjectMap<String, Button>();
+//	public ObjectMap<String, Button> buttons_by_name = new ObjectMap<String, Button>();
 	public ObjectMap<Integer, Button> buttons_by_key = new ObjectMap<Integer, Button>();
 	
 	public InputMultiplexer input_multiplexer;
@@ -379,7 +379,9 @@ public class UIManager implements InputProcessor {
 			for(Widget wd : widgets_to_destroy) {
 				widgets.remove(wd);
 				widget_independants.remove(wd);
-				buttons.remove(wd);
+				if(wd instanceof Button) {
+					buttons.remove((Button)wd);
+				}
 			}
 			
 //			widgets.removeAll(widgets_to_destroy);
@@ -393,7 +395,7 @@ public class UIManager implements InputProcessor {
 						for(int code : b.button_codes) {
 							buttons_by_key.remove(code);
 						}
-					buttons_by_name.remove(b.name_for_display);
+//					buttons_by_name.remove(b.name_for_display);
 				}
 			}
 			for (Widget w : widgets) {
@@ -1149,7 +1151,7 @@ public class UIManager implements InputProcessor {
 				return true;
 			}
 		}
-		return true;
+		return false;
 	}
 
 	/**

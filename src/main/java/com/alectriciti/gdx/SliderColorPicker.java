@@ -53,9 +53,6 @@ public class SliderColorPicker extends Slider3D {
     		style.drawRect(shape_renderer, getGlobalX(), getGlobalY(), shape.width, shape.height);
 
 			shape_renderer.flush();
-//			Gdx.gl.glEnable(GL20.GL_BLEND);
-//			Gdx.gl.glBlendFunc(GL20.GL_ONE_MINUS_DST_COLOR, GL20.GL_ZERO);
-//			Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 			Gdx.gl.glEnable(GL20.GL_BLEND);
 		    Gdx.gl.glBlendFunc(GL20.GL_ONE_MINUS_DST_COLOR, GL20.GL_ZERO);
     		shape_renderer.set(ShapeType.Line);
@@ -63,8 +60,6 @@ public class SliderColorPicker extends Slider3D {
 			
     		
     		style.drawRect(shape_renderer, getGlobalX(), getGlobalY(), shape.width, shape.height);
-//			shape_renderer.rect(getGlobalX(), getGlobalY(), shape.width, shape.height);
-//    		style.drawRect(shape_renderer, getGlobalX(), getGlobalY(), shape.width, shape.height);
 
     	    // 4. Flush AGAIN to force the border to render using our custom blend function
     	    shape_renderer.flush();
@@ -123,6 +118,8 @@ public class SliderColorPicker extends Slider3D {
 		value_display.setAutoreconstruct(false);
         updateTextDisplay();
     }
+    
+    
     /**
      * Instantly swaps the dimensional behavior of the slider.
      */
