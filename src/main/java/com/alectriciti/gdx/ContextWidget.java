@@ -27,8 +27,13 @@ public class ContextWidget extends DropdownMenuButton{
 	}
 	
 	@Override
+	protected void attachChildWidget(Widget widget_to_attach) {
+		super.attachChildWidget(widget_to_attach);
+		widget_to_attach.setValue(Parameter.VISIBLE, Value.TRUE, InheritanceRule.PROTECT_CHILDREN);
+	}
+	
+	@Override
 	protected void OnCreate() {
-		// TODO Auto-generated method stub
 		activate();
 	}
 	
@@ -39,7 +44,6 @@ public class ContextWidget extends DropdownMenuButton{
 	
 	@Override
 	public void drawShape(ShapeRenderer renderer) {
-		// TODO Auto-generated method stub
 		super.drawShape(renderer);
 //		renderer.set(ShapeType.Line);
 //		renderer.setColor(Color.GRAY);

@@ -712,9 +712,9 @@ public class Widget implements Contextable, Drawable{
 	
 	public boolean isVisible() {
 	    // If the parent is invisible, this widget MUST be invisible.
-	    if (parent != null && !parent.isVisible()) {
-	        return false;
-	    }
+//	    if (parent != null && !parent.isVisible()) {
+//	        return false;
+//	    }
 	    // Otherwise, rely on its own masking and logical state
 	    return transient_visible && getValue(Parameter.VISIBLE).get();
 	}
@@ -723,9 +723,9 @@ public class Widget implements Contextable, Drawable{
 	    if(shape == null) return false;
 	    
 	    // If the parent is untouchable/invisible, this widget MUST be untouchable.
-	    if (parent != null && (!parent.isTouchable() || !parent.isVisible())) {
-	        return false;
-	    }
+//	    if (parent != null && (!parent.isTouchable() || !parent.isVisible())) {
+//	        return false;
+//	    }
 	    return transient_touchable && getValue(Parameter.TOUCHABLE).get();
 	}
 	
