@@ -980,12 +980,8 @@ public class UIManager implements InputProcessor {
 				case TOGGLE:
 					if (!button.activated) {
 						button.activate();
-						button.activated = true;
-						print(button.name_for_display + " ACTIVATED");
 					} else {
 						button.deactivate();
-						button.activated = false;
-						print(button.name_for_display + " DEACTIVATED");
 					}
 					break;
 				}
@@ -1144,6 +1140,10 @@ public class UIManager implements InputProcessor {
 		
 		return false;
 	}
+	
+//	public boolean isHoveringOverUI() {
+//		return widget_hovering != null;
+//	}
 
 	@Override
 	public boolean mouseMoved(int screenX, int screenY) {

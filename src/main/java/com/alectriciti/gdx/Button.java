@@ -102,8 +102,10 @@ public class Button extends Widget implements Activatable{
 	}
 	
 	public void setKeybinds(int...new_codes) {
-		for(int code : this.button_codes) {
-			manager.buttons_by_key.remove(code);
+		if(this.button_codes!=null) {
+			for(int code : this.button_codes) {
+				manager.buttons_by_key.remove(code);
+			}
 		}
 		for(int code : new_codes) {
 			manager.buttons_by_key.put(code, this);
@@ -187,7 +189,6 @@ public class Button extends Widget implements Activatable{
 		if(button_type == ButtonType.TOGGLE) {
 			activated = false;
 		}
-		
 		onDeactivate();
 		
 		for(Runnable r : run_on_deactivate) {

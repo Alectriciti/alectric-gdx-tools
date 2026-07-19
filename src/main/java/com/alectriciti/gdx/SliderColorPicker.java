@@ -169,10 +169,10 @@ public class SliderColorPicker extends Slider3D {
 
         if (mode == ColorPickerMode.SATURATION) { //[cite: 24]
             // X=Sat, Y=Val, Z=Hue
-            set3DValue(new Vector3(sat, val, normalizedHue)); //[cite: 23]
+            setValue(new Vector3(sat, val, normalizedHue)); //[cite: 23]
         } else if (mode == ColorPickerMode.HUE) { //[cite: 24]
             // X=Hue, Y=Val, Z=Sat
-            set3DValue(new Vector3(normalizedHue, val, sat)); //[cite: 23]
+            setValue(new Vector3(normalizedHue, val, sat)); //[cite: 23]
         }
     }
 

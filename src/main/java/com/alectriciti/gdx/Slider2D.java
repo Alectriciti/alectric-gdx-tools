@@ -108,7 +108,6 @@ public class Slider2D extends Widget {
 
     public void reset() {
         setValue(value_default);
-        triggerValueChange(false);
     }
 
     @Override
@@ -200,11 +199,18 @@ public class Slider2D extends Widget {
         
         knob.setGlobalPosition(targetX, targetY);
         triggerValueChange(quantized);
-        
+        updateTextDisplay();
+        fireEvents();
         return true;
     }
 
-    protected void triggerValueChange(boolean quantize) {
+    protected void fireEvents() {
+        for(Runnable r : change_listeners) {
+            r.run();
+        }
+	}
+
+	protected void triggerValueChange(boolean quantize) {
         float norm_x = (knob.getGlobalX() - getGlobalX()) / (getWidth() - knob.getWidth());
         float norm_y = (knob.getGlobalY() - getGlobalY()) / (getHeight() - knob.getHeight());
 
@@ -215,12 +221,6 @@ public class Slider2D extends Widget {
             value.x = Math.round(value.x / quantize_amount.x) * quantize_amount.x;
             value.y = Math.round(value.y / quantize_amount.y) * quantize_amount.y;
         }
-
-        updateTextDisplay();
-        
-        for(Runnable r : change_listeners) {
-            r.run();
-        }
     }
 
     protected void updateTextDisplay() {
@@ -230,6 +230,9 @@ public class Slider2D extends Widget {
         }
     }
 
+    /**
+     * Sets the value manually
+     */
     public void setValue(Vector2 newValue) {
         this.value.x = MathUtils.clamp(newValue.x, minValue.x, maxValue.x);
         this.value.y = MathUtils.clamp(newValue.y, minValue.y, maxValue.y);
@@ -245,6 +248,7 @@ public class Slider2D extends Widget {
 
         knob.setGlobalPosition(new_x, new_y);
         updateTextDisplay();
+        fireEvents();
     }
 
     @Override

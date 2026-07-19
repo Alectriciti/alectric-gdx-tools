@@ -56,19 +56,29 @@ public class Slider3D extends Slider2D {
         return new Vector3(value.x, value.y, zValue);
     }
 
-    public void set3DValue(Vector3 newValue) {
-        super.setValue(new Vector2(newValue.x, newValue.y)); // Updates X and Y
-        setZValue(newValue.z);                               // Updates Z
+    public void setValue(Vector3 newValue) {
+        this.value.x = MathUtils.clamp(newValue.x, minValue.x, maxValue.x);
+        this.value.y = MathUtils.clamp(newValue.y, minValue.y, maxValue.y);
+        this.zValue = MathUtils.clamp(newValue.z, minZ, maxZ);
+
+        float norm_x = (maxValue.x == minValue.x) ? 0 : (value.x - minValue.x) / (maxValue.x - minValue.x);
+        float norm_y = (maxValue.y == minValue.y) ? 0 : (value.y - minValue.y) / (maxValue.y - minValue.y);
+
+        int max_px_x = (int)(getWidth() - knob.shape.width);
+        int max_px_y = (int)(getHeight() - knob.shape.height);
+        
+        int new_x = (int)(getGlobalX() + (max_px_x * norm_x));
+        int new_y = (int)(getGlobalY() + (max_px_y * norm_y));
+
+        knob.setGlobalPosition(new_x, new_y);
+        updateTextDisplay();
+        fireEvents();
     }
 
     public void setZValue(float newZ) {
         this.zValue = MathUtils.clamp(newZ, minZ, maxZ);
         updateTextDisplay();
-        
-        // Fire listeners so the rest of your UI knows Z changed
-        for (Runnable r : change_listeners) {
-            r.run();
-        }
+        fireEvents();
     }
 
     @Override
