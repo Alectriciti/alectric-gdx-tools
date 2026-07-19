@@ -7,7 +7,9 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
  * anything that can be dragged and dropped should implement this interface
  */
 public interface Draggable {
-	
+
+
+	public void onDragStart();
 	
 	/**
 	 * called when the mouse is being dragged with this draggable
@@ -18,10 +20,11 @@ public interface Draggable {
 	
 	/**
 	 * called when the mouse is released after dragging this draggable
+	 * @param target the object it was dropped onto, this may be null
 	 * @param mouseX the x coordinate of the mouse at it's current position
 	 * @param mouseY the y coordinate of the mouse at it's current position
 	 */
-	public void onDrop(int mouseX, int mouseY);
+	public void onDrop(DropTarget target, int mouseX, int mouseY);
 	
 	
 	/**

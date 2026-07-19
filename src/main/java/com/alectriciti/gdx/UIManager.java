@@ -10,13 +10,13 @@ import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWVidMode;
 
 import com.alectriciti.gdx.Button.ButtonType;
-import com.alectriciti.gdx.events.WidgetRemoveEvent;
 import com.alectriciti.gdx.events.DragDropEvent;
 import com.alectriciti.gdx.events.DragStartEvent;
 import com.alectriciti.gdx.events.Draggable;
 import com.alectriciti.gdx.events.DropTarget;
 import com.alectriciti.gdx.events.EventManager;
 import com.alectriciti.gdx.events.WidgetAddEvent;
+import com.alectriciti.gdx.events.WidgetRemoveEvent;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Input.Keys;
@@ -587,7 +587,7 @@ public class UIManager implements InputProcessor {
  			boolean success = false;
  			
  			if(!event.isCancelled()) {
-	 			dragged_item.onDrop(mouse_x, mouse_y);
+	 			dragged_item.onDrop(final_target, mouse_x, mouse_y);
 	 			
 	 			if(final_target!=null) {
 	 				success = final_target.onDropReceived(dragged_item, mouse_x, mouse_y);
@@ -777,15 +777,24 @@ public class UIManager implements InputProcessor {
 			return null;
 		}
 
-		int total_widgets = found_widgets.size();
 
 		if (edit_mode) {
+		
+			List<Widget> editable_widgets = new ArrayList<Widget>();
+			for(Widget w : found_widgets) {
+				if(w.isEditable()) {
+					editable_widgets.add(w);
+				}
+			}
+			int total_widgets = editable_widgets.size();
 			int offset = (int) (scrollSelectionOffset % total_widgets); // Wrap safely
-
+			if(total_widgets<=0) {
+				return null;
+			}
 			int i = (total_widgets - 1 + offset + total_widgets) % total_widgets;
 			return found_widgets.get(i);
 		} else {
-			return found_widgets.get(total_widgets - 1);
+			return found_widgets.get(found_widgets.size() - 1);
 		}
 		/*
 		 * for (int o = 0; o < total_widgets; o++) { int i = (total_widgets - 1 - o +
@@ -1109,6 +1118,7 @@ public class UIManager implements InputProcessor {
 					mouse_clicked_widget.pressing = false;
 					mouse_clicked_widget = null; 
 				}
+				dragged_item.onDragStart();
 			}
 		}
 		

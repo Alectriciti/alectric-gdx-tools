@@ -14,6 +14,7 @@ import static com.badlogic.gdx.graphics.GL20.*;
 import static com.badlogic.gdx.graphics.GL20.GL_FUNC_ADD;
 
 import com.alectriciti.gdx.events.Draggable;
+import com.alectriciti.gdx.events.DropTarget;
 
 /**
  * A chat message is a divided collection of [ColoredText]s, which allow for multi-colored lines of text
@@ -230,16 +231,23 @@ public class TextWidget extends Widget implements Draggable{
 	public void onDrag(int mouseX, int mouseY) {
 //		print("ya dragging at "+mouseX+", "+mouseY);
 	}
-
-	@Override
-	public void onDrop(int mouseX, int mouseY) {
-//		print("dropping at "+mouseX+", "+mouseY);
-	}
 	
 	@Override
 	public void drawDragGhost(SpriteBatch batch, float x, float y) {
 		// Just use your existing font to draw the string right at the mouse cursor
 		font.draw(batch, this.getText(), x, y);
+	}
+
+	@Override
+	public void onDrop(DropTarget target, int mouseX, int mouseY) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onDragStart() {
+		// TODO Auto-generated method stub
+		
 	}
 
 }
