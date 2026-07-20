@@ -18,6 +18,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 
@@ -153,6 +154,52 @@ public class SliderColorPicker extends Slider3D {
         Color c = new Color().fromHsv(hue, sat, val);
         c.a = 1.0f;
         return c;
+    }
+    
+    @Override
+    public void setValue(Vector3 newValue) {
+        this.value.x = MathUtils.clamp(newValue.x, minValue.x, maxValue.x);
+        this.value.y = MathUtils.clamp(newValue.y, minValue.y, maxValue.y);
+        this.zValue = MathUtils.clamp((newValue.z+1.0f)%1.0f, minZ, maxZ);
+
+        float norm_x = (maxValue.x == minValue.x) ? 0 : (value.x - minValue.x) / (maxValue.x - minValue.x);
+        float norm_y = (maxValue.y == minValue.y) ? 0 : (value.y - minValue.y) / (maxValue.y - minValue.y);
+
+        int max_px_x = (int)(getWidth() - knob.shape.width);
+        int max_px_y = (int)(getHeight() - knob.shape.height);
+        
+        int new_x = (int)(getGlobalX() + (max_px_x * norm_x));
+        int new_y = (int)(getGlobalY() + (max_px_y * norm_y));
+
+        knob.setGlobalPosition(new_x, new_y);
+        updateTextDisplay();
+        fireEvents();
+    }
+    
+    
+    /**
+     * Updates the slider's X, Y, and Z values to match the provided Color.
+     * Maps the color's HSV values to the correct axes based on the current mode.
+     */
+    public void setValueByColor(Color color) {
+        if (color == null) return;
+        
+        float[] hsv = new float[3];
+        color.toHsv(hsv);
+        
+        // LibGDX Hue is returned as 0-360. We normalize it to our 0.0f - 1.0f slider range.
+        float normalizedHue = hsv[0] / 360f; 
+        float sat = hsv[1];
+        float val = hsv[2];
+
+        if (mode == ColorPickerMode.SATURATION) {
+            // In Saturation Mode: X = Saturation, Y = Value, Z (Scroll) = Hue
+            setValue(new Vector3(sat, val, normalizedHue));
+            
+        } else if (mode == ColorPickerMode.HUE) {
+            // In Hue Mode: X = Hue, Y = Value, Z (Scroll) = Saturation
+            setValue(new Vector3(normalizedHue, val, sat));
+        }
     }
 
     /**
