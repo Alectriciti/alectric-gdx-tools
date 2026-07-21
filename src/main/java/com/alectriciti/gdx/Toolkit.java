@@ -16,6 +16,8 @@ import com.badlogic.gdx.graphics.glutils.ImmediateModeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 
 public class Toolkit {
 	
@@ -453,7 +455,23 @@ public class Toolkit {
     public static boolean isShiftPressed() {
     	return Gdx.input.isKeyPressed(Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Keys.SHIFT_RIGHT);
     }
-    		
+
+
+	public static Vector2 lerp(Vector2 a, Vector2 b, float alpha) {
+		float x = a.x + alpha * (b.x - a.x);
+		float y = a.y + alpha * (b.y - a.y);
+		return new Vector2(x, y);
+	}
+	
+	public static Vector3 lerp3(Vector2 a, Vector2 b, float alpha) {
+		float x = a.x + alpha * (b.x - a.x);
+		float y = a.y + alpha * (b.y - a.y);
+		return new Vector3(x, y, 0);
+	}
+		
+	public static Vector2 vector2(Vector3 v) {
+		return new Vector2(v.x,v.y);
+	}
     
     
 }
