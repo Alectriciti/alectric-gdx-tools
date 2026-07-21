@@ -8,8 +8,12 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
  */
 public interface Draggable {
 
-
-	public void onDragStart();
+	
+	/**
+	 * 
+	 * @return true will allow the dragging is successful and active
+	 */
+	public boolean onDragStart();
 	
 	/**
 	 * called when the mouse is being dragged with this draggable

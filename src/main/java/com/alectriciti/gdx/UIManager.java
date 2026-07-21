@@ -1114,7 +1114,10 @@ public class UIManager implements InputProcessor {
 					mouse_clicked_widget.pressing = false;
 					mouse_clicked_widget = null; 
 				}
-				dragged_item.onDragStart();
+				boolean success = dragged_item.onDragStart();
+				if(!success) {
+					dragged_item = null;
+				}
 			}
 		}
 		

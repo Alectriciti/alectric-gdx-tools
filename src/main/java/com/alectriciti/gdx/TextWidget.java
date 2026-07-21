@@ -44,10 +44,6 @@ public class TextWidget extends Widget implements Draggable{
     Color shadow;
     float offset_shadow_x = 0;
     float offset_shadow_y = 0;
-
-//    public Message(BitmapFont font, ColoredText...msgs){
-//        construct(last_used_font, msgs);
-//    }
     
     public TextWidget(Widget parent, String s){
     	this(parent, new ColoredText(s, Color.WHITE));
@@ -241,13 +237,12 @@ public class TextWidget extends Widget implements Draggable{
 	@Override
 	public void onDrop(DropTarget target, int mouseX, int mouseY) {
 		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
-	public void onDragStart() {
+	public boolean onDragStart() {
 		// TODO Auto-generated method stub
-		
+		return false;
 	}
 
 }
