@@ -1,12 +1,11 @@
 package com.alectriciti.gdx;
 
-import static com.alectriciti.gdx.Toolkit.ANSI_RESET;
-
 import java.awt.MouseInfo;
 import java.awt.Point;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Locale;
+import java.util.Random;
 import java.util.Set;
 
 import com.badlogic.gdx.Gdx;
@@ -472,6 +471,40 @@ public class Toolkit {
 	public static Vector2 vector2(Vector3 v) {
 		return new Vector2(v.x,v.y);
 	}
-    
+
+
+	public static Vector2 RandomVector2() {
+		return new Vector2(RandomCentered(), RandomCentered()).nor().scl((float)Math.random());
+	}
+	public static Vector2 RandomVector2(float m) {
+		return new Vector2(RandomCentered(m), RandomCentered(m)).nor().scl((float)Math.random());
+	}
+	
+	public static Vector3 RandomVector3() {
+		return new Vector3(RandomCentered(), RandomCentered(), RandomCentered()).nor().scl((float)Math.random());
+	}
+	
+	/**
+	 * 
+	 * @return -1.0 to 1.0
+	 */
+	public static float RandomCentered() {
+		return (float) (Math.random()*2f - 1f);
+	}
+	
+	public static float RandomCentered(float a) {
+		return (float) (Math.random()*2f - 1f)*a;
+	}
+	
+	public static float RandomRange(float min, float max) {
+		return (float) ((Math.random()*(max-min))+min);
+	}
+	
+	public static int RandomRange(int min, int max) {
+		if(min>=max) {
+			min = max-1;
+		}
+		return new Random().nextInt(max-min)+min;
+	}
     
 }
