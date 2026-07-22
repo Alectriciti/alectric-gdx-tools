@@ -100,11 +100,11 @@ public class Toolkit {
 	}
 	
 	public static int getMouseX() {
-		return Gdx.input.getX();
+		return UIManager.getInstance().getInputMapper().getX();
 	}
 	
 	public static int getMouseY() {
-		return Gdx.graphics.getHeight() - Gdx.input.getY();
+		return UIManager.getInstance().getInputMapper().getY();
 	}
 	
 	public static int[] getAbsoluteMousePosition() {

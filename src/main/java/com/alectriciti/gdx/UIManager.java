@@ -1,5 +1,6 @@
 package com.alectriciti.gdx;
 
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -46,6 +47,30 @@ import static com.alectriciti.gdx.Toolkit.*;
  * A UI Manager can be instantiated to automatically run logic and or render
  */
 public class UIManager implements InputProcessor {
+	
+	private static UIManager instance;
+	
+	public static UIManager getInstance() {return instance;}
+	
+	public UIManager(InputMultiplexer input, BitmapFont font) {
+		instance = this;
+		event_manager = new EventManager();
+		input_multiplexer = input;
+		input_multiplexer.addProcessor(this);
+		primary_font = font;
+		input_mapper = new InputMapper() {
+			
+			@Override
+			public int getY() {
+				return Gdx.graphics.getHeight() - Gdx.input.getY();
+			}
+			
+			@Override
+			public int getX() {
+				return Gdx.input.getX();
+			}
+		};
+	}
 
 	public Color COLOR_BUTTON_ACTIVATED = Color.GREEN;
 	public Color COLOR_BUTTON_TEXT_ACTIVATED = new Color(0.1f, 0.1f, 0.1f, 1);
@@ -188,14 +213,6 @@ public class UIManager implements InputProcessor {
 	
 	public EventManager getEventManager() {
 		return event_manager;
-	}
-	
-	
-	public UIManager(InputMultiplexer input, BitmapFont font) {
-		input_multiplexer = input;
-		input_multiplexer.addProcessor(this);
-		primary_font = font;
-		event_manager = new EventManager();
 	}
 
 	/**
@@ -1239,6 +1256,7 @@ public class UIManager implements InputProcessor {
 	}
 
 	String folder_widgets = "widgets/";
+	private InputMapper input_mapper;
 	private static Style default_style;
 
 	/**
@@ -1320,6 +1338,7 @@ public class UIManager implements InputProcessor {
 		for (Widget w : widgets) {
 			w.dispose();
 		}
+		instance = null;
 	}
 	
 	
@@ -1399,6 +1418,14 @@ public class UIManager implements InputProcessor {
 			default_style = new Style(primary_font);
 		}
 		return default_style;
+	}
+
+	public InputMapper getInputMapper() {
+		return input_mapper;
+	}
+	
+	public void setInputMapper(InputMapper input_mapper) {
+		this.input_mapper = input_mapper;
 	}
 
 }
