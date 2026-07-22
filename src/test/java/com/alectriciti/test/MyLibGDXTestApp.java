@@ -367,7 +367,7 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
         picker.setGlobalPosition(700, 10);
         picker.setSize(200, 200);
         picker.addChangeListener(() -> {
-        	UIManager.getDefaultStyle().color_hover = picker.getCurrentColor();
+        	ui_manager.getDefaultStyle().color_hover = picker.getCurrentColor();
         });
         
 //        SliderColorPicker picker2 = new SliderColorPicker("color picker", ui_manager);

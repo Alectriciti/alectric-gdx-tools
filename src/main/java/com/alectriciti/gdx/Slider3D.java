@@ -88,7 +88,8 @@ public class Slider3D extends Slider2D {
     }
 
     @Override
-    public void scroll(float amountX, float amountY) {
+    public boolean scroll(float amountX, float amountY) {
+    	if(!scroll_enabled) return false;
         // Calculate the increment based on modifier keys
         float scroll_step = isControlPressed() ? scroll_amount_ctrl_z : scroll_amount_z;
         
@@ -96,6 +97,7 @@ public class Slider3D extends Slider2D {
         float delta = (amountY < 0) ? scroll_step : -scroll_step;
         
         setZValue(zValue + delta);
+        return true;
     }
 
     @Override

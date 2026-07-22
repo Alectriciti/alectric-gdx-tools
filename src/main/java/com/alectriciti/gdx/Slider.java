@@ -31,6 +31,8 @@ public class Slider extends Widget {
     TextWidget value_display;
     
     public Orientation orientation = Orientation.HORIZONTAL;
+    
+    public boolean scroll_enabled = true;
 
     // Current numeric value (derived from normalized)
     private float value = 0f;
@@ -334,7 +336,8 @@ public class Slider extends Widget {
     }
     
     @Override
-	public void scroll(float amountX, float amountY) {
+	public boolean scroll(float amountX, float amountY) {
+    	if(!scroll_enabled)return false;
 
     	boolean horizontal = orientation == Orientation.HORIZONTAL;
     	float pos_val = horizontal?getGlobalX():getGlobalY();
@@ -352,6 +355,7 @@ public class Slider extends Widget {
 		else
 	    	knob.setGlobalPosition(knob.getGlobalX(), new_val);
     	triggerValueChange(isShiftPressed());
+    	return true;
 	}
     
     /**

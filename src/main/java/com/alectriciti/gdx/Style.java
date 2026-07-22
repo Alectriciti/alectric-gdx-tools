@@ -53,8 +53,13 @@ public class Style {
 	                                                                                         
 	public BitmapFont font;
 
+    public Style(UIManager ui_manager) {
+    	this.font = ui_manager.primary_font;
+    	build();
+    }
+
     public Style() {
-    	this.font = UIManager.primary_font;
+    	this.font = UIManager.getIntegratedFont();
     	build();
     }
 

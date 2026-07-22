@@ -99,14 +99,6 @@ public class Toolkit {
 		return new_color;
 	}
 	
-	public static int getMouseX() {
-		return UIManager.getInstance().getInputMapper().getX();
-	}
-	
-	public static int getMouseY() {
-		return UIManager.getInstance().getInputMapper().getY();
-	}
-	
 	public static int[] getAbsoluteMousePosition() {
         Point p = MouseInfo.getPointerInfo().getLocation();
 

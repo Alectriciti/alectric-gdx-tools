@@ -66,8 +66,8 @@ public class WindowMoverWidget extends Widget{
 	protected void OnMouseClicked() {
 		// TODO Auto-generated method stub
 		super.OnMouseClicked();
-		mouse_x = -getMouseX();
-		mouse_y = -getMouseY();
+		mouse_x = -getUIManager().getMouseX();
+		mouse_y = -getUIManager().getMouseY();
 	}
 
 	int mouse_x, mouse_y;

@@ -69,7 +69,7 @@ public class TextWidget extends Widget implements Draggable{
         this.msgs = msgs;
         if(layout == null) layout = new GlyphLayout();
         if(font == null) {
-            font = UIManager.getDefaultFont();
+            font = manager.getDefaultFont();
             if(font == null) {
                 System.out.println("Warning: no font supplied for Message:" + this.id + "!");
                 return;

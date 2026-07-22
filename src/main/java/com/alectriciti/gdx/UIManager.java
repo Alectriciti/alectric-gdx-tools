@@ -1,6 +1,5 @@
 package com.alectriciti.gdx;
 
-import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -48,16 +47,14 @@ import static com.alectriciti.gdx.Toolkit.*;
  */
 public class UIManager implements InputProcessor {
 	
-	private static UIManager instance;
-	
-	public static UIManager getInstance() {return instance;}
+	private static BitmapFont integrated_font;
 	
 	public UIManager(InputMultiplexer input, BitmapFont font) {
-		instance = this;
 		event_manager = new EventManager();
 		input_multiplexer = input;
 		input_multiplexer.addProcessor(this);
 		primary_font = font;
+		integrated_font = font; //for static getting, styles
 		input_mapper = new InputMapper() {
 			
 			@Override
@@ -155,7 +152,7 @@ public class UIManager implements InputProcessor {
 	public Widget pointerCapturedWidget = null; // widget that captured pointer (for drag)
 //	private int pointerCapturedId = -1; // pointer id (if you support multi-touch) - we use 0 for mouse
 
-	static BitmapFont primary_font;
+	BitmapFont primary_font;
 	boolean font_activated = false;
 
 	// List<Canvas> canvases = new ArrayList<Canvas>();
@@ -377,7 +374,7 @@ public class UIManager implements InputProcessor {
 			ObjectSet<Widget> widgz = new ObjectSet<Widget>(widgets_to_add);
 			//call widget listeners
 			for(Widget widget : widgz) {
-				widget.callOnCreate();
+				widget.create();
 			}
 			//call ui manager listeners for API support
 			for(Widget w : widgz) {
@@ -1177,8 +1174,7 @@ public class UIManager implements InputProcessor {
 
 		if (!edit_mode) {
 			if (widget_hovering != null) {
-				widget_hovering.scroll(amountX, amountY);
-				return true;
+				return widget_hovering.scroll(amountX, amountY);
 			}
 		}
 		return false;
@@ -1257,7 +1253,7 @@ public class UIManager implements InputProcessor {
 
 	String folder_widgets = "widgets/";
 	private InputMapper input_mapper;
-	private static Style default_style;
+	private Style default_style;
 
 	/**
 	 * Should be run on resize
@@ -1338,7 +1334,6 @@ public class UIManager implements InputProcessor {
 		for (Widget w : widgets) {
 			w.dispose();
 		}
-		instance = null;
 	}
 	
 	
@@ -1409,13 +1404,17 @@ public class UIManager implements InputProcessor {
 		}
 	}
 
-	public static BitmapFont getDefaultFont() {
+	public BitmapFont getDefaultFont() {
 		return primary_font;
 	}
+	
+	public void setDefaultStyle(Style style) {
+		this.default_style = style;
+	}
 
-	public static Style getDefaultStyle() {
+	public Style getDefaultStyle() {
 		if(default_style==null) {
-			default_style = new Style(primary_font);
+			default_style = new Style(this);
 		}
 		return default_style;
 	}
@@ -1426,6 +1425,18 @@ public class UIManager implements InputProcessor {
 	
 	public void setInputMapper(InputMapper input_mapper) {
 		this.input_mapper = input_mapper;
+	}
+	
+	public int getMouseX() {
+		return getInputMapper().getX();
+	}
+	
+	public int getMouseY() {
+		return getInputMapper().getY();
+	}
+
+	public static BitmapFont getIntegratedFont() {
+		return integrated_font;
 	}
 
 }

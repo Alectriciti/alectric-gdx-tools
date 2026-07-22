@@ -38,6 +38,7 @@ public class Widget implements Contextable, Drawable{
 	public String type = "widget";
 	
 	transient protected UIManager manager;
+	public UIManager getUIManager() {return manager;}
 	
 	protected transient Widget parent;
 	public boolean follow_parent = true;
@@ -47,7 +48,7 @@ public class Widget implements Contextable, Drawable{
 	public String group;
 	protected boolean serializable = true;
 	
-	public Style style = UIManager.getDefaultStyle();
+	public Style style;
 	
 	public String getId() {
 		if(id==null)return getClass().getSimpleName();
@@ -146,9 +147,9 @@ public class Widget implements Contextable, Drawable{
 	/**
 	 * The color which is drawn to be active at all times
 	 */
-	public Color color = style.color_base.cpy();
-	public Color font_color = style.color_text.cpy();
-	public Color color_outline = style.color_outline.cpy();
+	public Color color;
+	public Color font_color;
+	public Color color_outline;
 	private float opacity = 1;
 	
 	public boolean focused;
@@ -171,7 +172,7 @@ public class Widget implements Contextable, Drawable{
 	 * @param canvas name of the container to apply it to
 	 */
 	public Widget(String id, Widget parent) {
-		if(parent==null) printError("AHHH!");
+		if(parent==null) printError("Parent of "+id+" is null!");
 		initializeParameters();
 		this.id = id;
 		this.name_for_display = id;
@@ -183,6 +184,7 @@ public class Widget implements Contextable, Drawable{
 		}else {
 			printError("Error instantiating "+id+" ... Canvas is NULL. Register with a WidgetManager instead");
 		}
+		this.style = manager.getDefaultStyle();
 		setSize(DEFAULT_WIDGET_SIZE, DEFAULT_WIDGET_SIZE);
 //		updateGlobalPosition();
 		pushNewZPosition(false);
@@ -195,6 +197,7 @@ public class Widget implements Contextable, Drawable{
 		this.manager = manager;
 		this.manager.registerWidget(this);
 		this.shape = new Rectangle();
+		this.style = manager.getDefaultStyle();
 		setSize(DEFAULT_WIDGET_SIZE, DEFAULT_WIDGET_SIZE);
 		updateGlobalPosition();
 		pushNewZPosition(false);
@@ -209,6 +212,7 @@ public class Widget implements Contextable, Drawable{
 		this.manager = manager;
 		this.manager.registerWidget(this);
 		this.shape = new Rectangle();
+		this.style = manager.getDefaultStyle();
 		//pushNewZPosition(false);
 	}
 	
@@ -217,6 +221,17 @@ public class Widget implements Contextable, Drawable{
 		for(Parameter p : Parameter.values()) {
 			parameters.put(p, Value.UNASSIGNED);
 		}
+	}
+	
+	
+	/**
+	 * called when the uimanager properly adds this widget
+	 */
+	public void create() {
+		color = style.color_base.cpy();
+		font_color = style.color_text.cpy();
+		color_outline = style.color_outline.cpy();
+		OnCreate();
 	}
 
 	public String getName() {
@@ -659,7 +674,7 @@ public class Widget implements Contextable, Drawable{
 	}
 	
 	public boolean isMouseOver() {
-		return containsGlobal(getMouseX(), getMouseY());
+		return containsGlobal(getUIManager().getMouseX(), getUIManager().getMouseY());
 	}
 	
 	protected void setHoverColor() {
@@ -1106,10 +1121,11 @@ public class Widget implements Contextable, Drawable{
 	
 	/**
 	 * An implementable scroll function for when this widget is focused
+	 * @return 
 	 */
-	public void scroll(float amountX, float amountY) {
+	public boolean scroll(float amountX, float amountY) {
 		// TODO Auto-generated method stub
-		
+		return false;
 	}
 	/**
 	 * Default selection region for a widget.

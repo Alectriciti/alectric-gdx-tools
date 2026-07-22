@@ -140,7 +140,7 @@ public class ScrollArea extends Widget {
     // --- 3. Input Handling (Optional: Mouse Wheel) ---
     
     @Override
-    public void scroll(float amountX, float amountY) {
+    public boolean scroll(float amountX, float amountY) {
         // Adjust internal scroll offsets based on mouse wheel
         scroll_y += (-amountY * 20f); // Arbitrary scroll speed
         
@@ -156,6 +156,7 @@ public class ScrollArea extends Widget {
         
         // Push the new positions down to all children
         updateGlobalPosition(); 
+         return true;
     }
     
     

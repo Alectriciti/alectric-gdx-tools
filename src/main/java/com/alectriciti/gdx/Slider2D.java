@@ -21,6 +21,8 @@ import com.badlogic.gdx.math.Vector2;
 public class Slider2D extends Widget {
     
     public String value_name;
+    
+    public boolean scroll_enabled = true;
 
     public TextWidget value_display;
     // Current numeric value (derived from normalized position)
@@ -270,8 +272,10 @@ public class Slider2D extends Widget {
     		return;
     	}
     	super.drawBorder(shape_renderer);
-        boolean hitKnob = getMouseX() >= knob.getGlobalX() && getMouseX() <= knob.getGlobalX() + knob.shape.width &&
-                getMouseY() >= knob.getGlobalY() && getMouseY() <= knob.getGlobalY() + knob.shape.height;
+    	int mouseX = getUIManager().getMouseX();
+    	int mouseY = getUIManager().getMouseY();
+        boolean hitKnob = mouseX >= knob.getGlobalX() && mouseX <= knob.getGlobalX() + knob.shape.width &&
+        		mouseY >= knob.getGlobalY() && mouseY <= knob.getGlobalY() + knob.shape.height;
         if(hitKnob) {
 			shape_renderer.set(ShapeType.Line);
 			shape_renderer.setColor(color_outline);
