@@ -184,12 +184,12 @@ public class Widget implements Contextable, Drawable{
 		}else {
 			printError("Error instantiating "+id+" ... Canvas is NULL. Register with a WidgetManager instead");
 		}
-		this.style = manager.getDefaultStyle();
+		assignStyle(manager.getDefaultStyle());
 		setSize(DEFAULT_WIDGET_SIZE, DEFAULT_WIDGET_SIZE);
 //		updateGlobalPosition();
 		pushNewZPosition(false);
 	}
-	
+
 	public Widget(String id, UIManager manager) {
 		initializeParameters();
 		this.id = id;
@@ -197,7 +197,7 @@ public class Widget implements Contextable, Drawable{
 		this.manager = manager;
 		this.manager.registerWidget(this);
 		this.shape = new Rectangle();
-		this.style = manager.getDefaultStyle();
+		assignStyle(manager.getDefaultStyle());
 		setSize(DEFAULT_WIDGET_SIZE, DEFAULT_WIDGET_SIZE);
 		updateGlobalPosition();
 		pushNewZPosition(false);
@@ -212,7 +212,7 @@ public class Widget implements Contextable, Drawable{
 		this.manager = manager;
 		this.manager.registerWidget(this);
 		this.shape = new Rectangle();
-		this.style = manager.getDefaultStyle();
+		assignStyle(manager.getDefaultStyle());
 		//pushNewZPosition(false);
 	}
 	
@@ -228,9 +228,6 @@ public class Widget implements Contextable, Drawable{
 	 * called when the uimanager properly adds this widget
 	 */
 	public void create() {
-		color = style.color_base.cpy();
-		font_color = style.color_text.cpy();
-		color_outline = style.color_outline.cpy();
 		OnCreate();
 	}
 
@@ -929,12 +926,11 @@ public class Widget implements Contextable, Drawable{
 		this.editable = new_editable;
 	}
 	
-	
 	public void setStyle(Style style, boolean recursive) {
-		this.style = style;
 		if(recursive) {
 			setStyleChildren(style, recursive);
 		}
+		assignStyle(style);
 	}
 	
 	
@@ -942,6 +938,14 @@ public class Widget implements Contextable, Drawable{
 		for(Widget w : widgets_children) {
 			w.setStyle(style2, recursive);
 		}
+	}
+
+	
+	public void assignStyle(Style defaultStyle) {
+		style = defaultStyle;
+		color = style.color_base.cpy();
+		font_color = style.color_text.cpy();
+		color_outline = style.color_outline.cpy();
 	}
 
 	/**
