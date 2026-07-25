@@ -98,6 +98,12 @@ public class Widget implements Contextable, Drawable{
 
 	transient List<Runnable> run_on_click = new ArrayList<Runnable>();
 	
+	int render_layer = 0;
+	
+	public void setRenderLayer(int x) {
+		render_layer = x;
+	}
+	
 	public void setTexture(FileHandle fileHandle) {
 		this.texture_file = fileHandle;
 		this.texture = new Texture(texture_file);

@@ -39,6 +39,7 @@ import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.ObjectSet;
+import com.badlogic.gdx.utils.OrderedSet;
 
 import static com.alectriciti.gdx.Toolkit.*;
 
@@ -67,8 +68,19 @@ public class UIManager implements InputProcessor {
 				return Gdx.input.getX();
 			}
 		};
+		ui_manager_connector.add(this);
 	}
-
+	
+	List<UIManager> ui_manager_connector = new ArrayList<UIManager>();
+	
+	/**
+	 * This allows ui managers to detect each other through various events such as Drag/Drop
+	 * @param manager
+	 */
+	public void addNeighborUIManager(UIManager manager) {
+		this.ui_manager_connector.add(manager);
+	}
+	
 	public Color COLOR_BUTTON_ACTIVATED = Color.GREEN;
 	public Color COLOR_BUTTON_TEXT_ACTIVATED = new Color(0.1f, 0.1f, 0.1f, 1);
 	public Color COLOR_BUTTON_PRESSING = Color.GRAY;
@@ -156,8 +168,6 @@ public class UIManager implements InputProcessor {
 	boolean font_activated = false;
 
 	// List<Canvas> canvases = new ArrayList<Canvas>();
-	List<Widget> widget_independants = new ArrayList<Widget>();
-	List<Canvas> canvases_active = new ArrayList<Canvas>();
 	
 
 
@@ -203,6 +213,11 @@ public class UIManager implements InputProcessor {
 	public List<Button> buttons_rapidfiring = new ArrayList<Button>();
 //	public ObjectMap<String, Button> buttons_by_name = new ObjectMap<String, Button>();
 	public ObjectMap<Integer, Button> buttons_by_key = new ObjectMap<Integer, Button>();
+	
+
+	public ObjectMap<Integer, List<Widget>> widgets_to_render = new ObjectMap<Integer, List<Widget>>();
+	List<Widget> widget_independants = new ArrayList<Widget>();
+	List<Canvas> canvases_active = new ArrayList<Canvas>();
 	
 	public InputMultiplexer input_multiplexer;
 	
@@ -253,6 +268,10 @@ public class UIManager implements InputProcessor {
 				// mouse_adjusting_widfget = null;
 				widget_focused.pushNewZPosition(true);
 				widget_independants.sort(Comparator.comparingInt(Widget::getZIndex));
+				for(Integer i : widgets_to_render.keys()) {
+					widgets_to_render.get(i).sort(Comparator.comparingInt(Widget::getZIndex));
+				}
+				
 			}
 			widget_focused.focused = true;
 			if(widget_focused instanceof InputProcessor) {
@@ -369,6 +388,10 @@ public class UIManager implements InputProcessor {
 			for (Widget widget : widgets_to_add) {
 				if (widget.getParent() == null) {
 					widget_independants.add(widget);
+					if(!widgets_to_render.containsKey(widget.render_layer)) {
+						widgets_to_render.put(widget.render_layer, new ArrayList<Widget>());
+					}
+					widgets_to_render.get(widget.render_layer).add(widget);
 				}
 			}
 			ObjectSet<Widget> widgz = new ObjectSet<Widget>(widgets_to_add);
@@ -392,6 +415,7 @@ public class UIManager implements InputProcessor {
 			
 			for(Widget wd : widgets_to_destroy) {
 				widgets.remove(wd);
+				widgets_to_render.get(wd.render_layer).remove(wd);
 				widget_independants.remove(wd);
 				if(wd instanceof Button) {
 					buttons.remove((Button)wd);
@@ -765,7 +789,7 @@ public class UIManager implements InputProcessor {
 
 			// canvas_proposed_to_attach
 
-			Widget widget_to_highlight = getSelectableWidgetAtPosition(mouse_x, mouse_y);
+			Widget widget_to_highlight = getSelectableWidgetAtPosition(false);
 			if (widget_to_highlight != null) {
 				setWidgetSelectionCandidate(widget_to_highlight);
 			} else {
@@ -780,12 +804,19 @@ public class UIManager implements InputProcessor {
 	/**
 	 * Main Hover Logic... this FETCHES The widget selection candidate
 	 */
-	private Widget getSelectableWidgetAtPosition(int mouseX, int mouseY) {
+	private Widget getSelectableWidgetAtPosition(boolean include_connected_ui_managers) {
 		// Widget widget = null;
 		// boolean found = false;
 
-		List<Widget> found_widgets = getAllWidgetsAtLocation(mouseX, mouseY);
-
+		List<Widget> found_widgets;
+		if(include_connected_ui_managers) {
+			found_widgets = new ArrayList<Widget>();
+			for(UIManager man : ui_manager_connector) {
+				found_widgets.addAll(man.getAllWidgetsAtLocation(man.mouse_x, man.mouse_y));
+			}
+		}else {
+			found_widgets = getAllWidgetsAtLocation(mouse_x, mouse_y);
+		}
 		if (found_widgets.isEmpty()) {
 			// print("found widgets is empty");
 			return null;
@@ -854,30 +885,35 @@ public class UIManager implements InputProcessor {
 	    found_widgets.sort(Comparator.comparingInt(Widget::getZIndex));
 	    return found_widgets;
 	}
+	
+	public void renderAll(ShapeRenderer shape_renderer, SpriteBatch sprite_batch) {
+		renderAll(shape_renderer, sprite_batch, 0, true);
+	}
+	
+	public void renderAll(ShapeRenderer shape_renderer, SpriteBatch sprite_batch, int layer) {
+		renderAll(shape_renderer, sprite_batch, layer, true);
+	}
 	/**
 	 * Renders all canvases in the order they were created
 	 * 
 	 * @param renderer
 	 */
-	public void renderAll(ShapeRenderer shape_renderer, SpriteBatch sprite_batch) {
-
-		Gdx.gl.glEnable(GL20.GL_BLEND);
-
-		Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-		if (debug_mode) {
-
+	public void renderAll(ShapeRenderer shape_renderer, SpriteBatch sprite_batch, int layer, boolean auto_gl) {
+		
+		if(auto_gl) {
+			Gdx.gl.glEnable(GL20.GL_BLEND);
+			Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 		}
-		// font.setColor(Color.WHITE);
-		// font.draw(sprite_batch, "Widget Scroll Selector: "+scrollSelectionOffset, 20,
-		// 500);
-		// font.draw(sprite_batch, "Widget Candidate
-		// "+(widget_hovering!=null?widget_hovering:"null"), 20, 524);
-
+//		if (debug_mode) {
+//
+//		}
+		
 		/*
 		 * Now Canvas Groups
 		 */
-		// if(font!=null) {
-		for (Widget widget : widget_independants) {
+		if(!widgets_to_render.containsKey(layer))return;
+		
+		for (Widget widget : widgets_to_render.get(layer)) {
 			if (widget.isVisible()) {
 				shape_renderer.begin();
 				widget.style.drawShape(widget, shape_renderer);
@@ -907,29 +943,19 @@ public class UIManager implements InputProcessor {
 			}
 			shape_renderer.end();
 		}
-		// Draw this ontop to allow for visibility
-		/*
-		 * if(widget_currently_adjusting!=null) { shape_renderer.begin();
-		 * widget_currently_adjusting.drawShape(shape_renderer, false);
-		 * widget_currently_adjusting.drawEditMode(shape_renderer, true);
-		 * shape_renderer.end(); sprite_batch.begin();
-		 * widget_currently_adjusting.drawFont(sprite_batch, font, false);
-		 * sprite_batch.end(); }
-		 */
 		// Draw Drag & Drop Ghost
-		// Draw Drag & Drop Ghost
-				if (dragged_item != null) {
-					sprite_batch.begin();
-					float draw_x = mouse_x + drag_ghost_offset_x;
-					float draw_y = mouse_y + drag_ghost_offset_y;
-					
-					sprite_batch.setColor(1, 1, 1, 0.7f); 
-		            // The widget draws whatever it wants (text, shapes, textures)
-					dragged_item.drawDragGhost(sprite_batch, draw_x, draw_y); 
-					sprite_batch.setColor(1, 1, 1, 1);
-					
-					sprite_batch.end();
-				}
+		if (dragged_item != null) {
+			sprite_batch.begin();
+			float draw_x = mouse_x + drag_ghost_offset_x;
+			float draw_y = mouse_y + drag_ghost_offset_y;
+			
+			sprite_batch.setColor(1, 1, 1, 0.7f); 
+            // The widget draws whatever it wants (text, shapes, textures)
+			dragged_item.drawDragGhost(sprite_batch, draw_x, draw_y); 
+			sprite_batch.setColor(1, 1, 1, 1);
+			
+			sprite_batch.end();
+		}
 	}
 
 	public void registerGroup(Widget w) {
@@ -1139,7 +1165,7 @@ public class UIManager implements InputProcessor {
 			dragged_item.onDrag(mouse_x, mouse_y);
             
 			// --- NEW: Poll for Drop Targets ---
-			Widget hovered = getSelectableWidgetAtPosition(mouse_x, mouse_y); //[cite: 3]
+			Widget hovered = getSelectableWidgetAtPosition(true); 
 			
 			if (hovered instanceof DropTarget && ((DropTarget) hovered).doesAccept(dragged_item)) {
 				drop_target_candidate = hovered;
@@ -1152,7 +1178,7 @@ public class UIManager implements InputProcessor {
 			}
 			// ----------------------------------
 
-			return true; // Consume the event!
+			return false; //CHANGED FOR THE BUG GAME TESTING // Consume the event!
 		}
 		
 		return false;

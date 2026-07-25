@@ -491,7 +491,7 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 		Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 		
 		//Gdx.gl.glDisable(GL20.GL_BLEND);
-		ui_manager.renderAll(shape_renderer, sprite_batch);
+		ui_manager.renderAll(shape_renderer, sprite_batch, 0);
 		debugDraw(shape_renderer);
 	}
 
