@@ -31,7 +31,7 @@ public class EventManager {
      */
     @SuppressWarnings("unchecked")
     public void fireEvent(Event event) {
-    	print("event fired: " + event.getClass().getSimpleName());
+//    	print("event fired: " + event.getClass().getSimpleName());
         Array<EventListener<? extends Event>> listeners = bus.get(event.getClass());
         
         if (listeners != null) {
