@@ -132,6 +132,12 @@ public class SpriteBatch3D implements Disposable, Batch {
 	}
 	
 	public float y_to_z_scale_multiplier = 1.0f;
+	
+	
+	public SpriteBatch3D (float y_to_z_scale) {
+		this();
+		this.y_to_z_scale_multiplier = y_to_z_scale;
+	}
 
 	/** Constructs a SpriteBatch3D with the default shader.
 	 * @see SpriteBatch3D#SpriteBatch3D(int, ShaderProgram) */

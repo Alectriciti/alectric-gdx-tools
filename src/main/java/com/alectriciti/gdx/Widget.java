@@ -392,10 +392,19 @@ public class Widget implements Contextable, Drawable{
 		this.shape_base.y = y;
 		this.shape.x = x;
 		this.shape.y = y;
-		updateAlignment();
-		updateGlobalPosition();
+		updateAll();
 		return this;
 	}
+	
+	/**
+	 * Updates both Alignment and Global Positioning
+	 * Use this after establishing a widget to fix it's position.
+	 */
+	public void updateAll() {
+		updateAlignment();
+		updateGlobalPosition();
+	}
+	
 	/**
 	 * Recalculates local shape positions based on alignment and base offsets.
 	 * Enforces visual clamping so widgets cannot escape their parent's bounds.
