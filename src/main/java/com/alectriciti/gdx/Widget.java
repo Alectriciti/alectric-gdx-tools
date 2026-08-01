@@ -31,8 +31,8 @@ import com.badlogic.gdx.utils.JsonValue;
  */
 public class Widget implements Contextable, Drawable{
 
-	protected static int DEFAULT_WIDGET_SIZE = 32;
-	protected static int DEFAULT_SLIDER_SIZE = 64;
+	public static int DEFAULT_WIDGET_SIZE = 32;
+	public static int DEFAULT_SLIDER_SIZE = 64;
 	
 	//Class stuff for Serialization
 	public String type = "widget";
@@ -71,7 +71,8 @@ public class Widget implements Contextable, Drawable{
 	
 	public Point font_offset = new Point(0, 0);
 	
-	public Direction alignment = Direction.NONE;
+	public float align_x = 0f;
+	public float align_y = 0f;
 	
 	public boolean editable = true;
 	
@@ -406,72 +407,69 @@ public class Widget implements Contextable, Drawable{
 		updateGlobalPosition();
 	}
 	
-	public Widget setAlignment(Direction d) {
-		this.alignment = d;
-		this.updateAll();
-		return this;
+	
+	public Widget setAlignment(Direction direction) {
+		switch(direction) {
+		case CENTER:
+			return setAlignment(0.5f, 0.5f);
+		case DOWN:
+			return setAlignment(0.5f, 0.0f);
+		case DOWN_LEFT:
+			return setAlignment(0.0f, 0.0f);
+		case DOWN_RIGHT:
+			return setAlignment(1, 0.0f);
+		case LEFT:
+			return setAlignment(0.0f, 0.5f);
+		case NONE:
+			return this;
+		case RIGHT:
+			return setAlignment(1.0f, 0.5f);
+		case UP:
+			return setAlignment(0.5f, 1.0f);
+		case UP_LEFT:
+			return setAlignment(0.0f, 1.0f);
+		case UP_RIGHT:
+			return setAlignment(1.0f, 1.0f);
+		default:
+			break;
+		
+		}
+	    return this;
+	}
+	
+	
+	public Widget setAlignment(Orientation orientation, float value) {
+	    if (orientation == Orientation.HORIZONTAL) {
+	        this.align_x = value;
+	    } else if (orientation == Orientation.VERTICAL) {
+	        this.align_y = value;
+	    } else if (orientation == Orientation.NONE) {
+	        this.align_x = 0f;
+	        this.align_y = 0f;
+	    }
+	    this.updateAll();
+	    return this;
 	}
 	
 	/**
-	 * Recalculates local shape positions based on alignment and base offsets.
-	 * Enforces visual clamping so widgets cannot escape their parent's bounds.
+	 * Convenience method to set both alignments simultaneously
 	 */
-	public void updateAlignment() {
-	    // If no alignment is requested, rely entirely on the raw shape_base
-	    if (alignment == Direction.NONE) {
-	        shape.x = shape_base.x;
-	        shape.y = shape_base.y;
-	        return;
-	    }
+	public Widget setAlignment(float horizontal, float vertical) {
+	    this.align_x = horizontal;
+	    this.align_y = vertical;
+	    this.updateAll();
+	    return this;
+	}
 	
+	
+	public void updateAlignment() {
 	    float parentW = getParentWidth();
 	    float parentH = getParentHeight();
 	
-	    // 1. Calculate Horizontal (X) Alignment
-	    switch(alignment) {
-	        case UP_LEFT:
-	        case LEFT:
-	        case DOWN_LEFT:
-	            shape.x = shape_base.x;
-	            break;
-	        case UP:
-	        case CENTER:
-	        case DOWN:
-	            shape.x = (parentW / 2f) - (shape.width / 2f) + shape_base.x;
-	            break;
-	        case UP_RIGHT:
-	        case RIGHT:
-	        case DOWN_RIGHT:
-	            shape.x = parentW - shape.width + shape_base.x;
-	            break;
-	        default:
-	            shape.x = shape_base.x;
-	            break;
-	    }
-	
-	    // 2. Calculate Vertical (Y) Alignment (libGDX origin is bottom-left)
-	    switch(alignment) {
-	        case DOWN_LEFT:
-	        case DOWN:
-	        case DOWN_RIGHT:
-	            shape.y = shape_base.y;
-	            break;
-	        case LEFT:
-	        case CENTER:
-	        case RIGHT:
-	            shape.y = (parentH / 2f) - (shape.height / 2f) + shape_base.y;
-	            break;
-	        case UP_LEFT:
-	        case UP:
-	        case UP_RIGHT:
-	            shape.y = parentH - shape.height + shape_base.y;
-	            break;
-	        default:
-	            shape.y = shape_base.y;
-	            break;
-	    }
+	    // Interpolate local position relative to the parent's available space
+	    shape.x = (parentW - shape.width) * align_x + shape_base.x;
+	    shape.y = (parentH - shape.height) * align_y + shape_base.y;
 	}
-	
 	
 	public void setRelativeX(float x) {
 		// TODO Auto-generated method stub
@@ -558,53 +556,11 @@ public class Widget implements Contextable, Drawable{
 	    float localX = (parent != null) ? globalX - parent.getGlobalX() : globalX;
 	    float localY = (parent != null) ? globalY - parent.getGlobalY() : globalY;
 	    
-	    // Apply reverse alignment math to calculate the new anchor offset (shape_base)
-	    if (alignment == Direction.NONE) {
-	        shape_base.x = localX;
-	        shape_base.y = localY;
-	    } else {
-	        // Reverse Horizontal (X) Math
-	        switch(alignment) {
-	            case UP_LEFT:
-	            case LEFT:
-	            case DOWN_LEFT:
-	                shape_base.x = localX;
-	                break;
-	            case UP:
-	            case CENTER:
-	            case DOWN:
-	                shape_base.x = localX - (parentWidth / 2f) + (shape.width / 2f);
-	                break;
-	            case UP_RIGHT:
-	            case RIGHT:
-	            case DOWN_RIGHT:
-	                shape_base.x = localX - parentWidth + shape.width;
-	                break;
-	            default: break;
-	        }
-	        
-	        // Reverse Vertical (Y) Math
-	        switch(alignment) {
-	            case DOWN_LEFT:
-	            case DOWN:
-	            case DOWN_RIGHT:
-	                shape_base.y = localY;
-	                break;
-	            case LEFT:
-	            case CENTER:
-	            case RIGHT:
-	                shape_base.y = localY - (parentHeight / 2f) + (shape.height / 2f);
-	                break;
-	            case UP_LEFT:
-	            case UP:
-	            case UP_RIGHT:
-	                shape_base.y = localY - parentHeight + shape.height;
-	                break;
-	            default: break;
-	        }
-	    }
+	    // Reverse the interpolation math to find the new raw anchor offset (shape_base)
+	    shape_base.x = localX - (parentWidth - shape.width) * align_x;
+	    shape_base.y = localY - (parentHeight - shape.height) * align_y;
 	    
-	    // --- BUG FIX: Clear stale clamp offsets before updating global position ---
+	    // Clear stale clamp offsets before updating global position
 	    this.clamp_offset_x = 0;
 	    this.clamp_offset_y = 0;
 	    
@@ -801,11 +757,19 @@ public class Widget implements Contextable, Drawable{
 		return true;
 	}
 	
+//	public boolean isVisible() {
+//	    // If the parent is invisible, this widget MUST be invisible.
+////	    if (parent != null && !parent.isVisible()) {
+////	        return false;
+////	    }
+//	    // Otherwise, rely on its own masking and logical state
+//	    return transient_visible && getValue(Parameter.VISIBLE).get();
+//	}
 	public boolean isVisible() {
 	    // If the parent is invisible, this widget MUST be invisible.
-//	    if (parent != null && !parent.isVisible()) {
-//	        return false;
-//	    }
+	    if (parent != null && !parent.isVisible()) {
+	        return false;
+	    }
 	    // Otherwise, rely on its own masking and logical state
 	    return transient_visible && getValue(Parameter.VISIBLE).get();
 	}

@@ -17,38 +17,8 @@ public class WindowMoverWidget extends Widget{
 	
 	public WindowMoverWidget(String name, UIManager manager) {
 		super(name, manager);
-		this.alignment = Direction.UP;
+		this.setAlignment(Orientation.VERTICAL, 1);
 	}
-	
-	
-	@Override
-		public void updateAlignment() {
-			// TODO Auto-generated method stub
-			super.updateAlignment();
-			switch(alignment) {
-			case DOWN:
-				break;
-			case DOWN_LEFT:
-				break;
-			case DOWN_RIGHT:
-				break;
-			case LEFT:
-				break;
-			case NONE:
-				break;
-			case RIGHT:
-				break;
-			case UP:
-				break;
-			case UP_LEFT:
-				break;
-			case UP_RIGHT:
-				break;
-			default:
-				break;
-			
-			}
-		}
 	
 	@Override
 	public boolean isAlwaysEditable() {

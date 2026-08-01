@@ -125,10 +125,10 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 		button_mode_2.setType(ButtonType.TOGGLE);
 		button_mode_3.setType(ButtonType.TOGGLE);
 		button_mode_4.setType(ButtonType.TOGGLE);
-		button_mode_1.alignment = Direction.UP_LEFT;
-		button_mode_2.alignment = Direction.UP_LEFT;
-		button_mode_3.alignment = Direction.UP_LEFT;
-		button_mode_4.alignment = Direction.UP_LEFT;
+		button_mode_1.setAlignment(0, 1);
+		button_mode_2.setAlignment(0, 1);
+		button_mode_3.setAlignment(0, 1);
+		button_mode_4.setAlignment(0, 1);
 		button_mode_1.setGlobalPosition(40, height-120);
 		button_mode_2.setGlobalPosition(80, height-120);
 		button_mode_3.setGlobalPosition(120, height-120);
@@ -187,7 +187,7 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 		
 		info = new Widget("info", ui_manager);
 		info.show_text = true;
-		info.alignment = Direction.UP;
+		info.setAlignment(0, 1);
 		info.setSize(120, 53);
 		info.setRelativePosition(10, 10);
 		
@@ -210,11 +210,11 @@ public class MyLibGDXTestApp implements Lwjgl3WindowListener, ApplicationListene
 		 * Dropdown Menus
 		 */
     	main_menu = new DropdownMenuButton("Main Menu", ui_manager, Keys.ESCAPE);
-    	main_menu.alignment = Direction.UP;
+    	main_menu.setAlignment(0.0f, 1);
     	main_menu.setRelativePosition(0, 0);
     	main_menu.setSize(120, 32);
     	other_menu = new DropdownMenuButton("Other Menu", ui_manager, Keys.F1);
-    	other_menu.alignment = Direction.UP;
+    	other_menu.setAlignment(0.0f, 1);
     	other_menu.setRelativePosition(120, 0);
     	other_menu.setSize(120, 32);
     	
