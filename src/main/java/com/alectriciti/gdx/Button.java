@@ -152,11 +152,9 @@ public class Button extends Widget implements Activatable{
 	}
 	
 	@Override
-	public void setSize(float width, float height) {
-		// TODO Auto-generated method stub
+	public Widget setSize(float width, float height) {
 		super.setSize(width, height);
-		//effect_rect.width = shape.getWidth();
-		//effect_rect.height = shape.getHeight();
+		return this;
 	}
 
 	/**
