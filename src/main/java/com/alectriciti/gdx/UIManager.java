@@ -483,11 +483,11 @@ public class UIManager implements InputProcessor {
 		//else if (left_mouse_is_pressed) {
 		//}
 		//Set Mouse Data
-		if (Gdx.input.isButtonPressed(Buttons.RIGHT)) {
-			right_click_down();
-		} else if (right_mouse_is_pressed) {
-			right_click_release();
-		}
+//		if (Gdx.input.isButtonPressed(Buttons.RIGHT)) {
+//			right_click_down();
+//		} else if (right_mouse_is_pressed) {
+//			right_click_release();
+//		}
 
 		HoverMouseLogic();
 
@@ -1109,11 +1109,17 @@ public class UIManager implements InputProcessor {
 	    }
 		return false;
 	}
-
+	
 	@Override
 	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-		boolean b = left_click_release();
-		return b;
+	    if (button == Buttons.LEFT) {
+	        return left_click_release();
+	    }
+	    if (button == Buttons.RIGHT) {
+	        right_click_release();
+	        return true;
+	    }
+	    return false;
 	}
 
 	@Override

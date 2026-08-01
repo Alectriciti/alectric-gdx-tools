@@ -767,9 +767,9 @@ public class Widget implements Contextable, Drawable{
 //	}
 	public boolean isVisible() {
 	    // If the parent is invisible, this widget MUST be invisible.
-	    if (parent != null && !parent.isVisible()) {
-	        return false;
-	    }
+//	    if (parent != null && !parent.isVisible()) {
+//	        return false;
+//	    }
 	    // Otherwise, rely on its own masking and logical state
 	    return transient_visible && getValue(Parameter.VISIBLE).get();
 	}

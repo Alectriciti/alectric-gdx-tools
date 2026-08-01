@@ -28,7 +28,7 @@ import com.badlogic.gdx.math.Vector2;
 public class Slider extends Widget {
 	
     String value_name;
-    TextWidget value_display;
+    public TextWidget value_display;
     
     public Orientation orientation = Orientation.HORIZONTAL;
     
