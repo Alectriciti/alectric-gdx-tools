@@ -57,7 +57,7 @@ public class Widget implements Contextable, Drawable{
 	
 	public String name_for_display; //The display name
 	public boolean show_text = false;
-
+	
 	public transient LinkedList<Widget> widgets_children = new LinkedList<Widget>();
 	
 	//A constantly refreshing cache for quickly determining grandchildren
@@ -98,6 +98,7 @@ public class Widget implements Contextable, Drawable{
 	protected FileHandle texture_file;	
 
 	transient List<Runnable> run_on_click = new ArrayList<Runnable>();
+	transient List<Runnable> run_on_hover = new ArrayList<Runnable>();
 	
 	int render_layer = 0;
 	
@@ -869,6 +870,16 @@ public class Widget implements Contextable, Drawable{
 	
 	public void addOnClick(Runnable r) {
 		this.run_on_click.add(r);
+	}
+	
+	public void addOnHover(Runnable r) {
+		this.run_on_hover.add(r);
+	}
+	
+	final void callOnHover() {
+		for(Runnable r : run_on_hover) {
+			r.run();
+		}
 	}
 	
 	/*

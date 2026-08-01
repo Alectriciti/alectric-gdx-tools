@@ -20,6 +20,11 @@ public class Knob extends Widget{
     	updateKnobSize();
 	}
 	
+	@Override
+	public boolean isVisible() {
+		return parent.isVisible();
+	}
+	
     	@Override
     	public void drawShape(ShapeRenderer shape_renderer) {
     		// TODO Auto-generated method stub

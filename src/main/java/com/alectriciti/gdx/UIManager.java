@@ -326,14 +326,18 @@ public class UIManager implements InputProcessor {
 			widget_hovering.hovering = false;
 		}
 		if (widget_to_assign != null) {
+			//TODO probably poll the mouse or something
+			//This effectively sets the new widget hovering
+			if(widget_hovering != widget_to_assign) {
+				widget_to_assign.callOnHover();
+			}
 			widget_hovering = widget_to_assign;
 			widget_hovering.hovering = true;
-//			 print("New Candidate: "+widget_hovering.getName());
 		} else {
 			widget_hovering = null;
 		}
 	}
-
+	
 	/**
 	 * Handles input for Buttons and Mouse
 	 */
@@ -786,7 +790,6 @@ public class UIManager implements InputProcessor {
 	 */
 	private void HoverMouseLogic() {
 		if (!left_mouse_is_pressed) {
-
 			// canvas_proposed_to_attach
 
 			Widget widget_to_highlight = getSelectableWidgetAtPosition(false);
