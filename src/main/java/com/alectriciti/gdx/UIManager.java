@@ -172,6 +172,7 @@ public class UIManager implements InputProcessor {
 
 
 	public Widget widget_hovering;
+	public Widget widget_last_hovered;
 	public Widget widget_focused;
 	public Widget context_widget_candidate;
 	public ContextWidget context_widget;
@@ -328,11 +329,12 @@ public class UIManager implements InputProcessor {
 		if (widget_to_assign != null) {
 			//TODO probably poll the mouse or something
 			//This effectively sets the new widget hovering
-			if(widget_hovering != widget_to_assign) {
+			if(widget_last_hovered != widget_to_assign) {
 				widget_to_assign.callOnHover();
 			}
 			widget_hovering = widget_to_assign;
 			widget_hovering.hovering = true;
+			widget_last_hovered = widget_to_assign;
 		} else {
 			widget_hovering = null;
 		}

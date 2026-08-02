@@ -18,8 +18,12 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 
-public class Toolkit {
+/**
+ * A utility class holding many different useful functions for game development
+ */
+public final class Toolkit {
 	
+	private Toolkit() {}
 	
 	// Define the ANSI escape codes for colors
     public static final String ANSI_RESET = "\u001B[0m";
@@ -106,6 +110,8 @@ public class Toolkit {
         int screenY = (int) p.getY();
         return new int[]{screenX, screenY};
     }
+	
+	
 	 // Reserved device names (Windows) — case-insensitive
     private static final Set<String> RESERVED_NAMES = new HashSet<>(
         Arrays.asList(
@@ -188,24 +194,6 @@ public class Toolkit {
         }
         return cleaned;
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     
     
     /***
@@ -447,7 +435,6 @@ public class Toolkit {
     	return Gdx.input.isKeyPressed(Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Keys.SHIFT_RIGHT);
     }
 
-
 	public static Vector2 lerp(Vector2 a, Vector2 b, float alpha) {
 		float x = a.x + alpha * (b.x - a.x);
 		float y = a.y + alpha * (b.y - a.y);
@@ -497,6 +484,14 @@ public class Toolkit {
 			min = max-1;
 		}
 		return new Random().nextInt(max-min)+min;
+	}
+	
+	public static String randomString(String... strings) {
+	    if (strings == null || strings.length == 0) {
+	        return null;
+	    }
+
+	    return strings[MathUtils.random(strings.length - 1)];
 	}
     
 }
